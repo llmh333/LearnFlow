@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: backend
+  profiles:
+    active: local
+  jackson:
+    default-property-inclusion: non_null
+    # Jackson 3 (tools.jackson) no longer exposes WRITE_DATES_AS_TIMESTAMPS as a SerializationFeature;
+    # Instant already serializes as ISO-8601 by default via the JSR-310 module Spring Boot registers.
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+app:
+  auth:
+    token-ttl: PT12H
+    registration-enabled: true
+  cors:
+    allowed-origins: http://localhost:5173
+  ai:
+    provider: claude
