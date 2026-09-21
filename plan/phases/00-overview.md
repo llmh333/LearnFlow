@@ -119,17 +119,24 @@ frontend/src/
 
 ### 1.7. Quy ước git & vòng lặp làm việc
 
-- Branch: `phase/<n>-<slug>` (vd `phase/3-srs-review`). Merge vào `main` khi DoD pass.
+- **`main` và `dev` không bao giờ nhận commit/push trực tiếp.** Mọi thay đổi — kể cả 1 task nhỏ trong 1 phase —
+  đi qua branch riêng rồi mở Pull Request merge vào `dev`. `dev` merge vào `main` khi có bản release/deploy.
+- Branch đặt từ `dev`, đặt tên `phase/<n>-<slug>` cho cả phase, hoặc `phase/<n>-<slug>/<task-slug>` khi một
+  task đủ lớn để tách branch riêng trong phase (vd `phase/3-srs-review`, `phase/3-srs-review/sm2-algorithm`).
+  Tên branch phải cho biết ngay đang làm phase nào để dễ theo dõi tiến độ trên GitHub.
+- Mỗi branch → một Pull Request nhắm vào `dev`, tiêu đề nêu rõ phase/task, mô tả liệt kê task nào trong
+  checklist của file phase đã xong. Merge PR xong mới tick `- [x]` các task tương ứng trong file phase.
 - Commit: Conventional Commits, scope = tên module — `feat(vocabulary): add attribute validation per language`.
 - **Thứ tự làm trong mỗi phase** (giữ nguyên ở mọi phase để nhất quán):
   1. Migration SQL → 2. Entity → 3. Repository → 4. Service + unit test → 5. Controller + integration test
   → 6. `types/domain.ts` → 7. `api/<domain>.ts` → 8. `hooks/use<Domain>.ts` → 9. Component/Page → 10. FE test
-- **Cổng kiểm tra trước khi đóng phase** (bắt buộc chạy hết, xanh hết):
+- **Cổng kiểm tra trước khi mở PR / đóng phase** (bắt buộc chạy hết, xanh hết):
   ```
   cd backend  && ./mvnw verify
   cd frontend && npm run lint && npm run build && npm run test
   ```
-- Đóng phase: tick hết checkbox trong file phase tương ứng, cập nhật decision log ở đây nếu có thay đổi.
+- Đóng phase: PR cuối cùng của phase merge vào `dev` xong, tick hết checkbox trong file phase tương ứng,
+  cập nhật decision log ở đây nếu có thay đổi.
 
 ---
 
