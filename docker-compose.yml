@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: learnflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-learnflow}
+      POSTGRES_USER: ${POSTGRES_USER:-learnflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-learnflow}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - learnflow-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-learnflow} -d ${POSTGRES_DB:-learnflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  learnflow-pgdata:
+    name: learnflow-pgdata
