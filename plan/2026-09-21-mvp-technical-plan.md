@@ -2,7 +2,7 @@
 
 ## Context
 
-LearnFlow là ứng dụng học ngoại ngữ cá nhân (Anh + Trung), một người dùng, không phải SaaS. Repo hiện tại chỉ có `PROJECT.md` (tài liệu yêu cầu) và `frontend/` đã scaffold Vite+React+TS mặc định — chưa có backend, chưa có domain code. Đây là kế hoạch kỹ thuật đầy đủ trước khi viết bất kỳ dòng code nào, đúng yêu cầu mục 13 của PROJECT.md: xác định domain model, kiến trúc BE/FE, DB schema, API, chiến lược SRS/AI, testing, cấu trúc thư mục và roadmap milestone nhỏ, mỗi milestone kết thúc ở trạng thái chạy được.
+LearnFlow là ứng dụng học ngoại ngữ cá nhân (Anh + Trung + Nhật), một người dùng, không phải SaaS. Repo hiện tại chỉ có `PROJECT.md` (tài liệu yêu cầu) và `frontend/` đã scaffold Vite+React+TS mặc định — chưa có backend, chưa có domain code. Đây là kế hoạch kỹ thuật đầy đủ trước khi viết bất kỳ dòng code nào, đúng yêu cầu mục 13 của PROJECT.md: xác định domain model, kiến trúc BE/FE, DB schema, API, chiến lược SRS/AI, testing, cấu trúc thư mục và roadmap milestone nhỏ, mỗi milestone kết thúc ở trạng thái chạy được.
 
 Ba quyết định người dùng đã chốt (khác/bổ sung so với PROJECT.md mục 8 "auth optional"):
 - **Có đăng ký/đăng nhập như một app bình thường** (không chỉ 1 password tĩnh) — dùng JWT + Spring Security, vẫn chỉ phục vụ 1 người dùng thực tế nhưng có luồng auth chuẩn.
