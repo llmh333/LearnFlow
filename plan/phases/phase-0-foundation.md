@@ -31,6 +31,9 @@ Chưa có migration (Flyway chỉ cần được wire đúng).
 ### Backend — `pom.xml`
 - [x] Xoá: `spring-boot-starter-mail`, `spring-boot-starter-quartz`, `spring-boot-starter-mail-test`, `spring-boot-starter-quartz-test`.
 - [x] Thêm: `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`.
+  > **Cập nhật ở Phase 1**: `flyway-core` đã đổi thành `spring-boot-starter-flyway` — xem ghi chú trong
+  > `phase-1-auth-shell.md` (Spring Boot 4.1.1 tách autoconfig Flyway ra module riêng, `flyway-core` một
+  > mình không tự chạy migration).
 - [x] Thêm: `io.jsonwebtoken:jjwt-api/jjwt-impl/jjwt-jackson` (0.12.x).
 - [x] Thêm: `spring-boot-testcontainers` + Testcontainers Postgres/JUnit5 module (scope test).
   > Lệch nhỏ so với kế hoạch gốc: Testcontainers 2.x (kéo về qua Spring Boot 4.1.1 BOM) đổi tên artifact
