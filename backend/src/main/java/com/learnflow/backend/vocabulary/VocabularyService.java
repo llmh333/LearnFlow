@@ -113,6 +113,13 @@ public class VocabularyService {
     }
 
     @Transactional(readOnly = true)
+    public long countByLanguage(String languageCode) {
+        return (languageCode == null || languageCode.isBlank())
+                ? vocabularyRepository.count()
+                : vocabularyRepository.count(VocabularySpecifications.hasLanguageCode(languageCode));
+    }
+
+    @Transactional(readOnly = true)
     public List<String> listTagNames() {
         return tagRepository.findAllByOrderByNameAsc().stream().map(VocabularyTag::getName).toList();
     }

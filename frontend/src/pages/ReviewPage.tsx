@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useDueReviews, useSubmitReview } from '@/hooks/useReviews'
+import { useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
 import { useUiStore } from '@/stores/uiStore'
-import type { DueVocabulary, SrsRating } from '@/types/domain'
+import type { DueVocabulary, SrsRating, StudySession } from '@/types/domain'
 
 const RATING_OPTIONS: { rating: SrsRating; label: string; key: string }[] = [
   { rating: 'AGAIN', label: 'Again', key: '1' },
@@ -14,20 +16,61 @@ const RATING_OPTIONS: { rating: SrsRating; label: string; key: string }[] = [
 ]
 
 export function ReviewPage() {
+  const [searchParams] = useSearchParams()
   const selectedLanguageCode = useUiStore((state) => state.selectedLanguageCode)
   const setSelectedLanguageCode = useUiStore((state) => state.setSelectedLanguageCode)
+
+  // Resolved once, synchronously (not via a state subscription) so the URL-sync effect and the
+  // session-start effect below agree on the same value even though both only run on mount.
+  const initialLanguageRef = useRef(
+    searchParams.get('language') || useUiStore.getState().selectedLanguageCode,
+  )
+
+  // A link like Dashboard's "Start review" can preselect a language via ?language=; sync it into
+  // the shared store once on mount so the filter reflects it too.
+  useEffect(() => {
+    const fromUrl = searchParams.get('language')
+    if (fromUrl && fromUrl !== selectedLanguageCode) {
+      setSelectedLanguageCode(fromUrl)
+    }
+    // Intentionally run only once on mount — the URL param is just an initial hint.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { data: due, isLoading } = useDueReviews({
     language: selectedLanguageCode || undefined,
     limit: 50,
   })
   const submitReview = useSubmitReview()
+  const startSession = useStartStudySession()
+  const endSession = useEndStudySession()
 
   const [queue, setQueue] = useState<DueVocabulary[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [reviewedCount, setReviewedCount] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [cardStartedAt, setCardStartedAt] = useState(() => Date.now())
+  const [finishedSession, setFinishedSession] = useState<StudySession | null>(null)
+
+  const sessionIdRef = useRef<number | null>(null);
+  const sessionEndedRef = useRef(false);
+
+  // Start exactly one study session per page visit, tied to whatever language was selected at
+  // that moment — switching the language filter later doesn't restart the session.
+  useEffect(() => {
+    startSession.mutate(initialLanguageRef.current || undefined, {
+      onSuccess: (session) => {
+        sessionIdRef.current = session.id
+      },
+    })
+    return () => {
+      if (sessionIdRef.current !== null && !sessionEndedRef.current) {
+        sessionEndedRef.current = true
+        endSession.mutate(sessionIdRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (due) {
@@ -45,16 +88,31 @@ export function ReviewPage() {
     setRevealed(true)
   }
 
+  function finishSession() {
+    if (sessionIdRef.current === null || sessionEndedRef.current) return
+    sessionEndedRef.current = true
+    endSession.mutate(sessionIdRef.current, {
+      onSuccess: (session) => setFinishedSession(session),
+    })
+  }
+
   function rate(rating: SrsRating) {
     if (!current || submitReview.isPending) return
     const responseTimeMs = Date.now() - cardStartedAt
     submitReview.mutate(
-      { vocabularyId: current.vocabularyId, payload: { rating, responseTimeMs } },
+      {
+        vocabularyId: current.vocabularyId,
+        payload: { rating, responseTimeMs, studySessionId: sessionIdRef.current ?? undefined },
+      },
       {
         onSuccess: () => {
           setQueue((prev) => {
             const [, ...rest] = prev
-            return rating === 'AGAIN' ? [...rest, current] : rest
+            const next = rating === 'AGAIN' ? [...rest, current] : rest
+            if (next.length === 0) {
+              finishSession()
+            }
+            return next
           })
           if (rating !== 'AGAIN') {
             setReviewedCount((count) => count + 1)
@@ -109,6 +167,17 @@ export function ReviewPage() {
   }
 
   if (!current) {
+    const minutes = finishedSession
+      ? Math.max(
+          1,
+          Math.round(
+            (new Date(finishedSession.endedAt ?? Date.now()).getTime() -
+              new Date(finishedSession.startedAt).getTime()) /
+              60000,
+          ),
+        )
+      : null
+
     return (
       <div className="flex flex-col gap-6">
         {header}
@@ -117,7 +186,9 @@ export function ReviewPage() {
             Session complete!
           </h2>
           <p className="text-sm text-neutral-500">
-            You reviewed {reviewedCount} word{reviewedCount === 1 ? '' : 's'}.
+            {finishedSession
+              ? `Reviewed ${finishedSession.wordsReviewed} word${finishedSession.wordsReviewed === 1 ? '' : 's'} in ${minutes} min${finishedSession.mistakesCount > 0 ? ` · ${finishedSession.mistakesCount} mistake${finishedSession.mistakesCount === 1 ? '' : 's'}` : ''}.`
+              : `You reviewed ${reviewedCount} word${reviewedCount === 1 ? '' : 's'}.`}
           </p>
         </Card>
       </div>

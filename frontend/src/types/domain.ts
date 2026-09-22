@@ -104,3 +104,51 @@ export interface ReviewHistoryEntry {
   newInterval: number | null
   responseTimeMs: number | null
 }
+
+export interface StudySession {
+  id: number
+  language: Language | null
+  startedAt: string
+  endedAt: string | null
+  wordsReviewed: number
+  wordsLearned: number
+  mistakesCount: number
+}
+
+export interface LanguageTodaySummary {
+  language: Language
+  dueCount: number
+  newCount: number
+  knownWords: number
+  retentionPercent: number
+  estimatedMinutes: number
+}
+
+export interface DashboardToday {
+  languages: LanguageTodaySummary[]
+  totalEstimatedMinutes: number
+  streakDays: number
+}
+
+export interface ProgressSummary {
+  total: number
+  newCount: number
+  learningCount: number
+  masteredCount: number
+  dueCount: number
+}
+
+export interface Retention {
+  successCount: number
+  totalCount: number
+  ratePercent: number
+}
+
+export interface WeakArea {
+  vocabularyId: number
+  word: string
+  meaning: string
+  easeFactor: number
+  reviewCount: number
+  failureCount: number
+}
