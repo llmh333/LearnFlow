@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ReviewPage } from './ReviewPage'
 
@@ -40,11 +41,21 @@ vi.mock('@/api/reviews', () => ({
   submitReview: (...args: unknown[]) => submitReview(...args),
 }))
 
+const startStudySession = vi.fn()
+const endStudySession = vi.fn()
+
+vi.mock('@/api/studySessions', () => ({
+  startStudySession: (...args: unknown[]) => startStudySession(...args),
+  endStudySession: (...args: unknown[]) => endStudySession(...args),
+}))
+
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <ReviewPage />
+      <MemoryRouter initialEntries={['/review']}>
+        <ReviewPage />
+      </MemoryRouter>
     </QueryClientProvider>,
   )
 }
@@ -62,6 +73,24 @@ describe('ReviewPage', () => {
       successCount: 1,
       failureCount: 0,
       memoryStrength: 100,
+    })
+    startStudySession.mockReset().mockResolvedValue({
+      id: 99,
+      language: { id: 1, code: 'en', name: 'English' },
+      startedAt: '2026-01-01T00:00:00Z',
+      endedAt: null,
+      wordsReviewed: 0,
+      wordsLearned: 0,
+      mistakesCount: 0,
+    })
+    endStudySession.mockReset().mockResolvedValue({
+      id: 99,
+      language: { id: 1, code: 'en', name: 'English' },
+      startedAt: '2026-01-01T00:00:00Z',
+      endedAt: '2026-01-01T00:05:00Z',
+      wordsReviewed: 2,
+      wordsLearned: 2,
+      mistakesCount: 0,
     })
   })
 
@@ -100,6 +129,6 @@ describe('ReviewPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /good/i }))
 
     expect(await screen.findByText('Session complete!')).toBeInTheDocument()
-    expect(screen.getByText(/you reviewed 2 words/i)).toBeInTheDocument()
+    expect(await screen.findByText(/reviewed 2 words in 5 min/i)).toBeInTheDocument()
   })
 })

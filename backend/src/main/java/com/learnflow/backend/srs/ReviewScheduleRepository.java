@@ -22,4 +22,18 @@ public interface ReviewScheduleRepository extends JpaRepository<ReviewSchedule, 
             """)
     List<ReviewSchedule> findDueByLanguageCode(
             @Param("languageCode") String languageCode, @Param("now") Instant now, Pageable pageable);
+
+    long countByNextReviewLessThanEqual(Instant now);
+
+    @Query(
+            "SELECT COUNT(rs) FROM ReviewSchedule rs WHERE rs.vocabulary.language.code = :languageCode AND rs.nextReview <= :now")
+    long countDueByLanguageCode(@Param("languageCode") String languageCode, @Param("now") Instant now);
+
+    long countByReviewCount(int reviewCount);
+
+    @Query(
+            "SELECT COUNT(rs) FROM ReviewSchedule rs WHERE rs.vocabulary.language.code = :languageCode AND rs.reviewCount = 0")
+    long countNewByLanguageCode(@Param("languageCode") String languageCode);
+
+    List<ReviewSchedule> findAllByVocabulary_Language_Code(String languageCode);
 }

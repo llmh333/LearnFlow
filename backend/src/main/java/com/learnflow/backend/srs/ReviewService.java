@@ -6,6 +6,9 @@ import com.learnflow.backend.srs.domain.ReviewSchedule;
 import com.learnflow.backend.srs.dto.DueVocabularyResponse;
 import com.learnflow.backend.srs.dto.ReviewHistoryResponse;
 import com.learnflow.backend.srs.dto.ReviewSubmitResponse;
+import com.learnflow.backend.srs.dto.RetentionStats;
+import com.learnflow.backend.srs.dto.ScheduleSnapshot;
+import com.learnflow.backend.srs.dto.SessionSummary;
 import com.learnflow.backend.srs.engine.SrsAlgorithm;
 import com.learnflow.backend.srs.engine.SrsRating;
 import com.learnflow.backend.srs.engine.SrsState;
@@ -16,7 +19,11 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +37,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ReviewService {
+
+    /**
+     * Streak/retention windows only look back this far — a personal app doesn't need to scan its
+     * entire history for a "last 60 days" style stat.
+     */
+    private static final int STREAK_LOOKBACK_DAYS = 60;
 
     private final ReviewScheduleRepository scheduleRepository;
     private final ReviewHistoryRepository historyRepository;
@@ -93,7 +106,7 @@ public class ReviewService {
 
         historyRepository.save(
                 new ReviewHistory(
-                        vocabularyId,
+                        schedule.getVocabulary(),
                         studySessionId,
                         now,
                         rating,
@@ -106,9 +119,81 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public List<ReviewHistoryResponse> historyOf(Long vocabularyId) {
-        return historyRepository.findByVocabularyIdOrderByReviewedAtDesc(vocabularyId).stream()
+        return historyRepository.findByVocabulary_IdOrderByReviewedAtDesc(vocabularyId).stream()
                 .map(ReviewHistoryResponse::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public long countDue(String languageCode) {
+        Instant now = Instant.now(clock);
+        return (languageCode == null || languageCode.isBlank())
+                ? scheduleRepository.countByNextReviewLessThanEqual(now)
+                : scheduleRepository.countDueByLanguageCode(languageCode, now);
+    }
+
+    /** Words never reviewed yet — the pool of "new" words a learner could start today. */
+    @Transactional(readOnly = true)
+    public long countNew(String languageCode) {
+        return (languageCode == null || languageCode.isBlank())
+                ? scheduleRepository.countByReviewCount(0)
+                : scheduleRepository.countNewByLanguageCode(languageCode);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ScheduleSnapshot> allSchedules(String languageCode) {
+        List<ReviewSchedule> schedules =
+                (languageCode == null || languageCode.isBlank())
+                        ? scheduleRepository.findAll()
+                        : scheduleRepository.findAllByVocabulary_Language_Code(languageCode);
+        return schedules.stream().map(ScheduleSnapshot::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RetentionStats retentionStats(String languageCode, int days) {
+        Instant since = Instant.now(clock).minus(Duration.ofDays(days));
+        long total =
+                (languageCode == null || languageCode.isBlank())
+                        ? historyRepository.countByReviewedAtGreaterThanEqual(since)
+                        : historyRepository.countByLanguageCodeAndReviewedAtGreaterThanEqual(
+                                languageCode, since);
+        long success =
+                (languageCode == null || languageCode.isBlank())
+                        ? historyRepository.countByReviewedAtGreaterThanEqualAndRatingNot(
+                                since, SrsRating.AGAIN)
+                        : historyRepository.countByLanguageCodeAndReviewedAtGreaterThanEqualAndRatingNot(
+                                languageCode, since, SrsRating.AGAIN);
+        return new RetentionStats(success, total);
+    }
+
+    /** Consecutive days (ending today, UTC) with at least one review. */
+    @Transactional(readOnly = true)
+    public int currentStreakDays() {
+        Instant since = Instant.now(clock).minus(Duration.ofDays(STREAK_LOOKBACK_DAYS));
+        Set<LocalDate> activeDays = new HashSet<>();
+        for (Instant reviewedAt : historyRepository.findReviewedTimestampsSince(since)) {
+            activeDays.add(reviewedAt.atZone(ZoneOffset.UTC).toLocalDate());
+        }
+
+        LocalDate day = LocalDate.now(clock.withZone(ZoneOffset.UTC));
+        int streak = 0;
+        while (activeDays.contains(day)) {
+            streak++;
+            day = day.minusDays(1);
+        }
+        return streak;
+    }
+
+    @Transactional(readOnly = true)
+    public SessionSummary summarizeSession(Long studySessionId) {
+        List<ReviewHistory> entries = historyRepository.findByStudySessionId(studySessionId);
+        long wordsReviewed = entries.stream().map(h -> h.getVocabulary().getId()).distinct().count();
+        long wordsLearned =
+                entries.stream()
+                        .filter(h -> h.getPreviousInterval() != null && h.getPreviousInterval().signum() == 0)
+                        .count();
+        long mistakes = entries.stream().filter(h -> h.getRating() == SrsRating.AGAIN).count();
+        return new SessionSummary((int) wordsReviewed, (int) wordsLearned, (int) mistakes);
     }
 
     private SrsState toState(ReviewSchedule schedule) {
