@@ -23,6 +23,8 @@
 | D8 | Field riêng theo ngôn ngữ | Cột JSONB `attributes` trên `vocabulary` | Validate ở tầng Service, không tách bảng. |
 | D9 | Ngôn ngữ học hỗ trợ + mục tiêu chứng chỉ | **EN → IELTS, ZH → HSK, JA → JLPT** (3 ngôn ngữ ở MVP) | `language` seed 3 dòng: `en`/`zh`/`ja`. `VocabularyAttributesValidator` whitelist thêm bộ key cho `ja`: `reading`, `examplePinyin`→ dùng `exampleReading` cho `ja`, `partOfSpeech`, `jlptLevel` (N5..N1). |
 | D10 | Trường `meaning` | Luôn là **văn bản tiếng Việt**, với mọi ngôn ngữ (kể cả UI hardcode tiếng Anh ở D2) | Không đổi D2 (UI copy vẫn tiếng Anh) — chỉ riêng dữ liệu `vocabulary.meaning` là tiếng Việt. Validate ở `VocabularyService` (không bắt buộc kiểm tra ngôn ngữ ký tự, chỉ là quy ước nhập liệu). |
+| D11 | Trình độ hiện tại (CEFR/HSK/JLPT) cho AI | **Suy ra tự động** từ `attributes.cefrLevel`/`hskLevel`/`jlptLevel` của các từ đã có review (`reviewCount > 0`) trong mỗi ngôn ngữ — lấy mức cao nhất đã chạm tới | Không thêm bảng/màn hình Settings mới. Logic nằm trong `ai.context.AIContextBuilder`. Không có từ nào đã ôn → mặc định A1/HSK 1/N5. |
+| D12 | Tone giọng AI Tutor | **Thân thiện, khích lệ** | Đưa thẳng vào system prompt của `ClaudeAIProvider` cho mọi tác vụ (giải thích ngữ pháp, sửa câu, hội thoại, tổng kết). |
 
 **Sai lệch của scaffold hiện tại cần sửa ở Phase 0:**
 - `pom.xml` **thiếu** `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`, JWT lib, Testcontainers.
@@ -152,7 +154,7 @@ frontend/src/
 | P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [x] |
 | P4 | [phase-4-study-dashboard.md](./phase-4-study-dashboard.md) | Study session + Dashboard + Progress | M6, M7, M10 | 2–3 ngày | [x] |
 | **— MỐC A: app dùng được hằng ngày, không cần AI —** | | | | | |
-| P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [ ] |
+| P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [x] |
 | **— MỐC B: MVP đủ 5 màn hình theo PROJECT.md §9 —** | | | | | |
 | P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [ ] |
 | P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [ ] |
@@ -194,9 +196,9 @@ frontend/src/
 
 ## 5. Câu hỏi còn mở (không chặn P0–P4)
 
-1. Trình độ hiện tại (CEFR/HSK) — người dùng tự khai trong Settings hay hệ thống suy ra từ vocabulary đã học? **Cần trả lời trước P5.**
+1. ~~Trình độ hiện tại (CEFR/HSK)~~ — đã chốt ở D11 (P5): suy ra tự động từ vocabulary đã học.
 2. Số "từ mới mỗi ngày" — cố định, cấu hình trong Settings, hay engine tự tính theo thời gian rảnh? **Cần trả lời trước P7.**
-3. Tone giọng AI (nghiêm túc / thân thiện) — ảnh hưởng system prompt. **Cần trả lời trước P5.**
+3. ~~Tone giọng AI~~ — đã chốt ở D12 (P5): thân thiện, khích lệ.
 4. Có cần export/import dữ liệu (CSV/JSON) trong app, hay chỉ dựa vào `pg_dump`? **Cần trả lời trước P8.**
 
 > Ngưỡng "mastered" đã được chốt ở P4 (`intervalDays >= 21 && easeFactor >= 2.5`, đặt trong `MasteryPolicy`), không còn là câu hỏi mở.
