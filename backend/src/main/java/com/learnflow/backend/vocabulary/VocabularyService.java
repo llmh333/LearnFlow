@@ -3,6 +3,7 @@ package com.learnflow.backend.vocabulary;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
+import com.learnflow.backend.srs.ReviewService;
 import com.learnflow.backend.vocabulary.domain.Vocabulary;
 import com.learnflow.backend.vocabulary.domain.VocabularyTag;
 import com.learnflow.backend.vocabulary.dto.VocabularyRequest;
@@ -26,6 +27,7 @@ public class VocabularyService {
     private final VocabularyTagRepository tagRepository;
     private final LanguageService languageService;
     private final VocabularyAttributesValidator attributesValidator;
+    private final ReviewService reviewService;
     private final Clock clock;
 
     public VocabularyService(
@@ -33,11 +35,13 @@ public class VocabularyService {
             VocabularyTagRepository tagRepository,
             LanguageService languageService,
             VocabularyAttributesValidator attributesValidator,
+            ReviewService reviewService,
             Clock clock) {
         this.vocabularyRepository = vocabularyRepository;
         this.tagRepository = tagRepository;
         this.languageService = languageService;
         this.attributesValidator = attributesValidator;
+        this.reviewService = reviewService;
         this.clock = clock;
     }
 
@@ -79,7 +83,9 @@ public class VocabularyService {
                         now);
         vocabulary.replaceTags(resolveTags(request.tags()));
 
-        return VocabularyResponse.from(vocabularyRepository.save(vocabulary));
+        Vocabulary saved = vocabularyRepository.save(vocabulary);
+        reviewService.createScheduleFor(saved.getId());
+        return VocabularyResponse.from(saved);
     }
 
     public VocabularyResponse update(Long id, VocabularyRequest request) {

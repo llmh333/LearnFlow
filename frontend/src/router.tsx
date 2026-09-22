@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { ReviewPage } from '@/pages/ReviewPage'
 import { VocabularyPage } from '@/pages/VocabularyPage'
 
 export const router = createBrowserRouter([
@@ -19,7 +20,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <PlaceholderPage title="Dashboard" /> },
       { path: 'vocabulary', element: <VocabularyPage /> },
-      { path: 'review', element: <PlaceholderPage title="Review" /> },
+      { path: 'review', element: <ReviewPage /> },
       { path: 'ai-tutor', element: <PlaceholderPage title="AI Tutor" /> },
       { path: 'progress', element: <PlaceholderPage title="Progress" /> },
     ],
