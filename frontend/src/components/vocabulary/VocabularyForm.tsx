@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useLanguages } from '@/hooks/useLanguages'
+import { useReviewHistory } from '@/hooks/useReviews'
 import type { VocabularyPayload } from '@/api/vocabulary'
 import type { Vocabulary } from '@/types/domain'
 
@@ -46,6 +47,7 @@ export function VocabularyForm({
   error,
 }: VocabularyFormProps) {
   const { data: languages } = useLanguages()
+  const { data: history } = useReviewHistory(initial?.id)
   const attrs = initial?.attributes
 
   const [languageCode, setLanguageCode] = useState(initial?.language.code ?? 'en')
@@ -199,6 +201,25 @@ export function VocabularyForm({
           <Field label="JLPT level (N5-N1)">
             <Input value={jlptLevel} onChange={(e) => setJlptLevel(e.target.value)} />
           </Field>
+        </div>
+      )}
+
+      {initial && history && history.length > 0 && (
+        <div className="rounded-md border border-neutral-200 p-4 dark:border-neutral-800">
+          <h3 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Review history
+          </h3>
+          <ul className="flex flex-col gap-1 text-xs text-neutral-500">
+            {history.slice(0, 5).map((entry) => (
+              <li key={entry.id} className="flex justify-between">
+                <span>{new Date(entry.reviewedAt).toLocaleString()}</span>
+                <span>{entry.rating}</span>
+                <span>
+                  {entry.previousInterval ?? 0}d → {entry.newInterval ?? 0}d
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

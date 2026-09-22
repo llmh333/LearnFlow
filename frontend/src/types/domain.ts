@@ -69,3 +69,38 @@ export interface PageResponse<T> {
   totalElements: number
   totalPages: number
 }
+
+export type SrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY'
+
+export interface DueVocabulary {
+  vocabularyId: number
+  language: Language
+  word: string
+  meaning: string
+  example: string | null
+  attributes: Record<string, unknown>
+  nextReview: string
+  reviewCount: number
+  memoryStrength: number
+}
+
+export interface ReviewSubmitResult {
+  vocabularyId: number
+  lastReview: string | null
+  nextReview: string
+  intervalDays: number
+  easeFactor: number
+  reviewCount: number
+  successCount: number
+  failureCount: number
+  memoryStrength: number
+}
+
+export interface ReviewHistoryEntry {
+  id: number
+  reviewedAt: string
+  rating: SrsRating
+  previousInterval: number | null
+  newInterval: number | null
+  responseTimeMs: number | null
+}

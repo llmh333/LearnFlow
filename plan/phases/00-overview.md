@@ -149,7 +149,7 @@ frontend/src/
 | P0 | [phase-0-foundation.md](./phase-0-foundation.md) | Nền tảng & toolchain | — | 0.5–1 ngày | [ ] |
 | P1 | [phase-1-auth-shell.md](./phase-1-auth-shell.md) | Auth + App shell | M1 | 1–1.5 ngày | [ ] |
 | P2 | [phase-2-vocabulary.md](./phase-2-vocabulary.md) | Language + Vocabulary | M2, M3 | 2–3 ngày | [x] |
-| P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [ ] |
+| P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [x] |
 | P4 | [phase-4-study-dashboard.md](./phase-4-study-dashboard.md) | Study session + Dashboard + Progress | M6, M7, M10 | 2–3 ngày | [ ] |
 | **— MỐC A: app dùng được hằng ngày, không cần AI —** | | | | | |
 | P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [ ] |

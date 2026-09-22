@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
+import com.learnflow.backend.srs.ReviewService;
 import com.learnflow.backend.vocabulary.domain.Vocabulary;
 import com.learnflow.backend.vocabulary.domain.VocabularyTag;
 import com.learnflow.backend.vocabulary.dto.VocabularyRequest;
@@ -35,6 +36,7 @@ class VocabularyServiceTest {
     @Mock private VocabularyRepository vocabularyRepository;
     @Mock private VocabularyTagRepository tagRepository;
     @Mock private LanguageService languageService;
+    @Mock private ReviewService reviewService;
 
     private VocabularyService vocabularyService;
 
@@ -46,6 +48,7 @@ class VocabularyServiceTest {
                         tagRepository,
                         languageService,
                         new VocabularyAttributesValidator(),
+                        reviewService,
                         FIXED_CLOCK);
     }
 
