@@ -6,6 +6,15 @@ LearnFlow là một ứng dụng web phục vụ mục đích học ngoại ng�
 
 - Tiếng Anh
 - Tiếng Trung (Quan thoại)
+- Tiếng Nhật
+
+Toàn bộ nội dung học tập phục vụ mục tiêu **thi chứng chỉ ngoại ngữ**:
+
+- Tiếng Anh → IELTS
+- Tiếng Trung → HSK
+- Tiếng Nhật → JLPT (N5–N1)
+
+Nghĩa của từ vựng (`meaning`) luôn được dịch và hiển thị bằng **tiếng Việt**, bất kể ngôn ngữ đang học.
 
 Ứng dụng được thiết kế cho **một người dùng duy nhất**, không hướng tới mô hình SaaS hay cộng đồng.
 
@@ -112,27 +121,30 @@ AI không nên kiểm soát các hệ thống lõi như thuật toán SRS.
 
 Ban đầu hỗ trợ:
 
-- Tiếng Anh
-- Tiếng Trung
+- Tiếng Anh (mục tiêu: IELTS)
+- Tiếng Trung (mục tiêu: HSK)
+- Tiếng Nhật (mục tiêu: JLPT)
 
-Kiến trúc nên đủ linh hoạt để có thể bổ sung các ngôn ngữ khác trong tương lai.
+Kiến trúc nên đủ linh hoạt để có thể bổ sung các ngôn ngữ hoặc chứng chỉ khác trong tương lai.
 
-Không hard-code toàn bộ hệ thống theo riêng tiếng Anh và tiếng Trung.
+Không hard-code toàn bộ hệ thống theo riêng ba ngôn ngữ này — cơ chế field riêng theo ngôn ngữ (metadata mở rộng) phải cho phép thêm ngôn ngữ thứ 4 mà không cần đổi schema.
+
+Với mọi ngôn ngữ, trường `meaning` (nghĩa) luôn là văn bản **tiếng Việt**.
 
 ---
 
-## 3.1. Tiếng Anh
+## 3.1. Tiếng Anh (mục tiêu: IELTS)
 
 Một từ vựng tiếng Anh có thể gồm:
 
 - Từ
-- Nghĩa
+- Nghĩa (tiếng Việt)
 - IPA
 - Từ loại
 - Ví dụ
 - Collocation
 - Tag
-- Trình độ CEFR
+- Trình độ (CEFR, quy đổi tương ứng band IELTS)
 - Mức độ ghi nhớ
 
 Ví dụ:
@@ -160,18 +172,18 @@ Tags:
 work, common
 
 Level:
-B1
+B1 (IELTS ~5.5–6.0)
 ```
 
 ---
 
-## 3.2. Tiếng Trung
+## 3.2. Tiếng Trung (mục tiêu: HSK)
 
 Một từ vựng tiếng Trung có thể gồm:
 
 - Hán tự
 - Pinyin
-- Nghĩa
+- Nghĩa (tiếng Việt)
 - Câu ví dụ
 - Pinyin của câu ví dụ
 - Lượng từ nếu có
@@ -202,6 +214,47 @@ daily, education
 
 HSK:
 HSK 1
+```
+
+---
+
+## 3.3. Tiếng Nhật (mục tiêu: JLPT)
+
+Một từ vựng tiếng Nhật có thể gồm:
+
+- Từ (Kanji/Kana)
+- Cách đọc (Furigana/Romaji)
+- Nghĩa (tiếng Việt)
+- Câu ví dụ
+- Cách đọc của câu ví dụ
+- Loại từ (danh từ/động từ/tính từ...)
+- JLPT level (N5–N1)
+- Tag
+- Mức độ ghi nhớ
+
+Ví dụ:
+
+```text
+Word:
+勉強
+
+Reading:
+べんきょう (benkyou)
+
+Meaning:
+học / học tập
+
+Example:
+毎日日本語を勉強します。
+
+Reading:
+まいにちにほんごをべんきょうします。
+
+Tags:
+daily, education
+
+JLPT:
+N5
 ```
 
 ---
@@ -259,6 +312,11 @@ Chinese
 Từ đã biết: 420
 Retention: 79%
 Từ đến hạn: 18
+
+Japanese
+Từ đã biết: 180
+Retention: 82%
+Từ đến hạn: 9
 ```
 
 Dashboard nên đơn giản.
@@ -287,7 +345,7 @@ Các field chung có thể gồm:
 id
 language
 word
-meaning
+meaning        # luôn là tiếng Việt, bất kể ngôn ngữ đang học
 example
 tags
 difficulty
@@ -296,7 +354,7 @@ created_at
 updated_at
 ```
 
-Các field riêng cho tiếng Anh:
+Các field riêng cho tiếng Anh (mục tiêu IELTS):
 
 ```text
 ipa
@@ -305,7 +363,7 @@ cefr_level
 collocations
 ```
 
-Các field riêng cho tiếng Trung:
+Các field riêng cho tiếng Trung (mục tiêu HSK):
 
 ```text
 pinyin
@@ -314,7 +372,16 @@ example_pinyin
 measure_word
 ```
 
-Nên cân nhắc thiết kế metadata mở rộng thay vì tách hoàn toàn hai hệ thống từ vựng riêng biệt.
+Các field riêng cho tiếng Nhật (mục tiêu JLPT):
+
+```text
+reading           # furigana/kana
+example_reading
+part_of_speech
+jlpt_level
+```
+
+Nên cân nhắc thiết kế metadata mở rộng thay vì tách hoàn toàn từng hệ thống từ vựng riêng biệt theo ngôn ngữ.
 
 ---
 

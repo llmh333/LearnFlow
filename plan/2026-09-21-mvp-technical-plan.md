@@ -1,5 +1,10 @@
 # LearnFlow — Kế hoạch kỹ thuật chi tiết (theo PROJECT.md mục 13)
 
+> **Lưu ý (2026-09-22):** tài liệu thực thi hiện tại là [`plan/phases/`](./phases/00-overview.md) (decision log D1–D10,
+> checklist theo phase). File này chỉ còn giá trị tham khảo cho phần thiết kế kiến trúc/DB/API tổng thể —
+> các chi tiết về phạm vi ngôn ngữ (đã mở rộng thành EN/ZH/JA, gắn mục tiêu IELTS/HSK/JLPT, `meaning` luôn
+> tiếng Việt) và trạng thái triển khai thực tế lấy theo `plan/phases/`, không phải theo file này.
+
 ## Context
 
 LearnFlow là ứng dụng học ngoại ngữ cá nhân (Anh + Trung + Nhật), một người dùng, không phải SaaS. Repo hiện tại chỉ có `PROJECT.md` (tài liệu yêu cầu) và `frontend/` đã scaffold Vite+React+TS mặc định — chưa có backend, chưa có domain code. Đây là kế hoạch kỹ thuật đầy đủ trước khi viết bất kỳ dòng code nào, đúng yêu cầu mục 13 của PROJECT.md: xác định domain model, kiến trúc BE/FE, DB schema, API, chiến lược SRS/AI, testing, cấu trúc thư mục và roadmap milestone nhỏ, mỗi milestone kết thúc ở trạng thái chạy được.

@@ -19,3 +19,53 @@ export interface ProblemDetail {
   instance?: string
   errors?: Record<string, string>
 }
+
+export interface Language {
+  id: number
+  code: string
+  name: string
+}
+
+/** Whitelisted attribute keys per language (D9), enforced backend-side by VocabularyAttributesValidator. */
+export interface EnglishAttributes {
+  ipa?: string
+  partOfSpeech?: string
+  cefrLevel?: string
+  collocations?: string[]
+}
+
+export interface ChineseAttributes {
+  pinyin?: string
+  hskLevel?: number
+  examplePinyin?: string
+  measureWord?: string
+}
+
+export interface JapaneseAttributes {
+  reading?: string
+  exampleReading?: string
+  partOfSpeech?: string
+  jlptLevel?: string
+}
+
+export interface Vocabulary {
+  id: number
+  language: Language
+  word: string
+  /** Always Vietnamese, regardless of the language being studied (decision D10). */
+  meaning: string
+  example: string | null
+  difficulty: number
+  tags: string[]
+  attributes: Record<string, unknown>
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PageResponse<T> {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
