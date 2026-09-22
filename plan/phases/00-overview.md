@@ -21,6 +21,8 @@
 | D6 | Thuật toán SRS | SM-2 rút gọn, qua interface `SrsAlgorithm` | FSRS để sau khi đủ dữ liệu. |
 | D7 | Auth | JWT thật (register/login), 1 user thực tế | Domain table **không có `user_id`** ở MVP. |
 | D8 | Field riêng theo ngôn ngữ | Cột JSONB `attributes` trên `vocabulary` | Validate ở tầng Service, không tách bảng. |
+| D9 | Ngôn ngữ học hỗ trợ + mục tiêu chứng chỉ | **EN → IELTS, ZH → HSK, JA → JLPT** (3 ngôn ngữ ở MVP) | `language` seed 3 dòng: `en`/`zh`/`ja`. `VocabularyAttributesValidator` whitelist thêm bộ key cho `ja`: `reading`, `examplePinyin`→ dùng `exampleReading` cho `ja`, `partOfSpeech`, `jlptLevel` (N5..N1). |
+| D10 | Trường `meaning` | Luôn là **văn bản tiếng Việt**, với mọi ngôn ngữ (kể cả UI hardcode tiếng Anh ở D2) | Không đổi D2 (UI copy vẫn tiếng Anh) — chỉ riêng dữ liệu `vocabulary.meaning` là tiếng Việt. Validate ở `VocabularyService` (không bắt buộc kiểm tra ngôn ngữ ký tự, chỉ là quy ước nhập liệu). |
 
 **Sai lệch của scaffold hiện tại cần sửa ở Phase 0:**
 - `pom.xml` **thiếu** `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`, JWT lib, Testcontainers.
@@ -146,7 +148,7 @@ frontend/src/
 |---|---|---|---|---|---|
 | P0 | [phase-0-foundation.md](./phase-0-foundation.md) | Nền tảng & toolchain | — | 0.5–1 ngày | [ ] |
 | P1 | [phase-1-auth-shell.md](./phase-1-auth-shell.md) | Auth + App shell | M1 | 1–1.5 ngày | [ ] |
-| P2 | [phase-2-vocabulary.md](./phase-2-vocabulary.md) | Language + Vocabulary | M2, M3 | 2–3 ngày | [ ] |
+| P2 | [phase-2-vocabulary.md](./phase-2-vocabulary.md) | Language + Vocabulary | M2, M3 | 2–3 ngày | [x] |
 | P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [ ] |
 | P4 | [phase-4-study-dashboard.md](./phase-4-study-dashboard.md) | Study session + Dashboard + Progress | M6, M7, M10 | 2–3 ngày | [ ] |
 | **— MỐC A: app dùng được hằng ngày, không cần AI —** | | | | | |
