@@ -22,3 +22,5 @@ app:
     allowed-origins: http://localhost:5173
   ai:
     provider: claude
+    model: claude-sonnet-5
+    timeout-seconds: 60
