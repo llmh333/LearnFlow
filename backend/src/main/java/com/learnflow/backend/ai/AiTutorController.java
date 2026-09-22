@@ -10,7 +10,7 @@ import com.learnflow.backend.ai.dto.ExamplesResponse;
 import com.learnflow.backend.ai.dto.GrammarExplainApiRequest;
 import com.learnflow.backend.ai.dto.GrammarExplainResponse;
 import com.learnflow.backend.ai.dto.SentenceCorrectionApiRequest;
-import com.learnflow.backend.ai.provider.SentenceCorrection;
+import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +42,8 @@ public class AiTutorController {
     }
 
     @PostMapping("/sentence/correct")
-    public SentenceCorrection correctSentence(@Valid @RequestBody SentenceCorrectionApiRequest request) {
+    public SentenceCorrectionApiResponse correctSentence(
+            @Valid @RequestBody SentenceCorrectionApiRequest request) {
         return aiTutorService.correctSentence(request.languageCode(), request.text());
     }
 

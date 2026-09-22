@@ -13,7 +13,9 @@ import com.learnflow.backend.ai.domain.AIConversation;
 import com.learnflow.backend.ai.domain.AIMessage;
 import com.learnflow.backend.ai.dto.ConversationMessageResponse;
 import com.learnflow.backend.ai.dto.ConversationSummaryResponse;
+import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
 import com.learnflow.backend.ai.provider.AIProvider;
+import com.learnflow.backend.ai.provider.MistakeAnalysis;
 import com.learnflow.backend.ai.provider.SentenceCorrection;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
@@ -70,15 +72,31 @@ class AiTutorServiceTest {
     }
 
     @Test
-    void correctSentence_returnsProviderResult() {
+    void correctSentence_whenTextChanges_alsoSuggestsCategoryAndTopic() {
         when(contextBuilder.build("en")).thenReturn(new LearnerContext("en", "A2", List.of()));
         when(aiProvider.correctSentence(any()))
                 .thenReturn(new SentenceCorrection("I went home.", "Past tense needed."));
+        when(aiProvider.analyzeMistake(any())).thenReturn(new MistakeAnalysis("Grammar", "Past tense"));
 
-        SentenceCorrection result = service.correctSentence("en", "I go home yesterday.");
+        SentenceCorrectionApiResponse result = service.correctSentence("en", "I go home yesterday.");
 
         assertThat(result.corrected()).isEqualTo("I went home.");
         assertThat(result.explanation()).isEqualTo("Past tense needed.");
+        assertThat(result.suggestedCategory()).isEqualTo("Grammar");
+        assertThat(result.suggestedTopic()).isEqualTo("Past tense");
+    }
+
+    @Test
+    void correctSentence_whenTextUnchanged_doesNotSuggestAMistake() {
+        when(contextBuilder.build("en")).thenReturn(new LearnerContext("en", "A2", List.of()));
+        when(aiProvider.correctSentence(any()))
+                .thenReturn(new SentenceCorrection("I am fine.", "Already correct."));
+
+        SentenceCorrectionApiResponse result = service.correctSentence("en", "I am fine.");
+
+        assertThat(result.suggestedCategory()).isNull();
+        assertThat(result.suggestedTopic()).isNull();
+        verify(aiProvider, never()).analyzeMistake(any());
     }
 
     @Test

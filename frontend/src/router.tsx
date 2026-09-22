@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AiTutorPage } from '@/pages/AiTutorPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { MistakeBookPage } from '@/pages/MistakeBookPage'
 import { ProgressPage } from '@/pages/ProgressPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ReviewPage } from '@/pages/ReviewPage'
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'review', element: <ReviewPage /> },
       { path: 'ai-tutor', element: <AiTutorPage /> },
       { path: 'progress', element: <ProgressPage /> },
+      { path: 'mistakes', element: <MistakeBookPage /> },
     ],
   },
 ])

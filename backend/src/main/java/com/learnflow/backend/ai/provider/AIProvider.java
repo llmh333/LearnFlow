@@ -15,6 +15,8 @@ public interface AIProvider {
 
     SentenceCorrection correctSentence(SentenceCorrectionRequest request);
 
+    MistakeAnalysis analyzeMistake(MistakeAnalysisRequest request);
+
     String continueConversation(ConversationRequest request);
 
     String summarizeConversation(ConversationSummaryRequest request);

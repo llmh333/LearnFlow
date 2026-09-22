@@ -8,10 +8,14 @@ export function explainGrammar(languageCode: string, question: string): Promise<
   })
 }
 
-export function correctSentence(
-  languageCode: string,
-  text: string,
-): Promise<{ corrected: string; explanation: string }> {
+export interface SentenceCorrectionResult {
+  corrected: string
+  explanation: string
+  suggestedCategory: string | null
+  suggestedTopic: string | null
+}
+
+export function correctSentence(languageCode: string, text: string): Promise<SentenceCorrectionResult> {
   return apiFetch('/ai/sentence/correct', {
     method: 'POST',
     body: JSON.stringify({ languageCode, text }),
