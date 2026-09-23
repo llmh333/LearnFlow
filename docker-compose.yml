@@ -49,6 +49,7 @@ services:
       APP_AI_PROVIDER: ${AI_PROVIDER:-claude}
       APP_AI_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       APP_AI_GEMINI_API_KEY: ${GEMINI_API_KEY}
+      APP_AI_GROQ_API_KEY: ${GROQ_API_KEY}
       APP_CORS_ALLOWED_ORIGINS: https://${DOMAIN}
       # application-prod.yml hardcodes registration-enabled=false (register once, then lock down),
       # but that leaves no way to ever create the first account. Default stays false/locked; flip
