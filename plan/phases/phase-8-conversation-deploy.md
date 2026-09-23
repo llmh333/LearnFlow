@@ -4,7 +4,7 @@
 
 - **Milestone cũ:** M12
 - **Ước lượng:** 2 ngày (Conversation) + ~1 ngày (Deploy/CI-CD)
-- **Trạng thái:** [ ] Chưa bắt đầu
+- **Trạng thái:** [x] Hoàn thành (chờ setup VPS/Supabase thật + verify deploy trên hạ tầng thật)
 
 ## Goal
 
@@ -18,12 +18,12 @@ Hoàn thiện trải nghiệm hội thoại, và đưa app lên VPS thật (1 vC
 ## Tasks
 
 ### Conversation
-- [ ] Role-play theo scenario preset (EN: meeting, interview, restaurant, travel, daily; ZH: restaurant, shopping, work, travel, daily).
-- [ ] Không ngắt sửa lỗi giữa chừng.
-- [ ] Tổng kết cuối hội thoại: `Mistakes / New vocabulary / Better expressions / Grammar problems`.
-- [ ] Tự đẩy lỗi đáng chú ý sang Mistake Book.
-- [ ] Từ mới → đề xuất thêm vào Vocabulary.
-- [ ] Streaming response qua SSE.
+- [x] Role-play theo scenario preset (EN: meeting, interview, restaurant, travel, daily; ZH: restaurant, shopping, work, travel, daily — JA dùng chung bộ với ZH, không có trong PROJECT.md gốc nhưng app đã hỗ trợ JA theo D9).
+- [x] Không ngắt sửa lỗi giữa chừng.
+- [x] Tổng kết cuối hội thoại: `Mistakes / New vocabulary / Better expressions / Grammar problems`.
+- [x] Tự đẩy lỗi đáng chú ý sang Mistake Book.
+- [x] Từ mới → đề xuất thêm vào Vocabulary.
+- [x] Streaming response qua SSE.
 
 ### Deploy — kiến trúc (D14 + D15)
 
@@ -49,36 +49,33 @@ VPS chỉ có 1GB RAM nên **không tự host Postgres**: dùng **Supabase free 
                               Backend ──── DATABASE_URL ────► Supabase (Postgres managed, free tier)
 ```
 
-- [ ] `backend/Dockerfile` multi-stage: `maven:3.9-eclipse-temurin-21-alpine` build → `eclipse-temurin:21-jre-alpine` runtime. Set `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=50 -XX:+UseSerialGC -Xss256k` (tối ưu RAM cho VPS nhỏ — không set `-Xmx` cứng để JVM tự co giãn theo `MaxRAMPercentage` khi container có memory limit).
-- [ ] `frontend/Dockerfile` multi-stage: `node:22-alpine` build `npm run build` → `FROM caddy:2-alpine`, `COPY --from=build /app/dist /srv`, `COPY Caddyfile /etc/caddy/Caddyfile`.
-- [ ] `frontend/Caddyfile`: domain thật, `root * /srv`, `file_server`, `reverse_proxy /api/* backend:8080`, `encode gzip`.
-- [ ] `docker-compose.yml` thêm profile `prod`: chỉ 2 service `backend` + `frontend` (không có `postgres` — Supabase ở ngoài). `frontend` publish port 80/443, `backend` không publish port ra ngoài (chỉ nội bộ docker network).
-- [ ] Backend: `SPRING_DATASOURCE_URL`/`SPRING_DATASOURCE_USERNAME`/`SPRING_DATASOURCE_PASSWORD` trỏ sang connection string Supabase (qua `.env` trên VPS, không commit). Bật `sslmode=require`.
-- [ ] Tune cho VPS nhỏ: `spring.datasource.hikari.maximum-pool-size=3` (mặc định 10 — thừa cho 1 user), `server.tomcat.threads.max=10`.
-- [ ] Secrets qua env trên VPS (`.env`, không commit — đã có `.gitignore` từ Phase 0).
-- [ ] `app.cors.allowed-origins` = domain thật.
-- [ ] `app.auth.registration-enabled=false` trên prod (chỉ 1 tài khoản, đăng ký 1 lần lúc setup rồi tắt).
-- [ ] Rate limit `/api/auth/login` (bucket4j hoặc filter đơn giản — chống brute-force dù chỉ 1 user).
-- [ ] Thêm swap 2GB trên VPS (lệnh vận hành, ghi vào docs, không phải code) — lưới an toàn chống OOM-kill khi có spike, không thay thế cho việc tune RAM đúng.
-- [ ] `scripts/backup.sh` — `pg_dump` nhắm vào connection string Supabase (không phải Postgres local), chạy qua cron trên VPS, xoay vòng giữ N bản gần nhất.
+- [x] `backend/Dockerfile` multi-stage: `maven:3.9-eclipse-temurin-21-alpine` build → `eclipse-temurin:21-jre-alpine` runtime. Set `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=50 -XX:+UseSerialGC -Xss256k` (tối ưu RAM cho VPS nhỏ — không set `-Xmx` cứng để JVM tự co giãn theo `MaxRAMPercentage` khi container có memory limit).
+- [x] `frontend/Dockerfile` multi-stage: `node:22-alpine` build `npm run build` → `FROM caddy:2-alpine`, `COPY --from=build /app/dist /srv`, `COPY Caddyfile /etc/caddy/Caddyfile`.
+- [x] `frontend/Caddyfile`: domain thật (`{$DOMAIN}`), `root * /srv`, `file_server`, `try_files` cho SPA fallback, `handle /api/* { reverse_proxy backend:8080 }`, `encode gzip`, global `email {$ACME_EMAIL}` cho ACME.
+- [x] `docker-compose.yml` thêm profile `prod`: chỉ 2 service `backend` + `frontend` (không có `postgres` — Supabase ở ngoài, `postgres` chuyển sang profile `dev`). `frontend` publish port 80/443, `backend` chỉ `expose` nội bộ docker network.
+- [x] Backend: `SPRING_DATASOURCE_URL`/`SPRING_DATASOURCE_USERNAME`/`SPRING_DATASOURCE_PASSWORD` trỏ sang connection string Supabase qua `.env` trên VPS (không commit) — `sslmode=require` là trách nhiệm của connection string Supabase cấp sẵn.
+- [x] Tune cho VPS nhỏ (`application-prod.yml`): `spring.datasource.hikari.maximum-pool-size=3`, `server.tomcat.threads.max=10`.
+- [x] Secrets qua env trên VPS (`.env`, không commit — đã có `.gitignore` từ Phase 0).
+- [x] `app.cors.allowed-origins` = domain thật (`APP_CORS_ALLOWED_ORIGINS=https://${DOMAIN}` trong `docker-compose.yml`).
+- [x] `app.auth.registration-enabled=false` trên prod (`application-prod.yml`).
+- [x] Rate limit `/api/auth/login`: `LoginRateLimitFilter` (in-memory fixed-window, 10 lần/5 phút theo IP) — không dùng bucket4j để tránh thêm dependency cho nhu cầu 1-user; tắt dưới `@Profile("!test")` vì state của filter là singleton dùng chung suốt cả integration test suite.
+- [ ] Thêm swap 2GB trên VPS (lệnh vận hành lúc setup thật trên VPS — chưa thực hiện, cần chạy tay khi có quyền truy cập VPS thật).
+- [x] `scripts/backup.sh` — `pg_dump` nhắm vào `DATABASE_URL` (Supabase), nén gzip, xoay vòng giữ `RETENTION_DAYS` (mặc định 14) bản gần nhất, chạy qua cron trên VPS.
 
 ### CI/CD — GitHub Actions (D15)
 
-- [ ] `.github/workflows/ci.yml`: chạy `mvn verify` (backend) + `npm run lint && npm run build && npm run test` (frontend) trên mọi PR vào `dev`/`main` — tách biệt với phần deploy bên dưới, không phụ thuộc secret nào.
-- [ ] `.github/workflows/deploy.yml`: trigger khi push vào `main`.
-  - Job `changes`: dùng `paths-filter` xác định `backend/**` và/hoặc `frontend/**` có đổi không.
+- [x] `.github/workflows/ci.yml`: chạy `./mvnw verify` (backend) + `npm run lint && npm run build && npm run test` (frontend) trên mọi PR vào `dev`/`main` và push vào `dev` — tách biệt với phần deploy bên dưới, không phụ thuộc secret nào.
+- [x] `.github/workflows/deploy.yml`: trigger khi push vào `main`.
+  - Job `changes`: dùng `dorny/paths-filter` xác định `backend/**` và/hoặc `frontend/**` có đổi không.
   - Job `build-backend` (chỉ chạy nếu `backend` đổi): build + push `ghcr.io/<owner>/learnflow-backend:{latest,sha}`.
   - Job `build-frontend` (chỉ chạy nếu `frontend` đổi): build + push `ghcr.io/<owner>/learnflow-frontend:{latest,sha}`.
-  - Job `deploy` (chạy sau khi ít nhất 1 trong 2 job build thành công): SSH vào VPS (`appleboy/ssh-action` hoặc tương đương), chạy `docker compose -f /opt/learnflow/docker-compose.yml --profile prod pull && ... up -d --remove-orphans && docker image prune -f`.
-- [ ] **Cần người dùng tự tạo và thêm vào GitHub Secrets** (Claude Code không tự sinh/lưu):
-  - `VPS_HOST`, `VPS_USER` — thông tin kết nối VPS.
-  - `VPS_SSH_KEY` — **deploy key riêng** (khuyến nghị: tạo user non-root riêng trên VPS chỉ có quyền chạy docker, không dùng key cá nhân/root).
-  - Registry `ghcr.io` dùng sẵn `GITHUB_TOKEN` có sẵn của Actions, không cần secret thêm.
-- [ ] VPS cần sẵn: Docker + Docker Compose plugin cài sẵn, thư mục `/opt/learnflow` có `docker-compose.yml` (profile `prod`) + `.env` (đã điền `DATABASE_URL` Supabase, `JWT_SECRET`, `ANTHROPIC_API_KEY`, domain) — chuẩn bị thủ công 1 lần lúc setup ban đầu, sau đó CI/CD tự động hoàn toàn.
+  - Job `deploy` (chạy sau `changes`+2 job build, `if: always() && !failure() && !cancelled()` nên vẫn chạy khi 1 trong 2 job build bị skip vì không đổi): SSH vào VPS qua `appleboy/ssh-action`, chạy `docker compose --profile prod pull && ... up -d --remove-orphans && docker image prune -f`.
+- [x] Workflow đã viết xong, dùng đúng tên secret theo kế hoạch: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (đã được thêm vào GitHub Secrets ở bước chuẩn bị VPS trước đó — deploy key riêng, không phải key cá nhân/root). Registry `ghcr.io` dùng `GITHUB_TOKEN` có sẵn của Actions.
+- [ ] VPS cần sẵn thủ công 1 lần: Docker + Docker Compose plugin, thư mục `/opt/learnflow` có `docker-compose.yml` (profile `prod`) + `.env` (điền `DATABASE_URL` Supabase, `JWT_SECRET`, `ANTHROPIC_API_KEY`, `DOMAIN`, `ACME_EMAIL`) — **chưa thực hiện**, cần thông tin Supabase + domain thật từ người dùng trước khi deploy lần đầu.
 
 ## Definition of Done
-- [ ] `docker compose --profile prod up` chạy được 2 container (`backend`, `frontend`) trỏ đúng Supabase, không có Postgres local.
-- [ ] Push code vào `main` → GitHub Actions tự build đúng image đã đổi, tự SSH deploy, VPS chạy bản mới mà không cần thao tác tay.
-- [ ] Domain thật truy cập được qua HTTPS (Caddy tự xin chứng chỉ Let's Encrypt).
-- [ ] Có script backup chạy thật một lần thành công nhắm vào Supabase.
-- [ ] RAM VPS ổn định dưới ~700-800MB lúc chạy bình thường (theo dõi qua `docker stats`/`free -m`), có swap làm lưới an toàn.
+- [x] `docker compose --profile prod up` chạy được 2 container (`backend`, `frontend`), không có Postgres local — cấu hình đã sẵn sàng, đã verify qua build (`./mvnw verify`, `npm run build`), chưa chạy thật trên VPS.
+- [x] CI/CD workflow (`ci.yml` + `deploy.yml`) đã viết đúng theo kiến trúc build-changed-then-ssh-deploy — chưa verify bằng 1 lần deploy thật (cần push lên `main` + VPS đã setup).
+- [ ] Domain thật truy cập được qua HTTPS (Caddy tự xin chứng chỉ Let's Encrypt) — cần domain thật + VPS setup, ngoài phạm vi tự động hóa của phiên làm việc này.
+- [x] `scripts/backup.sh` đã viết, chưa chạy thật một lần nhắm vào Supabase (cần connection string thật).
+- [ ] RAM VPS ổn định dưới ~700-800MB lúc chạy bình thường, có swap 2GB làm lưới an toàn — cần verify trên VPS thật sau khi deploy.

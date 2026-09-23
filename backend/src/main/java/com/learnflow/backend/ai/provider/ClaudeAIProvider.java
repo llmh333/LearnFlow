@@ -1,11 +1,16 @@
 package com.learnflow.backend.ai.provider;
 
 import com.learnflow.backend.ai.AIProperties;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,11 +19,13 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Calls the Anthropic Messages API directly via {@link RestClient} (no SDK dependency). Structured
- * results (examples list, sentence correction) use Claude's tool-use forcing instead of parsing
- * free text, per {@code plan/phases/phase-5-ai-tutor.md}.
+ * results (examples list, sentence correction, mistake analysis, conversation summary) use
+ * Claude's tool-use forcing instead of parsing free text, per {@code plan/phases/phase-5-ai-tutor.md}.
  */
 @Component
 @ConditionalOnProperty(prefix = "app.ai", name = "provider", havingValue = "claude", matchIfMissing = true)
@@ -32,9 +39,11 @@ public class ClaudeAIProvider implements AIProvider {
 
     private final RestClient restClient;
     private final AIProperties properties;
+    private final ObjectMapper objectMapper;
 
-    public ClaudeAIProvider(AIProperties properties) {
+    public ClaudeAIProvider(AIProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
+        this.objectMapper = objectMapper;
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(10));
@@ -154,6 +163,19 @@ public class ClaudeAIProvider implements AIProvider {
 
     @Override
     public String continueConversation(ConversationRequest request) {
+        Map<String, Object> body = conversationBody(request);
+        return extractText(post(body));
+    }
+
+    @Override
+    public void streamConversation(ConversationRequest request, Consumer<String> onDelta, Runnable onComplete) {
+        Map<String, Object> body = conversationBody(request);
+        body.put("stream", true);
+        streamPost(body, onDelta);
+        onComplete.run();
+    }
+
+    private Map<String, Object> conversationBody(ConversationRequest request) {
         String scenario =
                 request.scenario() == null || request.scenario().isBlank()
                         ? "daily conversation"
@@ -167,21 +189,114 @@ public class ClaudeAIProvider implements AIProvider {
                         .formatted(request.languageCode(), request.currentLevel(), scenario);
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage(request.userMessage()));
-        return extractText(post(baseBody(system, messages)));
+        return baseBody(system, messages);
     }
 
     @Override
-    public String summarizeConversation(ConversationSummaryRequest request) {
+    public ConversationSummary summarizeConversation(ConversationSummaryRequest request) {
         String system =
                 """
                 You are a friendly, encouraging language tutor. Summarize the practice conversation below
-                in %s for the learner: mention any mistakes, new vocabulary, and better expressions they
-                could use, in a warm and encouraging tone. Keep it to a few sentences.
+                in %s for the learner, in a warm and encouraging tone. Respond only via the
+                summarize_conversation tool. "mistakes" should only include genuinely notable errors (skip
+                if there were none). "newVocabulary" meanings must be written in Vietnamese, regardless of
+                the language practiced.
                 """
                         .formatted(request.languageCode());
+        Map<String, Object> mistakeItemSchema =
+                Map.of(
+                        "type", "object",
+                        "properties",
+                                Map.of(
+                                        "category",
+                                        Map.of(
+                                                "type", "string",
+                                                "enum",
+                                                        List.of(
+                                                                "Vocabulary",
+                                                                "Grammar",
+                                                                "Word order",
+                                                                "Pronunciation",
+                                                                "Usage",
+                                                                "Spelling",
+                                                                "Tone",
+                                                                "Other")),
+                                        "topic", Map.of("type", "string"),
+                                        "original", Map.of("type", "string"),
+                                        "corrected", Map.of("type", "string"),
+                                        "explanation", Map.of("type", "string")),
+                        "required", List.of("category", "topic", "original", "corrected", "explanation"));
+        Map<String, Object> vocabItemSchema =
+                Map.of(
+                        "type", "object",
+                        "properties",
+                                Map.of(
+                                        "word", Map.of("type", "string"),
+                                        "meaningVietnamese", Map.of("type", "string")),
+                        "required", List.of("word", "meaningVietnamese"));
+        Map<String, Object> schema =
+                Map.of(
+                        "type", "object",
+                        "properties",
+                                Map.of(
+                                        "overview", Map.of("type", "string"),
+                                        "mistakes", Map.of("type", "array", "items", mistakeItemSchema),
+                                        "newVocabulary", Map.of("type", "array", "items", vocabItemSchema),
+                                        "betterExpressions",
+                                                Map.of("type", "array", "items", Map.of("type", "string")),
+                                        "grammarProblems",
+                                                Map.of("type", "array", "items", Map.of("type", "string"))),
+                        "required",
+                                List.of(
+                                        "overview",
+                                        "mistakes",
+                                        "newVocabulary",
+                                        "betterExpressions",
+                                        "grammarProblems"));
+
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage("Please summarize this conversation for me."));
-        return extractText(post(baseBody(system, messages)));
+        Map<String, Object> body = baseBody(system, messages);
+        body.put("tools", List.of(toolSpec("summarize_conversation", "Return the structured summary", schema)));
+        body.put("tool_choice", Map.of("type", "tool", "name", "summarize_conversation"));
+
+        Map<String, Object> input = extractToolInput(post(body), "summarize_conversation");
+        return toConversationSummary(input);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ConversationSummary toConversationSummary(Map<String, Object> input) {
+        List<Map<String, Object>> mistakesRaw = (List<Map<String, Object>>) input.getOrDefault("mistakes", List.of());
+        List<ConversationMistake> mistakes =
+                mistakesRaw.stream()
+                        .map(
+                                m ->
+                                        new ConversationMistake(
+                                                String.valueOf(m.get("category")),
+                                                String.valueOf(m.get("topic")),
+                                                String.valueOf(m.get("original")),
+                                                String.valueOf(m.get("corrected")),
+                                                String.valueOf(m.get("explanation"))))
+                        .toList();
+
+        List<Map<String, Object>> vocabRaw =
+                (List<Map<String, Object>>) input.getOrDefault("newVocabulary", List.of());
+        List<SuggestedVocabulary> newVocabulary =
+                vocabRaw.stream()
+                        .map(
+                                v ->
+                                        new SuggestedVocabulary(
+                                                String.valueOf(v.get("word")), String.valueOf(v.get("meaningVietnamese"))))
+                        .toList();
+
+        List<String> betterExpressions =
+                ((List<?>) input.getOrDefault("betterExpressions", List.of()))
+                        .stream().map(String::valueOf).toList();
+        List<String> grammarProblems =
+                ((List<?>) input.getOrDefault("grammarProblems", List.of())).stream().map(String::valueOf).toList();
+
+        return new ConversationSummary(
+                String.valueOf(input.get("overview")), mistakes, newVocabulary, betterExpressions, grammarProblems);
     }
 
     @Override
@@ -211,19 +326,11 @@ public class ClaudeAIProvider implements AIProvider {
         return Map.of("role", "user", "content", content);
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> callTool(String system, String userMessage, Map<String, Object> tool) {
         Map<String, Object> body = baseBody(system, List.of(userMessage(userMessage)));
         body.put("tools", List.of(tool));
         body.put("tool_choice", Map.of("type", "tool", "name", tool.get("name")));
-
-        List<Map<String, Object>> content = extractContent(post(body));
-        for (Map<String, Object> block : content) {
-            if ("tool_use".equals(block.get("type"))) {
-                return (Map<String, Object>) block.get("input");
-            }
-        }
-        throw new AIProviderException("AI response did not include the expected tool call");
+        return extractToolInput(post(body), (String) tool.get("name"));
     }
 
     private Map<String, Object> baseBody(String system, List<Map<String, Object>> messages) {
@@ -253,6 +360,16 @@ public class ClaudeAIProvider implements AIProvider {
     }
 
     @SuppressWarnings("unchecked")
+    private Map<String, Object> extractToolInput(Map<String, Object> response, String toolName) {
+        for (Map<String, Object> block : extractContent(response)) {
+            if ("tool_use".equals(block.get("type")) && toolName.equals(block.get("name"))) {
+                return (Map<String, Object>) block.get("input");
+            }
+        }
+        throw new AIProviderException("AI response did not include the expected tool call: " + toolName);
+    }
+
+    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> extractContent(Map<String, Object> response) {
         Object content = response.get("content");
         if (!(content instanceof List<?> list)) {
@@ -278,6 +395,63 @@ public class ClaudeAIProvider implements AIProvider {
             }
         }
         throw new AIProviderException("Failed to call Claude API", lastError);
+    }
+
+    /**
+     * Streams the response body as Anthropic's SSE format, calling {@code onDelta} for each
+     * {@code content_block_delta} text fragment. Retries once on failure, same as {@link #post}.
+     */
+    private void streamPost(Map<String, Object> body, Consumer<String> onDelta) {
+        RuntimeException lastError = null;
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            try {
+                restClient
+                        .post()
+                        .uri(API_URL)
+                        .body(body)
+                        .exchange(
+                                (request, response) -> {
+                                    readSseStream(response.getBody(), onDelta);
+                                    return null;
+                                });
+                return;
+            } catch (RestClientException e) {
+                lastError = e;
+                log.warn(
+                        "Claude API streaming call failed (attempt {}/{}): {}",
+                        attempt,
+                        MAX_ATTEMPTS,
+                        e.getMessage());
+            }
+        }
+        throw new AIProviderException("Failed to stream from Claude API", lastError);
+    }
+
+    private void readSseStream(java.io.InputStream body, Consumer<String> onDelta) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith("data:")) {
+                    continue;
+                }
+                String json = line.substring(5).trim();
+                if (json.isEmpty()) {
+                    continue;
+                }
+                JsonNode event = objectMapper.readTree(json);
+                String type = event.path("type").asString("");
+                if ("content_block_delta".equals(type)) {
+                    JsonNode delta = event.path("delta");
+                    if ("text_delta".equals(delta.path("type").asString(""))) {
+                        onDelta.accept(delta.path("text").asString(""));
+                    }
+                } else if ("message_stop".equals(type)) {
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            throw new AIProviderException("Failed to read Claude streaming response", e);
+        }
     }
 
     private void logUsage(Map<String, Object> response) {
