@@ -3,6 +3,7 @@ package com.learnflow.backend.dailyplan;
 import com.learnflow.backend.ai.provider.AIProvider;
 import com.learnflow.backend.ai.provider.AIProviderException;
 import com.learnflow.backend.ai.provider.DailyPlanContext;
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.dailyplan.domain.DailyPlan;
 import com.learnflow.backend.dailyplan.domain.DailyPlanItem;
@@ -74,9 +75,10 @@ public class DailyPlanService {
         this.clock = clock;
     }
 
-    public DailyPlanResponse generate(int availableMinutes) {
+    public DailyPlanResponse generate(Long userId, int availableMinutes) {
         List<LanguageResponse> languages = languageService.listAll();
-        List<LanguageDemand> demands = languages.stream().map(this::demandFor).toList();
+        List<LanguageDemand> demands =
+                languages.stream().map(language -> demandFor(userId, language)).toList();
 
         DailyPlanDraft draft = planningEngine.plan(availableMinutes, demands);
         String intro = tryGenerateIntro(draft);
@@ -84,7 +86,7 @@ public class DailyPlanService {
         LocalDate today = LocalDate.now(clock);
         DailyPlan plan =
                 planRepository
-                        .findByPlanDate(today)
+                        .findByUser_IdAndPlanDate(userId, today)
                         .map(
                                 existing -> {
                                     itemRepository.deleteAllByDailyPlan_Id(existing.getId());
@@ -92,9 +94,11 @@ public class DailyPlanService {
                                     return existing;
                                 })
                         .orElseGet(
-                                () ->
-                                        planRepository.save(
-                                                new DailyPlan(today, availableMinutes, Instant.now(clock))));
+                                () -> {
+                                    User userRef = entityManager.getReference(User.class, userId);
+                                    return planRepository.save(
+                                            new DailyPlan(userRef, today, availableMinutes, Instant.now(clock)));
+                                });
         plan.setIntro(intro);
 
         Map<String, Short> languageIdByCode =
@@ -119,33 +123,33 @@ public class DailyPlanService {
     }
 
     @Transactional(readOnly = true)
-    public DailyPlanResponse today() {
+    public DailyPlanResponse today(Long userId) {
         LocalDate today = LocalDate.now(clock);
         DailyPlan plan =
                 planRepository
-                        .findByPlanDate(today)
+                        .findByUser_IdAndPlanDate(userId, today)
                         .orElseThrow(() -> new NotFoundException("No daily plan generated for today yet"));
         List<DailyPlanItem> items = itemRepository.findByDailyPlan_IdOrderByDisplayOrderAsc(plan.getId());
         return DailyPlanResponse.from(plan, items);
     }
 
-    public DailyPlanItemResponse setCompleted(Long itemId, boolean completed) {
+    public DailyPlanItemResponse setCompleted(Long userId, Long itemId, boolean completed) {
         DailyPlanItem item =
                 itemRepository
-                        .findById(itemId)
+                        .findByIdAndDailyPlan_User_Id(itemId, userId)
                         .orElseThrow(() -> new NotFoundException("Daily plan item not found: " + itemId));
         item.setCompleted(completed);
         return DailyPlanItemResponse.from(item);
     }
 
-    private LanguageDemand demandFor(LanguageResponse language) {
-        long dueCount = reviewService.countDue(language.code());
-        String weakTopic = topWeakTopic(language.code());
+    private LanguageDemand demandFor(Long userId, LanguageResponse language) {
+        long dueCount = reviewService.countDue(userId, language.code());
+        String weakTopic = topWeakTopic(userId, language.code());
         return new LanguageDemand(language.code(), language.name(), dueCount, weakTopic);
     }
 
-    private String topWeakTopic(String languageCode) {
-        List<MistakeResponse> recurring = mistakeService.recurring(languageCode, 1);
+    private String topWeakTopic(Long userId, String languageCode) {
+        List<MistakeResponse> recurring = mistakeService.recurring(userId, languageCode, 1);
         return recurring.isEmpty() ? null : recurring.get(0).topic();
     }
 

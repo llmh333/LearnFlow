@@ -1,10 +1,14 @@
 package com.learnflow.backend.dailyplan.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,7 +27,11 @@ public class DailyPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "plan_date", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
+
+    @Column(name = "plan_date", nullable = false)
     private LocalDate planDate;
 
     @Setter
@@ -38,7 +46,8 @@ public class DailyPlan {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public DailyPlan(LocalDate planDate, int availableMinutes, Instant createdAt) {
+    public DailyPlan(User user, LocalDate planDate, int availableMinutes, Instant createdAt) {
+        this.user = user;
         this.planDate = planDate;
         this.availableMinutes = availableMinutes;
         this.createdAt = createdAt;
