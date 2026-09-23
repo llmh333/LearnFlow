@@ -2,15 +2,48 @@ import type { ReactNode } from 'react'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
-import { useProgressHistory, useProgressSummary, useRetention, useWeakAreas } from '@/hooks/useProgress'
+import {
+  IconProgress,
+  IconSparkles,
+  IconFlame,
+  IconClock,
+  IconBook,
+  IconCheckCircle,
+  IconMistake,
+} from '@/components/ui/Icon'
+import {
+  useProgressHistory,
+  useProgressSummary,
+  useRetention,
+  useWeakAreas,
+} from '@/hooks/useProgress'
 import { useRecurringMistakes } from '@/hooks/useMistakes'
 import { useUiStore } from '@/stores/uiStore'
 
-function StatTile({ label, value }: { label: string; value: ReactNode }) {
+function StatTile({
+  label,
+  value,
+  icon: Icon,
+  colorClass,
+}: {
+  label: string
+  value: ReactNode
+  icon: typeof IconBook
+  colorClass: string
+}) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-neutral-200 p-4 dark:border-neutral-800">
-      <span className="text-xs uppercase tracking-wide text-neutral-400">{label}</span>
-      <span className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">{value}</span>
+    <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          {label}
+        </span>
+        <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${colorClass}`}>
+          <Icon size={16} />
+        </div>
+      </div>
+      <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        {value}
+      </span>
     </div>
   )
 }
@@ -28,9 +61,20 @@ export function ProgressPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Progress</h1>
-        <div className="w-40">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <span>Learning Analytics</span>
+            <Badge variant="primary" className="text-xs font-bold">
+              SRS Metrics
+            </Badge>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Track retention rates, memory strength, and weak areas over time.
+          </p>
+        </div>
+        <div className="w-full sm:w-44">
           <LanguageSwitcher
             value={selectedLanguageCode}
             onChange={setSelectedLanguageCode}
@@ -39,99 +83,192 @@ export function ProgressPage() {
         </div>
       </div>
 
+      {/* Metric Stat Tiles */}
       {summary && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <StatTile label="Total" value={summary.total} />
-          <StatTile label="New" value={summary.newCount} />
-          <StatTile label="Learning" value={summary.learningCount} />
-          <StatTile label="Mastered" value={summary.masteredCount} />
-          <StatTile label="Due" value={summary.dueCount} />
+          <StatTile
+            label="Total Words"
+            value={summary.total}
+            icon={IconBook}
+            colorClass="bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400"
+          />
+          <StatTile
+            label="New"
+            value={summary.newCount}
+            icon={IconSparkles}
+            colorClass="bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400"
+          />
+          <StatTile
+            label="Learning"
+            value={summary.learningCount}
+            icon={IconFlame}
+            colorClass="bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+          />
+          <StatTile
+            label="Mastered"
+            value={summary.masteredCount}
+            icon={IconCheckCircle}
+            colorClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
+          />
+          <StatTile
+            label="Due Review"
+            value={summary.dueCount}
+            icon={IconClock}
+            colorClass="bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400"
+          />
         </div>
       )}
 
+      {/* Retention Rate Card */}
       {retention && (
-        <Card>
-          <h2 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Retention (last 30 days)
-          </h2>
-          <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-            {retention.ratePercent.toFixed(1)}%
-          </p>
-          <p className="text-xs text-neutral-500">
-            {retention.successCount} / {retention.totalCount} reviews
-          </p>
+        <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <div className="space-y-1">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <IconProgress size={16} className="text-indigo-600 dark:text-indigo-400" />
+              <span>Retention Rate (Last 30 Days)</span>
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Based on {retention.successCount} successful recalls out of {retention.totalCount} total reviews.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                {retention.ratePercent.toFixed(1)}%
+              </p>
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                Target: &gt; 85%
+              </span>
+            </div>
+            <div className="h-12 w-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div
+                className="w-full bg-indigo-600 rounded-full transition-all duration-500"
+                style={{ height: `${Math.min(100, Math.max(5, retention.ratePercent))}%` }}
+              />
+            </div>
+          </div>
         </Card>
       )}
 
-      <Card>
-        <h2 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Weak areas
-        </h2>
-        {weakAreas && weakAreas.length > 0 ? (
-          <ul className="flex flex-col gap-1 text-sm">
-            {weakAreas.map((area) => (
-              <li
-                key={area.vocabularyId}
-                className="flex justify-between text-neutral-600 dark:text-neutral-400"
-              >
-                <span>
-                  {area.word} <span className="text-neutral-400">— {area.meaning}</span>
-                </span>
-                <span>
-                  ease {area.easeFactor.toFixed(2)} · {area.failureCount}/{area.reviewCount} failed
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-neutral-500">No weak areas yet.</p>
-        )}
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Weak Areas */}
+        <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <IconMistake size={16} className="text-amber-500" />
+              <span>Words Needing Attention</span>
+            </h2>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Low ease factor</span>
+          </div>
 
-      <Card>
-        <h2 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Recurring mistakes
-        </h2>
-        {recurringMistakes && recurringMistakes.length > 0 ? (
-          <ul className="flex flex-col gap-1 text-sm">
-            {recurringMistakes.slice(0, 5).map((mistake) => (
-              <li
-                key={mistake.id}
-                className="flex items-center justify-between gap-2 text-neutral-600 dark:text-neutral-400"
-              >
-                <span className="flex items-center gap-2">
-                  {mistake.category && <Badge>{mistake.category}</Badge>}
-                  {mistake.topic}
-                </span>
-                <span>{mistake.timesRepeated}x</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-neutral-500">No recurring mistakes yet.</p>
-        )}
-      </Card>
+          {weakAreas && weakAreas.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {weakAreas.map((area) => (
+                <li
+                  key={area.vocabularyId}
+                  className="flex items-center justify-between rounded-xl bg-slate-100/80 p-3 text-xs border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
+                >
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {area.word}
+                    </span>
+                    <span className="text-slate-400 mx-1.5">—</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-medium">{area.meaning}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="warning" className="text-[10px] font-bold">
+                      ease {area.easeFactor.toFixed(2)}
+                    </Badge>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      {area.failureCount}/{area.reviewCount} failed
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-6 text-center text-xs text-slate-400">No weak areas detected! Keep it up.</p>
+          )}
+        </Card>
 
-      <Card>
-        <h2 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Recent sessions
+        {/* Recurring Mistakes */}
+        <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <IconMistake size={16} className="text-rose-500" />
+              <span>Recurring Mistake Topics</span>
+            </h2>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Frequency count</span>
+          </div>
+
+          {recurringMistakes && recurringMistakes.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {recurringMistakes.slice(0, 5).map((mistake) => (
+                <li
+                  key={mistake.id}
+                  className="flex items-center justify-between rounded-xl bg-slate-100/80 p-3 text-xs border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
+                >
+                  <span className="flex items-center gap-2">
+                    {mistake.category && <Badge variant="danger">{mistake.category}</Badge>}
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {mistake.topic}
+                    </span>
+                  </span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400">
+                    {mistake.timesRepeated}x repeated
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-6 text-center text-xs text-slate-400">No recurring mistakes logged.</p>
+          )}
+        </Card>
+      </div>
+
+      {/* Recent Sessions */}
+      <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+          <IconClock size={16} className="text-indigo-600 dark:text-indigo-400" />
+          <span>Recent Study Sessions</span>
         </h2>
+
         {history && history.length > 0 ? (
-          <ul className="flex flex-col gap-1 text-sm">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {history.map((session) => (
-              <li
+              <div
                 key={session.id}
-                className="flex justify-between text-neutral-600 dark:text-neutral-400"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-100/70 p-3.5 text-xs dark:border-slate-700 dark:bg-slate-800"
               >
-                <span>{new Date(session.startedAt).toLocaleDateString()}</span>
-                <span>
-                  {session.wordsReviewed} words · {session.mistakesCount} mistakes
-                </span>
-              </li>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white">
+                    {new Date(session.startedAt).toLocaleDateString([], {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {new Date(session.startedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                    {session.wordsReviewed} words
+                  </span>
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    {session.mistakesCount > 0 ? `${session.mistakesCount} mistakes` : 'Clean run!'}
+                  </p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-sm text-neutral-500">No study sessions yet.</p>
+          <p className="py-6 text-center text-xs text-slate-400">No study sessions recorded yet.</p>
         )}
       </Card>
     </div>
