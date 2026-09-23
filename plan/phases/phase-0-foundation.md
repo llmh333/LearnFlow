@@ -1,10 +1,10 @@
 # Phase 0 — Nền tảng & toolchain
 
-[← Overview](./00-overview.md)
+[← Overview](./00-overview.md) · [Phase 1 →](./phase-1-auth-shell.md)
 
 - **Milestone cũ:** —
 - **Ước lượng:** 0.5–1 ngày
-- **Trạng thái:** [ ] Chưa bắt đầu
+- **Trạng thái:** [x] Hoàn thành
 
 ## Goal
 
@@ -21,46 +21,63 @@ Chưa có migration (Flyway chỉ cần được wire đúng).
 ## Tasks
 
 ### Toolchain & môi trường
-- [ ] `mise.toml` ở gốc: pin `java = "temurin-21"`, `node = "22"`.
-- [ ] `mise install` chạy được, kéo Node về máy.
+- [x] `mise.toml` ở gốc: pin `java = "temurin-21"`, `node = "22"`.
+- [x] `mise install` chạy được, kéo Node về máy.
 
 ### Docker & env
-- [ ] `docker-compose.yml`: chỉ service `postgres:17-alpine`, named volume `learnflow-pgdata`, healthcheck, port 5432. (Service backend/frontend để sau Phase 8 dùng compose profile.)
-- [ ] `.env.example` + đọc `.env`: `POSTGRES_*`, `JWT_SECRET`, `ANTHROPIC_API_KEY` (để trống tới P5).
+- [x] `docker-compose.yml`: chỉ service `postgres:17-alpine`, named volume `learnflow-pgdata`, healthcheck, port 5432. (Service backend/frontend để sau Phase 8 dùng compose profile.)
+- [x] `.env.example` + đọc `.env`: `POSTGRES_*`, `JWT_SECRET`, `ANTHROPIC_API_KEY` (để trống tới P5).
 
 ### Backend — `pom.xml`
-- [ ] Xoá: `spring-boot-starter-mail`, `spring-boot-starter-quartz`, `spring-boot-starter-mail-test`, `spring-boot-starter-quartz-test`.
-- [ ] Thêm: `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`.
-- [ ] Thêm: `io.jsonwebtoken:jjwt-api/jjwt-impl/jjwt-jackson` (0.12.x).
-- [ ] Thêm: `spring-boot-testcontainers` + `org.testcontainers:postgresql` + `junit-jupiter` (scope test).
-- [ ] Giữ nguyên: security, validation, webmvc, postgresql, lombok, devtools.
+- [x] Xoá: `spring-boot-starter-mail`, `spring-boot-starter-quartz`, `spring-boot-starter-mail-test`, `spring-boot-starter-quartz-test`.
+- [x] Thêm: `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`.
+  > **Cập nhật ở Phase 1**: `flyway-core` đã đổi thành `spring-boot-starter-flyway` — xem ghi chú trong
+  > `phase-1-auth-shell.md` (Spring Boot 4.1.1 tách autoconfig Flyway ra module riêng, `flyway-core` một
+  > mình không tự chạy migration).
+- [x] Thêm: `io.jsonwebtoken:jjwt-api/jjwt-impl/jjwt-jackson` (0.12.x).
+- [x] Thêm: `spring-boot-testcontainers` + Testcontainers Postgres/JUnit5 module (scope test).
+  > Lệch nhỏ so với kế hoạch gốc: Testcontainers 2.x (kéo về qua Spring Boot 4.1.1 BOM) đổi tên artifact
+  > từ `org.testcontainers:postgresql`/`junit-jupiter` thành `org.testcontainers:testcontainers-postgresql`/
+  > `testcontainers-junit-jupiter`. Đã dùng tên mới; import package Java tương ứng cũng đổi, cần lưu ý khi
+  > viết `AbstractIntegrationTest` ở Phase 1.
+- [x] Giữ nguyên: security, validation, webmvc, postgresql, lombok, devtools.
 
 ### Backend — config
-- [ ] `application.yml` + `application-local.yml`: datasource từ env, `flyway.enabled=true`, `jpa.hibernate.ddl-auto=validate`, `jpa.open-in-view=false`, Jackson `non_null` + `WRITE_DATES_AS_TIMESTAMPS=false`.
-- [ ] Package `common/config/ClockConfig`.
-- [ ] Package `common/error/{GlobalExceptionHandler, NotFoundException, ConflictException}`.
-- [ ] Package `common/web/PageResponse`.
-- [ ] `HealthController` (public): `GET /api/health` → `{ "status": "UP", "time": "..." }`.
+- [x] `application.yml` + `application-local.yml`: datasource từ env, `flyway.enabled=true`, `jpa.hibernate.ddl-auto=validate`, `jpa.open-in-view=false`, Jackson `non_null`.
+  > Lệch nhỏ: Spring Boot 4.1.1 dùng Jackson 3 (`tools.jackson`), `SerializationFeature` không còn
+  > `WRITE_DATES_AS_TIMESTAMPS` — hành vi ISO-8601 cho `Instant` đã là mặc định qua module JSR-310 nên
+  > không cần set gì thêm (đã ghi chú trong `application.yml`).
+- [x] Package `common/config/ClockConfig`.
+- [x] Package `common/error/{GlobalExceptionHandler, NotFoundException, ConflictException}`.
+- [x] Package `common/web/PageResponse`.
+- [x] `HealthController` (public): `GET /api/health` → `{ "status": "UP", "time": "..." }`.
+  > Thêm luôn `common/config/SecurityConfig` tạm thời (`permitAll` toàn bộ, CSRF off) vì
+  > `spring-boot-starter-security` trên classpath sẽ tự khoá mọi endpoint bằng user sinh ngẫu nhiên nếu
+  > không có config — nếu không thì `/api/health` không public được như DoD yêu cầu. Phase 1 sẽ thay bằng
+  > `SecurityConfig` JWT thật.
 
 ### Frontend
-- [ ] Cài `react-router-dom`, `@tanstack/react-query`, `zustand`.
-- [ ] Cài `tailwindcss` + `@tailwindcss/vite`.
-- [ ] Cài `vitest` + `@testing-library/react` + `@testing-library/jest-dom` + `jsdom`, thêm script `test`.
-- [ ] `vite.config.ts`: thêm tailwind plugin, alias `@ → src`, `server.proxy: { '/api': 'http://localhost:8080' }`.
-- [ ] `src/api/client.ts` (khung).
-- [ ] `App.tsx` gọi `/api/health` hiển thị trạng thái backend.
+- [x] Cài `react-router-dom`, `@tanstack/react-query`, `zustand`.
+- [x] Cài `tailwindcss` + `@tailwindcss/vite`.
+- [x] Cài `vitest` + `@testing-library/react` + `@testing-library/jest-dom` + `jsdom`, thêm script `test`.
+- [x] `vite.config.ts`: thêm tailwind plugin, alias `@ → src`, `server.proxy: { '/api': 'http://localhost:8080' }`.
+- [x] `src/api/client.ts` (khung).
+- [x] `App.tsx` gọi `/api/health` hiển thị trạng thái backend.
+  > Đã xoá trang demo mặc định của Vite scaffold (App.css, assets hero/react/vite svg) vì Phase 0 không
+  > giữ UI mẫu — `index.css` chỉ còn `@import "tailwindcss";`.
 
 ### Tài liệu
-- [ ] `AGENTS.md` ở gốc repo: copy nguyên mục 1 (Conventions Contract) của `00-overview.md`.
-- [ ] `README.md` gốc: 5 lệnh chạy dự án.
+- [x] `AGENTS.md` ở gốc repo: copy nguyên mục 1 (Conventions Contract) của `00-overview.md`.
+- [x] `README.md` gốc: 5 lệnh chạy dự án.
 
 ### Test
-- [ ] `BackendApplicationTests` context load.
-- [ ] `npm run build` pass.
+- [x] `BackendApplicationTests` context load.
+- [x] `npm run build` pass.
+- [x] FE test smoke cho `App.tsx` (trạng thái "checking" trước khi health resolve) — thêm ngoài checklist gốc để có ít nhất 1 test chạy qua `npm run test`.
 
 ## Definition of Done
-- [ ] `mise install` → `java -version` ra 21, `node -v` ra 22.
-- [ ] `docker compose up -d postgres` → healthy.
-- [ ] `./mvnw spring-boot:run` khởi động không lỗi, Flyway kết nối được DB.
-- [ ] `npm run dev` → trang hiển thị `Backend: UP`.
-- [ ] `./mvnw verify` và `npm run lint && npm run build && npm run test` đều xanh.
+- [x] `mise install` → `java -version` ra 21, `node -v` ra 22.
+- [x] `docker compose up -d postgres` → healthy.
+- [x] `./mvnw spring-boot:run` khởi động không lỗi, Flyway kết nối được DB.
+- [x] `npm run dev` → trang hiển thị `Backend: UP` (verify qua proxy `/api/health` khi cả hai server chạy).
+- [x] `./mvnw verify` và `npm run lint && npm run build && npm run test` đều xanh.

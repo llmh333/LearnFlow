@@ -21,6 +21,14 @@
 | D6 | Thuật toán SRS | SM-2 rút gọn, qua interface `SrsAlgorithm` | FSRS để sau khi đủ dữ liệu. |
 | D7 | Auth | JWT thật (register/login), 1 user thực tế | Domain table **không có `user_id`** ở MVP. |
 | D8 | Field riêng theo ngôn ngữ | Cột JSONB `attributes` trên `vocabulary` | Validate ở tầng Service, không tách bảng. |
+| D9 | Ngôn ngữ học hỗ trợ + mục tiêu chứng chỉ | **EN → IELTS, ZH → HSK, JA → JLPT** (3 ngôn ngữ ở MVP) | `language` seed 3 dòng: `en`/`zh`/`ja`. `VocabularyAttributesValidator` whitelist thêm bộ key cho `ja`: `reading`, `examplePinyin`→ dùng `exampleReading` cho `ja`, `partOfSpeech`, `jlptLevel` (N5..N1). |
+| D10 | Trường `meaning` | Luôn là **văn bản tiếng Việt**, với mọi ngôn ngữ (kể cả UI hardcode tiếng Anh ở D2) | Không đổi D2 (UI copy vẫn tiếng Anh) — chỉ riêng dữ liệu `vocabulary.meaning` là tiếng Việt. Validate ở `VocabularyService` (không bắt buộc kiểm tra ngôn ngữ ký tự, chỉ là quy ước nhập liệu). |
+| D11 | Trình độ hiện tại (CEFR/HSK/JLPT) cho AI | **Suy ra tự động** từ `attributes.cefrLevel`/`hskLevel`/`jlptLevel` của các từ đã có review (`reviewCount > 0`) trong mỗi ngôn ngữ — lấy mức cao nhất đã chạm tới | Không thêm bảng/màn hình Settings mới. Logic nằm trong `ai.context.AIContextBuilder`. Không có từ nào đã ôn → mặc định A1/HSK 1/N5. |
+| D12 | Tone giọng AI Tutor | **Thân thiện, khích lệ** | Đưa thẳng vào system prompt của `ClaudeAIProvider` cho mọi tác vụ (giải thích ngữ pháp, sửa câu, hội thoại, tổng kết). |
+| D13 | Số "từ mới mỗi ngày" | **Engine tự tính** theo thời gian rảnh còn lại sau khi trừ thời gian ôn từ due | Không cố định, không cần Settings. Công thức trong `dailyplan.engine.PlanningEngine`: 40% thời gian còn lại (sau review) ÷ 1 phút/từ mới. |
+| D14 | Database khi deploy | **Supabase free tier** (Postgres managed), không tự host Postgres trên VPS | VPS 1 vCPU/1GB RAM — bỏ hẳn container Postgres khỏi VPS để dồn RAM cho JVM. Rủi ro chấp nhận: free tier tự pause sau ~7 ngày không hoạt động, giới hạn 500MB (dư dả cho dữ liệu 1 người dùng cá nhân). Backend chỉ đổi `SPRING_DATASOURCE_URL` sang connection string Supabase, không đổi code (vẫn là Postgres chuẩn). |
+| D15 | Kiến trúc deploy + CI/CD | **2 image duy nhất**: `backend` (Spring Boot JRE) và `frontend` (build React → `FROM caddy:alpine`, Caddy vừa serve static vừa lo HTTPS vừa reverse-proxy `/api` sang backend) | Không chạy Postgres/Caddy riêng lẻ trên VPS — tối ưu tối đa cho 1GB RAM. GitHub Actions: build + push `ghcr.io/.../learnflow-{backend,frontend}` khi merge vào `main`, lọc theo `paths:` (chỉ build image nào có thay đổi), rồi **tự SSH vào VPS** chạy `docker compose pull && up -d`. Cần 3 GitHub Secrets do người dùng tự tạo: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (deploy key riêng, không dùng key cá nhân) — Claude Code không tự sinh/lưu secret này. |
+| D16 | Export/import dữ liệu trong app | **Không cần** — chỉ dựa vào backup hạ tầng (`pg_dump` nhắm vào Supabase connection string, hoặc backup tự động của Supabase) | Đúng tinh thần "không over-engineer" — không thêm endpoint/UI export-import CSV/JSON. |
 
 **Sai lệch của scaffold hiện tại cần sửa ở Phase 0:**
 - `pom.xml` **thiếu** `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`, JWT lib, Testcontainers.
@@ -119,17 +127,24 @@ frontend/src/
 
 ### 1.7. Quy ước git & vòng lặp làm việc
 
-- Branch: `phase/<n>-<slug>` (vd `phase/3-srs-review`). Merge vào `main` khi DoD pass.
+- **`main` và `dev` không bao giờ nhận commit/push trực tiếp.** Mọi thay đổi — kể cả 1 task nhỏ trong 1 phase —
+  đi qua branch riêng rồi mở Pull Request merge vào `dev`. `dev` merge vào `main` khi có bản release/deploy.
+- Branch đặt từ `dev`, đặt tên `phase/<n>-<slug>` cho cả phase, hoặc `phase/<n>-<slug>/<task-slug>` khi một
+  task đủ lớn để tách branch riêng trong phase (vd `phase/3-srs-review`, `phase/3-srs-review/sm2-algorithm`).
+  Tên branch phải cho biết ngay đang làm phase nào để dễ theo dõi tiến độ trên GitHub.
+- Mỗi branch → một Pull Request nhắm vào `dev`, tiêu đề nêu rõ phase/task, mô tả liệt kê task nào trong
+  checklist của file phase đã xong. Merge PR xong mới tick `- [x]` các task tương ứng trong file phase.
 - Commit: Conventional Commits, scope = tên module — `feat(vocabulary): add attribute validation per language`.
 - **Thứ tự làm trong mỗi phase** (giữ nguyên ở mọi phase để nhất quán):
   1. Migration SQL → 2. Entity → 3. Repository → 4. Service + unit test → 5. Controller + integration test
   → 6. `types/domain.ts` → 7. `api/<domain>.ts` → 8. `hooks/use<Domain>.ts` → 9. Component/Page → 10. FE test
-- **Cổng kiểm tra trước khi đóng phase** (bắt buộc chạy hết, xanh hết):
+- **Cổng kiểm tra trước khi mở PR / đóng phase** (bắt buộc chạy hết, xanh hết):
   ```
   cd backend  && ./mvnw verify
   cd frontend && npm run lint && npm run build && npm run test
   ```
-- Đóng phase: tick hết checkbox trong file phase tương ứng, cập nhật decision log ở đây nếu có thay đổi.
+- Đóng phase: PR cuối cùng của phase merge vào `dev` xong, tick hết checkbox trong file phase tương ứng,
+  cập nhật decision log ở đây nếu có thay đổi.
 
 ---
 
@@ -139,15 +154,15 @@ frontend/src/
 |---|---|---|---|---|---|
 | P0 | [phase-0-foundation.md](./phase-0-foundation.md) | Nền tảng & toolchain | — | 0.5–1 ngày | [ ] |
 | P1 | [phase-1-auth-shell.md](./phase-1-auth-shell.md) | Auth + App shell | M1 | 1–1.5 ngày | [ ] |
-| P2 | [phase-2-vocabulary.md](./phase-2-vocabulary.md) | Language + Vocabulary | M2, M3 | 2–3 ngày | [ ] |
-| P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [ ] |
-| P4 | [phase-4-study-dashboard.md](./phase-4-study-dashboard.md) | Study session + Dashboard + Progress | M6, M7, M10 | 2–3 ngày | [ ] |
+| P2 | [phase-2-vocabulary.md](./phase-2-vocabulary.md) | Language + Vocabulary | M2, M3 | 2–3 ngày | [x] |
+| P3 | [phase-3-srs-engine.md](./phase-3-srs-engine.md) | SRS engine + Review + History | M4, M5 | 2–3 ngày | [x] |
+| P4 | [phase-4-study-dashboard.md](./phase-4-study-dashboard.md) | Study session + Dashboard + Progress | M6, M7, M10 | 2–3 ngày | [x] |
 | **— MỐC A: app dùng được hằng ngày, không cần AI —** | | | | | |
-| P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [ ] |
+| P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [x] |
 | **— MỐC B: MVP đủ 5 màn hình theo PROJECT.md §9 —** | | | | | |
-| P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [ ] |
-| P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [ ] |
-| P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [ ] |
+| P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [x] |
+| P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [x] |
+| P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [x] |
 
 **Vì sao thứ tự này nhanh nhất & ổn định nhất:** toàn bộ giá trị lõi (vocabulary + SRS + lịch sử học) là deterministic, test được 100%, không phụ thuộc dịch vụ ngoài. Làm xong P4 là đã có app học thật sự dùng được mỗi ngày. AI — phần rủi ro nhất về chi phí, latency và tính ổn định — được đẩy xuống sau, khi nền dữ liệu đã chắc và AI có context thật để làm việc.
 
@@ -185,9 +200,11 @@ frontend/src/
 
 ## 5. Câu hỏi còn mở (không chặn P0–P4)
 
-1. Trình độ hiện tại (CEFR/HSK) — người dùng tự khai trong Settings hay hệ thống suy ra từ vocabulary đã học? **Cần trả lời trước P5.**
-2. Số "từ mới mỗi ngày" — cố định, cấu hình trong Settings, hay engine tự tính theo thời gian rảnh? **Cần trả lời trước P7.**
-3. Tone giọng AI (nghiêm túc / thân thiện) — ảnh hưởng system prompt. **Cần trả lời trước P5.**
-4. Có cần export/import dữ liệu (CSV/JSON) trong app, hay chỉ dựa vào `pg_dump`? **Cần trả lời trước P8.**
+1. ~~Trình độ hiện tại (CEFR/HSK)~~ — đã chốt ở D11 (P5): suy ra tự động từ vocabulary đã học.
+2. ~~Số "từ mới mỗi ngày"~~ — đã chốt ở D13 (P7): engine tự tính theo thời gian rảnh.
+3. ~~Tone giọng AI~~ — đã chốt ở D12 (P5): thân thiện, khích lệ.
+4. ~~Export/import dữ liệu~~ — đã chốt ở D16 (P8): không cần, chỉ dựa vào backup hạ tầng.
+
+Không còn câu hỏi mở nào chặn tiến độ — tất cả đã được chốt qua D11–D16.
 
 > Ngưỡng "mastered" đã được chốt ở P4 (`intervalDays >= 21 && easeFactor >= 2.5`, đặt trong `MasteryPolicy`), không còn là câu hỏi mở.

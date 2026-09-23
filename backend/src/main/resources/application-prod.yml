@@ -1,0 +1,17 @@
+# Production profile (Phase 8, D14/D15): tuned for a 1 vCPU / 1GB RAM VPS with Supabase as the
+# database (no local Postgres). Activated via SPRING_PROFILES_ACTIVE=prod in docker-compose.yml.
+spring:
+  datasource:
+    hikari:
+      # Single-user app — the default pool of 10 is pure overhead on a tiny VPS.
+      maximum-pool-size: 3
+
+server:
+  tomcat:
+    threads:
+      max: 10
+
+app:
+  auth:
+    # Only ever 1 account. Registered once during initial setup, then locked down.
+    registration-enabled: false

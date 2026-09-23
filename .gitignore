@@ -26,3 +26,20 @@ replay_pid*
 # Env
 .env
 .env.prod
+.env.local
+
+# Backend build output
+backend/target/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# mise local overrides
+.mise.local.toml

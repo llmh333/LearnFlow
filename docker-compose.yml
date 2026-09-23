@@ -1,0 +1,64 @@
+services:
+  # Local dev only (D14: prod uses Supabase, not a self-hosted Postgres). Start with
+  # `docker compose --profile dev up -d postgres` — see README.
+  postgres:
+    profiles: ["dev"]
+    image: postgres:17-alpine
+    container_name: learnflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-learnflow}
+      POSTGRES_USER: ${POSTGRES_USER:-learnflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-learnflow}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - learnflow-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-learnflow} -d ${POSTGRES_DB:-learnflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Production only (D15): 2 containers total on the VPS, backend never publishes a port directly
+  # — frontend's Caddy is the only thing exposed, reverse-proxying /api/* to backend.
+  backend:
+    profiles: ["prod"]
+    image: ghcr.io/${GHCR_OWNER:-llmh333}/learnflow-backend:latest
+    container_name: learnflow-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: ${DATABASE_URL}
+      SPRING_DATASOURCE_USERNAME: ${DATABASE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      APP_CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+    expose:
+      - "8080"
+
+  frontend:
+    profiles: ["prod"]
+    image: ghcr.io/${GHCR_OWNER:-llmh333}/learnflow-frontend:latest
+    container_name: learnflow-frontend
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  learnflow-pgdata:
+    name: learnflow-pgdata
+  caddy_data:
+    name: learnflow-caddy-data
+  caddy_config:
+    name: learnflow-caddy-config
