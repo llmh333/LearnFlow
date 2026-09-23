@@ -26,6 +26,9 @@
 | D11 | Trình độ hiện tại (CEFR/HSK/JLPT) cho AI | **Suy ra tự động** từ `attributes.cefrLevel`/`hskLevel`/`jlptLevel` của các từ đã có review (`reviewCount > 0`) trong mỗi ngôn ngữ — lấy mức cao nhất đã chạm tới | Không thêm bảng/màn hình Settings mới. Logic nằm trong `ai.context.AIContextBuilder`. Không có từ nào đã ôn → mặc định A1/HSK 1/N5. |
 | D12 | Tone giọng AI Tutor | **Thân thiện, khích lệ** | Đưa thẳng vào system prompt của `ClaudeAIProvider` cho mọi tác vụ (giải thích ngữ pháp, sửa câu, hội thoại, tổng kết). |
 | D13 | Số "từ mới mỗi ngày" | **Engine tự tính** theo thời gian rảnh còn lại sau khi trừ thời gian ôn từ due | Không cố định, không cần Settings. Công thức trong `dailyplan.engine.PlanningEngine`: 40% thời gian còn lại (sau review) ÷ 1 phút/từ mới. |
+| D14 | Database khi deploy | **Supabase free tier** (Postgres managed), không tự host Postgres trên VPS | VPS 1 vCPU/1GB RAM — bỏ hẳn container Postgres khỏi VPS để dồn RAM cho JVM. Rủi ro chấp nhận: free tier tự pause sau ~7 ngày không hoạt động, giới hạn 500MB (dư dả cho dữ liệu 1 người dùng cá nhân). Backend chỉ đổi `SPRING_DATASOURCE_URL` sang connection string Supabase, không đổi code (vẫn là Postgres chuẩn). |
+| D15 | Kiến trúc deploy + CI/CD | **2 image duy nhất**: `backend` (Spring Boot JRE) và `frontend` (build React → `FROM caddy:alpine`, Caddy vừa serve static vừa lo HTTPS vừa reverse-proxy `/api` sang backend) | Không chạy Postgres/Caddy riêng lẻ trên VPS — tối ưu tối đa cho 1GB RAM. GitHub Actions: build + push `ghcr.io/.../learnflow-{backend,frontend}` khi merge vào `main`, lọc theo `paths:` (chỉ build image nào có thay đổi), rồi **tự SSH vào VPS** chạy `docker compose pull && up -d`. Cần 3 GitHub Secrets do người dùng tự tạo: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (deploy key riêng, không dùng key cá nhân) — Claude Code không tự sinh/lưu secret này. |
+| D16 | Export/import dữ liệu trong app | **Không cần** — chỉ dựa vào backup hạ tầng (`pg_dump` nhắm vào Supabase connection string, hoặc backup tự động của Supabase) | Đúng tinh thần "không over-engineer" — không thêm endpoint/UI export-import CSV/JSON. |
 
 **Sai lệch của scaffold hiện tại cần sửa ở Phase 0:**
 - `pom.xml` **thiếu** `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`, JWT lib, Testcontainers.
@@ -200,6 +203,8 @@ frontend/src/
 1. ~~Trình độ hiện tại (CEFR/HSK)~~ — đã chốt ở D11 (P5): suy ra tự động từ vocabulary đã học.
 2. ~~Số "từ mới mỗi ngày"~~ — đã chốt ở D13 (P7): engine tự tính theo thời gian rảnh.
 3. ~~Tone giọng AI~~ — đã chốt ở D12 (P5): thân thiện, khích lệ.
-4. Có cần export/import dữ liệu (CSV/JSON) trong app, hay chỉ dựa vào `pg_dump`? **Cần trả lời trước P8.**
+4. ~~Export/import dữ liệu~~ — đã chốt ở D16 (P8): không cần, chỉ dựa vào backup hạ tầng.
+
+Không còn câu hỏi mở nào chặn tiến độ — tất cả đã được chốt qua D11–D16.
 
 > Ngưỡng "mastered" đã được chốt ở P4 (`intervalDays >= 21 && easeFactor >= 2.5`, đặt trong `MasteryPolicy`), không còn là câu hỏi mở.
