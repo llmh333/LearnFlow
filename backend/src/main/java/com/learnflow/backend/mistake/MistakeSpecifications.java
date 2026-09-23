@@ -8,6 +8,10 @@ final class MistakeSpecifications {
 
     private MistakeSpecifications() {}
 
+    static Specification<Mistake> hasUserId(Long userId) {
+        return (root, query, cb) -> cb.equal(root.get("user").get("id"), userId);
+    }
+
     static Specification<Mistake> hasLanguageCode(String languageCode) {
         return (root, query, cb) ->
                 cb.equal(cb.lower(root.get("language").get("code")), languageCode.toLowerCase(Locale.ROOT));

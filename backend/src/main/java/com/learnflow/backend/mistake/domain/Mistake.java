@@ -1,5 +1,6 @@
 package com.learnflow.backend.mistake.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.domain.Language;
 import com.learnflow.backend.vocabulary.domain.Vocabulary;
 import jakarta.persistence.Column;
@@ -31,6 +32,10 @@ public class Mistake {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id")
@@ -67,6 +72,7 @@ public class Mistake {
     private Instant createdAt;
 
     public Mistake(
+            User user,
             Language language,
             Vocabulary vocabulary,
             MistakeCategory category,
@@ -75,6 +81,7 @@ public class Mistake {
             String corrected,
             String explanation,
             Instant createdAt) {
+        this.user = user;
         this.language = language;
         this.vocabulary = vocabulary;
         this.category = category;

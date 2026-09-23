@@ -12,10 +12,11 @@ public interface MistakeRepository extends JpaRepository<Mistake, Long>, JpaSpec
     @Query(
             """
             SELECT m FROM Mistake m
-            WHERE m.language.code = :languageCode AND m.category.id = :categoryId
+            WHERE m.user.id = :userId AND m.language.code = :languageCode AND m.category.id = :categoryId
               AND LOWER(m.topic) = LOWER(:topic)
             """)
     Optional<Mistake> findExisting(
+            @Param("userId") Long userId,
             @Param("languageCode") String languageCode,
             @Param("categoryId") Integer categoryId,
             @Param("topic") String topic);
