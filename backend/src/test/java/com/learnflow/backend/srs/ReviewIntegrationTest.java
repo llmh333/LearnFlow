@@ -157,8 +157,11 @@ class ReviewIntegrationTest extends AbstractIntegrationTest {
     }
 
     private List<DueVocabularyResponse> fetchDue(String language) {
+        // High limit: the shared Testcontainers DB accumulates due vocabulary across the whole
+        // suite (plus the V9 starter-vocabulary seed, ~50 words/language), so a small limit can
+        // page past the specific word this test just created.
         return client.get()
-                .uri("/api/reviews/due?language=" + language + "&limit=100")
+                .uri("/api/reviews/due?language=" + language + "&limit=10000")
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .exchange()
                 .expectStatus()

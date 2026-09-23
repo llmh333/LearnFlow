@@ -18,9 +18,9 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
       )}
       <div
         className={cn(
-          'max-w-[85%] sm:max-w-[75%] whitespace-pre-wrap px-4 py-2.5 text-sm leading-relaxed shadow-xs transition-all',
+          'max-w-[85%] sm:max-w-[75%] whitespace-pre-wrap break-words [overflow-wrap:anywhere] px-4 py-2.5 text-sm leading-relaxed shadow-xs transition-all',
           isUser
-            ? 'rounded-2xl rounded-br-xs bg-[#365314] text-white font-medium dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+            ? 'rounded-2xl rounded-br-xs bg-[#B6F23A] text-[#1A1A1A] font-medium'
             : 'rounded-2xl rounded-bl-xs bg-white text-slate-800 border border-slate-200 dark:bg-[#1E1E1E] dark:text-slate-100 dark:border-[#333333]',
         )}
       >
