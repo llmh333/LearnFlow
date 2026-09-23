@@ -1,8 +1,13 @@
 services:
-  # Local dev only (D14: prod uses Supabase, not a self-hosted Postgres). Start with
-  # `docker compose --profile dev up -d postgres` — see README.
+  # D14 reversed (see plan/phases/00-overview.md decision log): the first prod deploy measured
+  # ~300-400ms raw TCP connect latency from the VPS to Supabase's ap-southeast-2 pooler — a
+  # networking limitation of the VPS provider's international routing, not fixable in app config —
+  # making every DB-touching request feel slow. VPS RAM headroom (only ~300MB used of ~960MB with
+  # backend+frontend running) turned out to comfortably fit a local Postgres too, so prod now
+  # self-hosts it again, same as the original plan, eliminating the network hop entirely.
+  # Runs under both profiles now; local dev still starts it with `docker compose --profile dev up -d postgres`.
   postgres:
-    profiles: ["dev"]
+    profiles: ["dev", "prod"]
     image: postgres:17-alpine
     container_name: learnflow-postgres
     restart: unless-stopped
@@ -20,23 +25,31 @@ services:
       timeout: 5s
       retries: 10
 
-  # Production only (D15): 2 containers total on the VPS, backend never publishes a port directly
-  # — frontend's Caddy is the only thing exposed, reverse-proxying /api/* to backend.
+  # Production (D15, minus Supabase per the note above): 3 containers total on the VPS, backend
+  # never publishes a port directly — frontend's Caddy is the only thing exposed, reverse-proxying
+  # /api/* to backend.
   backend:
     profiles: ["prod"]
     image: ghcr.io/${GHCR_OWNER:-llmh333}/learnflow-backend:latest
     container_name: learnflow-backend
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: ${DATABASE_URL}
-      SPRING_DATASOURCE_USERNAME: ${DATABASE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-learnflow}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-learnflow}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-learnflow}
       # Spring relaxed binding needs the full property-path env var name under the prod profile
       # (application-local.yml has an explicit ${JWT_SECRET} placeholder, application-prod.yml does not).
       APP_AUTH_JWT_SECRET: ${JWT_SECRET}
       APP_AI_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       APP_CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+      # application-prod.yml hardcodes registration-enabled=false (register once, then lock down),
+      # but that leaves no way to ever create the first account. Default stays false/locked; flip
+      # REGISTRATION_ENABLED=true in .env for the one-time initial registration, then set it back.
+      APP_AUTH_REGISTRATION_ENABLED: ${REGISTRATION_ENABLED:-false}
     expose:
       - "8080"
 

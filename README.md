@@ -36,11 +36,12 @@ cd frontend && npm run lint && npm run build && npm run test
 
 ## Deploy production (Phase 8)
 
-Kiến trúc: VPS 1 vCPU/1GB chạy đúng 2 container — `backend` (Spring Boot JRE) và `frontend`
-(React build tĩnh do Caddy phục vụ, Caddy cũng lo HTTPS tự động qua ACME và reverse-proxy
-`/api/*` sang `backend:8080`). Database dùng Supabase Postgres free-tier (không tự host Postgres
-trên VPS). Chi tiết quyết định kiến trúc: [`plan/phases/00-overview.md`](./plan/phases/00-overview.md)
-(D14–D16).
+Kiến trúc: VPS 1 vCPU/1GB chạy 3 container — `postgres` (tự host, không dùng Supabase nữa — xem
+D14 reversal), `backend` (Spring Boot JRE), và `frontend` (React build tĩnh do Caddy phục vụ, Caddy
+cũng lo HTTPS tự động qua ACME và reverse-proxy `/api/*` sang `backend:8080`). Ban đầu dùng Supabase
+free-tier (D14) nhưng đã đổi lại tự host sau khi đo được latency mạng VPS→Supabase ~300-400ms mỗi
+request (routing quốc tế của nhà cung cấp VPS không tốt) — self-host loại bỏ hoàn toàn network hop
+này. Chi tiết: [`plan/phases/00-overview.md`](./plan/phases/00-overview.md) (D14–D16 + ghi chú reversal).
 
 ### CI/CD
 
@@ -57,13 +58,13 @@ Cần các GitHub Secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (deploy key ri�
 ```bash
 mkdir -p /opt/learnflow && cd /opt/learnflow
 # copy docker-compose.yml lên đây, tạo .env với các biến:
-#   GHCR_OWNER, DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD,
+#   GHCR_OWNER, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD (mật khẩu mạnh, khác default dev),
 #   JWT_SECRET, ANTHROPIC_API_KEY, DOMAIN, ACME_EMAIL
 docker compose --profile prod up -d
 ```
 
 ### Backup
 
-`scripts/backup.sh` chạy `pg_dump` định kỳ (qua cron trên VPS) đối với connection string Supabase,
-nén gzip, giữ lại `RETENTION_DAYS` ngày gần nhất (mặc định 14). Không có tính năng export/import
-trong app (quyết định D16) — backup hoàn toàn ở tầng hạ tầng.
+`scripts/backup.sh` chạy `docker exec learnflow-postgres pg_dump` định kỳ (qua cron trên VPS), nén
+gzip, giữ lại `RETENTION_DAYS` ngày gần nhất (mặc định 14). Không có tính năng export/import trong
+app (quyết định D16) — backup hoàn toàn ở tầng hạ tầng.
