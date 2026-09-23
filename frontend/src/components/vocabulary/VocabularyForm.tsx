@@ -168,8 +168,8 @@ export function VocabularyForm({
       </div>
 
       {languageCode === 'en' && (
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/40">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+        <div className="rounded-xl border border-[#D5ECC2] bg-[#EDFBD8]/40 p-4 dark:border-[#365314] dark:bg-[#1E2B11]">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[#365314] dark:text-[#B6F23A]">
             English Attributes
           </p>
           <div className="grid grid-cols-2 gap-3">

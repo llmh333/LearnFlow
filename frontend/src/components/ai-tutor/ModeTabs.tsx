@@ -28,13 +28,13 @@ export function ModeTabs({ active, onChange }: ModeTabsProps) {
             className={cn(
               'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none',
               isActive
-                ? 'bg-[#365314] text-white shadow-xs dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+                ? 'bg-[#B6F23A] text-[#1A1A1A] shadow-xs'
                 : 'text-slate-700 hover:text-[#1A1A1A] hover:bg-white/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#262626]',
             )}
           >
             <Icon
               size={16}
-              className={isActive ? 'text-[#B6F23A] dark:text-[#1A1A1A]' : 'text-slate-500 dark:text-slate-400'}
+              className={isActive ? 'text-[#1A1A1A]' : 'text-slate-500 dark:text-slate-400'}
             />
             <span>{tab.label}</span>
           </button>

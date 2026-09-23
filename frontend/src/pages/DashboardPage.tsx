@@ -58,7 +58,7 @@ export function DashboardPage() {
 
           {/* Motivational Streak Card */}
           <div className="flex shrink-0 items-center gap-4 rounded-2xl bg-[#262626] p-4 border border-[#383838]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#365314] text-[#B6F23A] shadow-md">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#B6F23A] text-[#1A1A1A] shadow-xs">
               <IconFlame size={24} className="animate-bounce-soft" />
             </div>
             <div>
@@ -161,7 +161,7 @@ export function DashboardPage() {
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
                         <div
-                          className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-500"
+                          className="h-full rounded-full bg-[#B6F23A] transition-all duration-500"
                           style={{ width: `${Math.min(100, Math.max(5, language.retentionPercent))}%` }}
                         />
                       </div>

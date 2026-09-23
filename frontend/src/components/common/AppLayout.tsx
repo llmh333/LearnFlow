@@ -39,7 +39,7 @@ export function AppLayout() {
         {/* Brand Logo & Theme Toggle */}
         <div className="flex items-center justify-between px-2 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#365314] text-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#B6F23A] text-[#1A1A1A] shadow-xs">
               <IconSparkles size={20} />
             </div>
             <div>
@@ -68,7 +68,7 @@ export function AppLayout() {
                   cn(
                     'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150',
                     isActive
-                      ? 'bg-[#365314] text-white shadow-xs dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+                      ? 'bg-[#B6F23A] text-[#1A1A1A] font-bold shadow-xs'
                       : 'text-slate-700 hover:bg-[#F0F2F5] hover:text-[#1A1A1A] dark:text-slate-300 dark:hover:bg-[#262626] dark:hover:text-white',
                   )
                 }
@@ -79,7 +79,7 @@ export function AppLayout() {
                       className={cn(
                         'flex h-7 w-7 items-center justify-center rounded-lg transition-transform duration-150 group-hover:scale-110',
                         isActive
-                          ? 'bg-white/15 dark:bg-black/10'
+                          ? 'bg-black/10 text-[#1A1A1A]'
                           : 'text-slate-400 group-hover:text-[#1A1A1A] dark:text-slate-400 dark:group-hover:text-white',
                       )}
                     >
@@ -109,7 +109,7 @@ export function AppLayout() {
         {/* User Card */}
         <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-2.5 dark:border-[#2C2C2C] dark:bg-[#1E1E1E]">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#365314] text-xs font-bold text-white dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#B6F23A] text-xs font-bold text-[#1A1A1A] shadow-xs">
               {userInitial}
             </div>
             <p className="truncate text-xs font-semibold text-[#1A1A1A] dark:text-slate-200">
@@ -141,7 +141,7 @@ export function AppLayout() {
       {/* Mobile Top Navigation Bar */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md lg:hidden dark:border-[#282828] dark:bg-[#1A1A1A]/95">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#365314] text-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#B6F23A] text-[#1A1A1A] shadow-xs">
             <IconSparkles size={16} />
           </div>
           <span className="text-base font-bold text-[#1A1A1A] dark:text-white">LearnFlow</span>

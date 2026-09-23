@@ -177,7 +177,7 @@ export function ReviewPage() {
   if (isLoading) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-3 border-[#365314] border-t-transparent dark:border-[#B6F23A]" />
         <p className="text-sm font-medium text-slate-500">Preparing your review session...</p>
       </div>
     )
@@ -297,7 +297,7 @@ export function ReviewPage() {
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
           <div
-            className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-300 ease-out"
+            className="h-full rounded-full bg-[#B6F23A] transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -339,7 +339,7 @@ export function ReviewPage() {
                 className="shadow-xs gap-2 font-semibold"
               >
                 <span>Show answer</span>
-                <span className="rounded-md bg-white/20 dark:bg-black/20 px-1.5 py-0.5 text-xs font-mono">
+                <span className="rounded-md bg-black/10 px-1.5 py-0.5 text-xs font-mono font-medium text-[#1A1A1A]">
                   Space
                 </span>
               </Button>

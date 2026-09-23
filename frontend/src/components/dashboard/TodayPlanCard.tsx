@@ -196,7 +196,7 @@ export function TodayPlanCard() {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
             <div
-              className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-[#B6F23A] transition-all duration-500 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
