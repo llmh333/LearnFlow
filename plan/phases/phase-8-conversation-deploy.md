@@ -4,7 +4,13 @@
 
 - **Milestone cũ:** M12
 - **Ước lượng:** 2 ngày (Conversation) + ~1 ngày (Deploy/CI-CD)
-- **Trạng thái:** [x] Hoàn thành (chờ setup VPS/Supabase thật + verify deploy trên hạ tầng thật)
+- **Trạng thái:** [x] Hoàn thành — đã deploy thật, verify OK trên `https://leminhi.id.vn`
+
+> **Cập nhật sau khi deploy thật (D17, xem Overview):** Supabase (D14) bị revert — đo được
+> latency mạng VPS→Supabase ~300-400ms/request (routing quốc tế của nhà cung cấp VPS), gây cảm
+> giác app chậm. Đã quay lại tự host Postgres trên VPS (3 container thay vì 2). Phần "Deploy —
+> kiến trúc" bên dưới giữ nguyên làm lịch sử quyết định ban đầu; kiến trúc **thật sự đang chạy**
+> là 3 container `postgres` + `backend` + `frontend`, xem D17.
 
 ## Goal
 
