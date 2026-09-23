@@ -1,5 +1,6 @@
-# Production profile (Phase 8, D14/D15): tuned for a 1 vCPU / 1GB RAM VPS with Supabase as the
-# database (no local Postgres). Activated via SPRING_PROFILES_ACTIVE=prod in docker-compose.yml.
+# Production profile (Phase 8, D15; D17 revert): tuned for a 1 vCPU / 1GB RAM VPS, self-hosting
+# Postgres alongside the app (see D17 — Supabase was tried first per D14, then reverted due to
+# high network latency from the VPS). Activated via SPRING_PROFILES_ACTIVE=prod in docker-compose.yml.
 spring:
   datasource:
     hikari:
@@ -11,7 +12,6 @@ server:
     threads:
       max: 10
 
-app:
-  auth:
-    # Only ever 1 account. Registered once during initial setup, then locked down.
-    registration-enabled: false
+# app.auth.registration-enabled has no override here on purpose: docker-compose.yml always sets
+# APP_AUTH_REGISTRATION_ENABLED (env vars beat profile yml), so that's the single source of truth
+# for prod — keeping a value here too would just be dead config nobody notices going stale.
