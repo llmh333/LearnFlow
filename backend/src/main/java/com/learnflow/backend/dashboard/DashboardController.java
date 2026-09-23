@@ -1,6 +1,7 @@
 package com.learnflow.backend.dashboard;
 
 import com.learnflow.backend.dashboard.dto.DashboardTodayResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ public class DashboardController {
     }
 
     @GetMapping("/today")
-    public DashboardTodayResponse today() {
-        return dashboardService.today();
+    public DashboardTodayResponse today(@AuthenticationPrincipal Long userId) {
+        return dashboardService.today(userId);
     }
 }

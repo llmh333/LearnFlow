@@ -1,5 +1,6 @@
 package com.learnflow.backend.ai.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,10 @@ public class AIConversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id")
     private Language language;
@@ -47,7 +52,9 @@ public class AIConversation {
     @Column(columnDefinition = "text")
     private String summary;
 
-    public AIConversation(Language language, String mode, String scenario, Instant startedAt) {
+    public AIConversation(
+            User user, Language language, String mode, String scenario, Instant startedAt) {
+        this.user = user;
         this.language = language;
         this.mode = mode;
         this.scenario = scenario;

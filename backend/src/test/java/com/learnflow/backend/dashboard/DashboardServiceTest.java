@@ -23,6 +23,8 @@ class DashboardServiceTest {
     @Mock private VocabularyService vocabularyService;
     @Mock private ReviewService reviewService;
 
+    private static final Long USER_ID = 1L;
+
     private DashboardService dashboardService;
 
     @BeforeEach
@@ -36,19 +38,19 @@ class DashboardServiceTest {
         LanguageResponse chinese = new LanguageResponse((short) 2, "zh", "Chinese");
         when(languageService.listAll()).thenReturn(List.of(english, chinese));
 
-        when(reviewService.countDue("en")).thenReturn(12L);
-        when(reviewService.countNew("en")).thenReturn(5L);
-        when(vocabularyService.countByLanguage("en")).thenReturn(1240L);
-        when(reviewService.retentionStats("en", 30)).thenReturn(new RetentionStats(87L, 100L));
+        when(reviewService.countDue(USER_ID, "en")).thenReturn(12L);
+        when(reviewService.countNew(USER_ID, "en")).thenReturn(5L);
+        when(vocabularyService.countByLanguage(USER_ID, "en")).thenReturn(1240L);
+        when(reviewService.retentionStats(USER_ID, "en", 30)).thenReturn(new RetentionStats(87L, 100L));
 
-        when(reviewService.countDue("zh")).thenReturn(18L);
-        when(reviewService.countNew("zh")).thenReturn(5L);
-        when(vocabularyService.countByLanguage("zh")).thenReturn(420L);
-        when(reviewService.retentionStats("zh", 30)).thenReturn(new RetentionStats(79L, 100L));
+        when(reviewService.countDue(USER_ID, "zh")).thenReturn(18L);
+        when(reviewService.countNew(USER_ID, "zh")).thenReturn(5L);
+        when(vocabularyService.countByLanguage(USER_ID, "zh")).thenReturn(420L);
+        when(reviewService.retentionStats(USER_ID, "zh", 30)).thenReturn(new RetentionStats(79L, 100L));
 
-        when(reviewService.currentStreakDays()).thenReturn(7);
+        when(reviewService.currentStreakDays(USER_ID)).thenReturn(7);
 
-        DashboardTodayResponse response = dashboardService.today();
+        DashboardTodayResponse response = dashboardService.today(USER_ID);
 
         assertThat(response.languages()).hasSize(2);
         var englishSummary = response.languages().get(0);
@@ -67,9 +69,9 @@ class DashboardServiceTest {
     @Test
     void today_noLanguages_returnsEmptySummaryWithZeroTotals() {
         when(languageService.listAll()).thenReturn(List.of());
-        when(reviewService.currentStreakDays()).thenReturn(0);
+        when(reviewService.currentStreakDays(USER_ID)).thenReturn(0);
 
-        DashboardTodayResponse response = dashboardService.today();
+        DashboardTodayResponse response = dashboardService.today(USER_ID);
 
         assertThat(response.languages()).isEmpty();
         assertThat(response.totalEstimatedMinutes()).isZero();

@@ -122,6 +122,54 @@ class StudySessionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void anotherUsersSession_cannotBeEnded() {
+        StudySessionResponse started =
+                client.post()
+                        .uri("/api/study-sessions/start")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .body(new StartStudySessionRequest("en"))
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(StudySessionResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        String otherEmail = "study-other-" + System.nanoTime() + "@example.com";
+        AuthResponse otherAuth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(new RegisterRequest(otherEmail, "password123", "Other Study Tester"))
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        String otherHeader = "Bearer " + otherAuth.token();
+
+        client.post()
+                .uri("/api/study-sessions/" + started.id() + "/end")
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        // still not ended for the real owner
+        StudySessionResponse ended =
+                client.post()
+                        .uri("/api/study-sessions/" + started.id() + "/end")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(StudySessionResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        assertThat(ended.endedAt()).isNotNull();
+    }
+
+    @Test
     void end_unknownSession_returns404() {
         client.post()
                 .uri("/api/study-sessions/999999/end")

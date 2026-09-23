@@ -114,6 +114,60 @@ class ReviewIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void anotherUsersReviewSchedule_isInvisibleAndInaccessible() {
+        VocabularyResponse mine = createVocabulary();
+        submitRating(mine.id(), SrsRating.GOOD);
+
+        String otherEmail = "review-other-" + System.nanoTime() + "@example.com";
+        AuthResponse otherAuth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(new RegisterRequest(otherEmail, "password123", "Other Review Tester"))
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        String otherHeader = "Bearer " + otherAuth.token();
+
+        // The other account's due queue never contains a word it never created.
+        List<DueVocabularyResponse> othersDue =
+                client.get()
+                        .uri("/api/reviews/due?language=en&limit=10000")
+                        .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(new ParameterizedTypeReference<List<DueVocabularyResponse>>() {})
+                        .returnResult()
+                        .getResponseBody();
+        assertThat(othersDue).extracting(DueVocabularyResponse::vocabularyId).doesNotContain(mine.id());
+
+        // It can't submit a review against my word's schedule either.
+        client.post()
+                .uri("/api/reviews/" + mine.id() + "/submit")
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .body(new ReviewSubmitRequest(SrsRating.GOOD, null, null))
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        // ...nor read my review history.
+        List<ReviewHistoryResponse> othersView =
+                client.get()
+                        .uri("/api/reviews/history/" + mine.id())
+                        .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(new ParameterizedTypeReference<List<ReviewHistoryResponse>>() {})
+                        .returnResult()
+                        .getResponseBody();
+        assertThat(othersView).isEmpty();
+    }
+
+    @Test
     void submit_missingSchedule_returns404() {
         ReviewSubmitRequest request = new ReviewSubmitRequest(SrsRating.GOOD, null, null);
 

@@ -33,6 +33,7 @@ class ReviewServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
+    private static final Long USER_ID = 1L;
 
     @Mock private ReviewScheduleRepository scheduleRepository;
     @Mock private ReviewHistoryRepository historyRepository;
@@ -51,21 +52,22 @@ class ReviewServiceTest {
 
     @Test
     void submit_computesNextReviewFromFixedClockPlusAlgorithmInterval() {
-        Vocabulary vocabulary = new Vocabulary(null, "achieve", "đạt được", null, (short) 0, java.util.Map.of(), NOW, NOW);
-        ReviewSchedule schedule = new ReviewSchedule(vocabulary, NOW.minus(Duration.ofDays(5)));
+        Vocabulary vocabulary =
+                new Vocabulary(null, null, "achieve", "đạt được", null, (short) 0, java.util.Map.of(), NOW, NOW);
+        ReviewSchedule schedule = new ReviewSchedule(vocabulary, null, NOW.minus(Duration.ofDays(5)));
         schedule.setIntervalDays(BigDecimal.valueOf(6.0).setScale(2));
         schedule.setEaseFactor(BigDecimal.valueOf(2.5).setScale(2));
         schedule.setReviewCount(2);
         schedule.setSuccessCount(2);
         schedule.setFailureCount(0);
         schedule.setMemoryStrength(BigDecimal.valueOf(100.0).setScale(2));
-        when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
+        when(scheduleRepository.findByVocabularyIdAndUser_Id(1L, USER_ID)).thenReturn(Optional.of(schedule));
 
         SrsState newState = new SrsState(15.0, 2.5, 3, 3, 0, 100.0);
         when(algorithm.apply(any(SrsState.class), org.mockito.ArgumentMatchers.eq(SrsRating.GOOD)))
                 .thenReturn(newState);
 
-        ReviewSubmitResponse response = reviewService.submit(1L, SrsRating.GOOD, 1200, null);
+        ReviewSubmitResponse response = reviewService.submit(USER_ID, 1L, SrsRating.GOOD, 1200, null);
 
         assertThat(response.nextReview()).isEqualTo(NOW.plus(Duration.ofDays(15)));
         assertThat(response.intervalDays()).isEqualByComparingTo("15.00");
@@ -83,10 +85,11 @@ class ReviewServiceTest {
     @Test
     void createScheduleFor_newVocabulary_createsScheduleDueNow() {
         when(scheduleRepository.existsById(42L)).thenReturn(false);
-        Vocabulary reference = new Vocabulary(null, "word", "nghĩa", null, (short) 0, java.util.Map.of(), NOW, NOW);
-        when(entityManager.getReference(Vocabulary.class, 42L)).thenReturn(reference);
+        Vocabulary vocabularyRef =
+                new Vocabulary(null, null, "word", "nghĩa", null, (short) 0, java.util.Map.of(), NOW, NOW);
+        when(entityManager.getReference(Vocabulary.class, 42L)).thenReturn(vocabularyRef);
 
-        reviewService.createScheduleFor(42L);
+        reviewService.createScheduleFor(USER_ID, 42L);
 
         ArgumentCaptor<ReviewSchedule> captor = ArgumentCaptor.forClass(ReviewSchedule.class);
         verify(scheduleRepository).save(captor.capture());
@@ -98,7 +101,7 @@ class ReviewServiceTest {
     void createScheduleFor_existingSchedule_isIdempotent() {
         when(scheduleRepository.existsById(42L)).thenReturn(true);
 
-        reviewService.createScheduleFor(42L);
+        reviewService.createScheduleFor(USER_ID, 42L);
 
         verify(scheduleRepository, never()).save(any());
         verify(entityManager, never()).getReference(Vocabulary.class, 42L);

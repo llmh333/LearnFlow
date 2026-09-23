@@ -1,5 +1,6 @@
 package com.learnflow.backend.mistake;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
 import com.learnflow.backend.mistake.domain.Mistake;
@@ -21,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Repeated occurrences of the same {@code language + category + topic} merge into one row
  * (`timesRepeated++`) instead of piling up duplicates — per PROJECT.md §4.5 "Hệ thống cần theo dõi
- * lỗi lặp lại." Uses {@link EntityManager#getReference} for the optional vocabulary link, the same
- * pattern {@code srs.ReviewService} uses, so this module never injects another module's repository.
+ * lỗi lặp lại." Uses {@link EntityManager#getReference} for the optional vocabulary link and for
+ * the owning user, the same pattern {@code srs.ReviewService} uses, so this module never injects
+ * another module's repository. Every method is scoped to {@code userId} (see decision D18) — the
+ * merge-on-duplicate-topic behavior only merges within the same account.
  */
 @Service
 @Transactional
@@ -50,7 +53,7 @@ public class MistakeService {
         this.clock = clock;
     }
 
-    public MistakeResponse createOrIncrement(CreateMistakeRequest request) {
+    public MistakeResponse createOrIncrement(Long userId, CreateMistakeRequest request) {
         Language language = languageService.getByCode(request.languageCode());
         MistakeCategory category = resolveCategory(request.category());
         String topic =
@@ -60,7 +63,7 @@ public class MistakeService {
 
         Mistake mistake =
                 mistakeRepository
-                        .findExisting(request.languageCode(), category.getId(), topic)
+                        .findExisting(userId, request.languageCode(), category.getId(), topic)
                         .map(
                                 existing -> {
                                     existing.setTimesRepeated(existing.getTimesRepeated() + 1);
@@ -72,6 +75,7 @@ public class MistakeService {
                                 () ->
                                         mistakeRepository.save(
                                                 new Mistake(
+                                                        entityManager.getReference(User.class, userId),
                                                         language,
                                                         resolveVocabulary(request.vocabularyId()),
                                                         category,
@@ -85,8 +89,8 @@ public class MistakeService {
     }
 
     @Transactional(readOnly = true)
-    public List<MistakeResponse> list(String languageCode, String categoryName) {
-        Specification<Mistake> spec = Specification.unrestricted();
+    public List<MistakeResponse> list(Long userId, String languageCode, String categoryName) {
+        Specification<Mistake> spec = MistakeSpecifications.hasUserId(userId);
         if (languageCode != null && !languageCode.isBlank()) {
             spec = spec.and(MistakeSpecifications.hasLanguageCode(languageCode));
         }
@@ -99,8 +103,8 @@ public class MistakeService {
     }
 
     @Transactional(readOnly = true)
-    public List<MistakeResponse> recurring(String languageCode, int limit) {
-        Specification<Mistake> spec = Specification.unrestricted();
+    public List<MistakeResponse> recurring(Long userId, String languageCode, int limit) {
+        Specification<Mistake> spec = MistakeSpecifications.hasUserId(userId);
         if (languageCode != null && !languageCode.isBlank()) {
             spec = spec.and(MistakeSpecifications.hasLanguageCode(languageCode));
         }

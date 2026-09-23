@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AIContextBuilderTest {
 
+    private static final Long USER_ID = 1L;
+
     @Mock private ReviewService reviewService;
 
     private AIContextBuilder builder;
@@ -28,9 +30,9 @@ class AIContextBuilderTest {
 
     @Test
     void build_noWordsEngagedYet_returnsBeginnerLevelAndNoWeakWords() {
-        when(reviewService.allSchedules("en")).thenReturn(List.of());
+        when(reviewService.allSchedules(USER_ID, "en")).thenReturn(List.of());
 
-        LearnerContext context = builder.build("en");
+        LearnerContext context = builder.build(USER_ID, "en");
 
         assertThat(context.currentLevel()).isEqualTo("A1");
         assertThat(context.weakWords()).isEmpty();
@@ -38,14 +40,14 @@ class AIContextBuilderTest {
 
     @Test
     void build_english_picksHighestCefrLevelAmongEngagedWords() {
-        when(reviewService.allSchedules("en"))
+        when(reviewService.allSchedules(USER_ID, "en"))
                 .thenReturn(
                         List.of(
                                 snapshot(1L, "achieve", Map.of("cefrLevel", "B1"), "2.50", 3),
                                 snapshot(2L, "elaborate", Map.of("cefrLevel", "C1"), "2.30", 2),
                                 snapshot(3L, "untouched", Map.of("cefrLevel", "C2"), "2.50", 0)));
 
-        LearnerContext context = builder.build("en");
+        LearnerContext context = builder.build(USER_ID, "en");
 
         // "untouched" has reviewCount 0 so it's excluded from level estimation and weak words.
         assertThat(context.currentLevel()).isEqualTo("C1");
@@ -53,26 +55,26 @@ class AIContextBuilderTest {
 
     @Test
     void build_chinese_picksHighestHskLevelAmongEngagedWords() {
-        when(reviewService.allSchedules("zh"))
+        when(reviewService.allSchedules(USER_ID, "zh"))
                 .thenReturn(
                         List.of(
                                 snapshot(1L, "学习", Map.of("hskLevel", 2), "2.50", 3),
                                 snapshot(2L, "提高", Map.of("hskLevel", 4), "2.50", 1)));
 
-        LearnerContext context = builder.build("zh");
+        LearnerContext context = builder.build(USER_ID, "zh");
 
         assertThat(context.currentLevel()).isEqualTo("HSK 4");
     }
 
     @Test
     void build_japanese_picksHighestJlptLevelAmongEngagedWords() {
-        when(reviewService.allSchedules("ja"))
+        when(reviewService.allSchedules(USER_ID, "ja"))
                 .thenReturn(
                         List.of(
                                 snapshot(1L, "勉強", Map.of("jlptLevel", "N5"), "2.50", 5),
                                 snapshot(2L, "経済", Map.of("jlptLevel", "N2"), "2.50", 1)));
 
-        LearnerContext context = builder.build("ja");
+        LearnerContext context = builder.build(USER_ID, "ja");
 
         assertThat(context.currentLevel()).isEqualTo("N2");
     }
@@ -90,9 +92,9 @@ class AIContextBuilderTest {
                                                 String.valueOf(1.30 + i * 0.05),
                                                 i + 1))
                         .toList();
-        when(reviewService.allSchedules("en")).thenReturn(many);
+        when(reviewService.allSchedules(USER_ID, "en")).thenReturn(many);
 
-        LearnerContext context = builder.build("en");
+        LearnerContext context = builder.build(USER_ID, "en");
 
         assertThat(context.weakWords()).hasSize(10);
         assertThat(context.weakWords().get(0)).isEqualTo("word0"); // lowest ease factor (1.30) first

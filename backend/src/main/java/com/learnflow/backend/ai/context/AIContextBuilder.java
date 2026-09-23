@@ -28,8 +28,8 @@ public class AIContextBuilder {
         this.reviewService = reviewService;
     }
 
-    public LearnerContext build(String languageCode) {
-        List<ScheduleSnapshot> schedules = reviewService.allSchedules(languageCode);
+    public LearnerContext build(Long userId, String languageCode) {
+        List<ScheduleSnapshot> schedules = reviewService.allSchedules(userId, languageCode);
         List<ScheduleSnapshot> engaged = schedules.stream().filter(s -> s.reviewCount() > 0).toList();
 
         String level = estimateLevel(languageCode, engaged);

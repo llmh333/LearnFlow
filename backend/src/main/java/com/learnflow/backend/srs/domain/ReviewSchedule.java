@@ -1,11 +1,13 @@
 package com.learnflow.backend.srs.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.vocabulary.domain.Vocabulary;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -34,6 +36,10 @@ public class ReviewSchedule {
     @MapsId
     @JoinColumn(name = "vocabulary_id")
     private Vocabulary vocabulary;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
 
     @Setter
     @Column(name = "last_review")
@@ -67,8 +73,9 @@ public class ReviewSchedule {
     @Column(name = "memory_strength", nullable = false, precision = 5, scale = 2)
     private BigDecimal memoryStrength;
 
-    public ReviewSchedule(Vocabulary vocabulary, Instant now) {
+    public ReviewSchedule(Vocabulary vocabulary, User user, Instant now) {
         this.vocabulary = vocabulary;
+        this.user = user;
         this.nextReview = now;
         this.intervalDays = BigDecimal.ZERO.setScale(2);
         this.easeFactor = BigDecimal.valueOf(2.5).setScale(2);
