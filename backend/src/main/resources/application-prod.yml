@@ -19,6 +19,7 @@ app:
     provider: ${AI_PROVIDER:claude}
     anthropic-api-key: ${ANTHROPIC_API_KEY:}
     gemini-api-key: ${GEMINI_API_KEY:}
+    groq-api-key: ${GROQ_API_KEY:}
 # app.auth.registration-enabled has no override here on purpose: docker-compose.yml always sets
 # APP_AUTH_REGISTRATION_ENABLED (env vars beat profile yml), so that's the single source of truth
 # for prod — keeping a value here too would just be dead config nobody notices going stale.
