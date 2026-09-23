@@ -22,13 +22,13 @@ export function ConversationSummaryCard({ summary, languageCode }: ConversationS
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-indigo-100 bg-white p-5 text-sm dark:border-indigo-900/40 dark:bg-slate-900 shadow-sm animate-fade-in">
-      <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+    <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-xs animate-fade-in">
+      <div className="flex items-center gap-2 text-[#365314] dark:text-[#B6F23A]">
         <IconSparkles size={18} />
         <h3 className="font-bold text-slate-900 dark:text-white">Conversation Analysis</h3>
       </div>
 
-      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-slate-100 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 font-medium">
+      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-[#F8F9FA] dark:bg-[#262626] p-3 rounded-xl border border-slate-200 dark:border-[#383838] font-medium">
         {summary.overview}
       </p>
 
@@ -53,22 +53,22 @@ export function ConversationSummaryCard({ summary, languageCode }: ConversationS
 
       {summary.suggestedVocabulary.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#365314] dark:text-[#B6F23A]">
             Recommended Vocabulary
           </p>
           <ul className="flex flex-col gap-2">
             {summary.suggestedVocabulary.map((v) => (
               <li
                 key={v.word}
-                className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 p-2.5 border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
+                className="flex items-center justify-between gap-2 rounded-xl bg-[#F8F9FA] p-2.5 border border-slate-200 dark:bg-[#262626] dark:border-[#383838]"
               >
                 <div className="text-xs font-semibold text-slate-900 dark:text-white">
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">{v.word}</span>
+                  <span className="font-bold text-[#365314] dark:text-[#B6F23A]">{v.word}</span>
                   <span className="text-slate-400 mx-1.5">—</span>
                   <span>{v.meaningVietnamese}</span>
                 </div>
                 {addedWords.has(v.word) ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[#365314] dark:text-[#B6F23A]">
                     <IconCheck size={14} /> Added
                   </span>
                 ) : (

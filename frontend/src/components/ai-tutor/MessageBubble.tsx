@@ -12,7 +12,7 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
   return (
     <div className={cn('flex items-end gap-2.5 my-2', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
           <IconBot size={15} />
         </div>
       )}
@@ -20,8 +20,8 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
         className={cn(
           'max-w-[85%] sm:max-w-[75%] whitespace-pre-wrap px-4 py-2.5 text-sm leading-relaxed shadow-xs transition-all',
           isUser
-            ? 'rounded-2xl rounded-br-xs bg-indigo-600 text-white font-medium shadow-indigo-600/10'
-            : 'rounded-2xl rounded-bl-xs bg-white text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700',
+            ? 'rounded-2xl rounded-br-xs bg-[#365314] text-white font-medium dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+            : 'rounded-2xl rounded-bl-xs bg-white text-slate-800 border border-slate-200 dark:bg-[#1E1E1E] dark:text-slate-100 dark:border-[#333333]',
         )}
       >
         {content}

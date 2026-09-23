@@ -44,7 +44,7 @@ export function ChatWindow({
       <div className="flex-1 space-y-1 overflow-y-auto pr-1">
         {messages.length === 0 && !streamingReply && (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
               <IconSparkles size={24} />
             </div>
             <div>

@@ -39,14 +39,14 @@ export function AppLayout() {
         {/* Brand Logo & Theme Toggle */}
         <div className="flex items-center justify-between px-2 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-sm shadow-indigo-500/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#365314] text-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
               <IconSparkles size={20} />
             </div>
             <div>
-              <div className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+              <div className="text-lg font-extrabold tracking-tight text-[#1A1A1A] dark:text-white flex items-center gap-1.5">
                 LearnFlow
               </div>
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                 Spaced Repetition & AI
               </p>
             </div>
@@ -68,22 +68,23 @@ export function AppLayout() {
                   cn(
                     'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150',
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30 dark:bg-indigo-600 dark:text-white'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+                      ? 'bg-[#365314] text-white shadow-xs dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+                      : 'text-slate-700 hover:bg-[#F0F2F5] hover:text-[#1A1A1A] dark:text-slate-300 dark:hover:bg-[#262626] dark:hover:text-white',
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <Icon
-                      size={19}
+                    <div
                       className={cn(
-                        'transition-transform duration-150 group-hover:scale-110',
+                        'flex h-7 w-7 items-center justify-center rounded-lg transition-transform duration-150 group-hover:scale-110',
                         isActive
-                          ? 'text-white'
-                          : 'text-slate-400 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200',
+                          ? 'bg-white/15 dark:bg-black/10'
+                          : 'text-slate-400 group-hover:text-[#1A1A1A] dark:text-slate-400 dark:group-hover:text-white',
                       )}
-                    />
+                    >
+                      <Icon size={17} />
+                    </div>
                     <span>{item.label}</span>
                   </>
                 )}
@@ -95,23 +96,23 @@ export function AppLayout() {
 
       {/* Motivation Tip Card & User Footer */}
       <div className="space-y-3 pt-4">
-        <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-purple-50/50 p-3.5 dark:border-indigo-900/40 dark:from-indigo-950/40 dark:to-purple-950/30">
-          <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
-            <IconFlame size={16} className="text-amber-500 animate-pulse-subtle" />
+        <div className="rounded-2xl border border-[#D5ECC2] bg-[#EDFBD8] p-3.5 dark:border-[#365314] dark:bg-[#1E2B11]">
+          <div className="flex items-center gap-2 text-[#365314] dark:text-[#B6F23A]">
+            <IconFlame size={16} className="text-[#93D620] dark:text-[#B6F23A] animate-pulse-subtle" />
             <span className="text-xs font-bold uppercase tracking-wider">Stay Consistent</span>
           </div>
-          <p className="mt-1 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="mt-1 text-xs text-[#2b440e] dark:text-slate-200 leading-relaxed font-medium">
             Reviewing daily cements 90% of newly learned words into long-term memory.
           </p>
         </div>
 
         {/* User Card */}
-        <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 p-2.5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-2.5 dark:border-[#2C2C2C] dark:bg-[#1E1E1E]">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white shadow-xs">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#365314] text-xs font-bold text-white dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
               {userInitial}
             </div>
-            <p className="truncate text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <p className="truncate text-xs font-semibold text-[#1A1A1A] dark:text-slate-200">
               {user?.email}
             </p>
           </div>
@@ -131,19 +132,19 @@ export function AppLayout() {
   )
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen bg-[#F0F2F5] text-[#1A1A1A] dark:bg-[#121212] dark:text-[#F5F5F5]">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white p-4 lg:flex dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:flex dark:border-[#282828] dark:bg-[#1A1A1A] shadow-xs">
         {navContent}
       </aside>
 
       {/* Mobile Top Navigation Bar */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md lg:hidden dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md lg:hidden dark:border-[#282828] dark:bg-[#1A1A1A]/95">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#365314] text-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs">
             <IconSparkles size={16} />
           </div>
-          <span className="text-base font-bold text-slate-900 dark:text-white">LearnFlow</span>
+          <span className="text-base font-bold text-[#1A1A1A] dark:text-white">LearnFlow</span>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -162,10 +163,10 @@ export function AppLayout() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs animate-fade-in"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-fade-in"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl dark:bg-slate-900 animate-scale-in">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl dark:bg-[#1A1A1A] animate-scale-in">
             <div className="mb-2 flex justify-end">
               <button
                 type="button"

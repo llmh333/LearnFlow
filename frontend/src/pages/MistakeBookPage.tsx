@@ -55,7 +55,7 @@ function MistakeRow({ mistake }: { mistake: Mistake }) {
 
       {mistake.explanation && (
         <div className="flex items-start gap-1.5 rounded-lg bg-slate-100 p-2.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          <IconSparkles size={14} className="shrink-0 mt-0.5 text-indigo-600 dark:text-indigo-400" />
+          <IconSparkles size={14} className="shrink-0 mt-0.5 text-[#365314] dark:text-[#B6F23A]" />
           <p className="leading-relaxed font-medium">{mistake.explanation}</p>
         </div>
       )}
@@ -139,7 +139,7 @@ export function MistakeBookPage() {
         </h2>
         {isLoading ? (
           <Card className="flex justify-center py-10">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#365314] border-t-transparent dark:border-[#B6F23A]" />
           </Card>
         ) : mistakes && mistakes.length > 0 ? (
           <div className="flex flex-col gap-3">

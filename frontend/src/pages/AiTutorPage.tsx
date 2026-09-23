@@ -86,8 +86,8 @@ function AskTab({ languageCode }: { languageCode: string }) {
       <ErrorNotice error={explainGrammar.error} />
 
       {explainGrammar.data && (
-        <Card className="border-indigo-200 bg-white p-6 shadow-sm dark:border-indigo-900/60 dark:bg-slate-900 animate-fade-in">
-          <div className="flex items-center gap-2 mb-3 text-indigo-600 dark:text-indigo-400">
+        <Card className="border-slate-200 bg-white p-6 shadow-xs dark:border-[#2C2C2C] dark:bg-[#1E1E1E] animate-fade-in">
+          <div className="flex items-center gap-2 mb-3 text-[#365314] dark:text-[#B6F23A]">
             <IconSparkles size={18} />
             <span className="text-xs font-bold uppercase tracking-wider">Explanation</span>
           </div>

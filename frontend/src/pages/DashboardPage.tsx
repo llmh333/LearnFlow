@@ -39,17 +39,17 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Welcome Banner & Streak Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 p-6 sm:p-8 text-white shadow-lg shadow-indigo-950/20">
+      <div className="relative overflow-hidden rounded-3xl bg-[#1A1A1A] p-6 sm:p-8 text-white shadow-xl border border-[#2E2E2E]">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md">
-              <IconSparkles size={14} className="text-amber-300" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#B6F23A]/15 border border-[#B6F23A]/30 px-3 py-1 text-xs font-bold text-[#B6F23A]">
+              <IconSparkles size={14} />
               <span>Smart SRS Spaced Repetition</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Welcome back! Keep the momentum.
             </h1>
-            <p className="text-sm text-indigo-100 max-w-xl">
+            <p className="text-sm text-slate-300 max-w-xl">
               {hasDueWords
                 ? 'You have reviews scheduled for today. Completing them reinforces long-term retention!'
                 : 'Great job! Your review queue is currently clear. You can learn new words or practice with the AI Tutor.'}
@@ -57,15 +57,15 @@ export function DashboardPage() {
           </div>
 
           {/* Motivational Streak Card */}
-          <div className="flex shrink-0 items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur-md border border-white/20">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 text-white shadow-md shadow-orange-500/30">
+          <div className="flex shrink-0 items-center gap-4 rounded-2xl bg-[#262626] p-4 border border-[#383838]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#365314] text-[#B6F23A] shadow-md">
               <IconFlame size={24} className="animate-bounce-soft" />
             </div>
             <div>
-              <div className="text-xl font-black tracking-tight">
+              <div className="text-xl font-black tracking-tight text-white">
                 {data.streakDays} {data.streakDays === 1 ? 'Day' : 'Days'}
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-indigo-200">
+              <div className="flex items-center gap-1.5 text-xs text-[#B6F23A] font-semibold">
                 <IconClock size={13} />
                 <span>~{data.totalEstimatedMinutes} min goal</span>
               </div>
@@ -73,9 +73,9 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Decorative background glow */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        {/* Decorative background subtle glow */}
+        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#B6F23A]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#93D620]/10 blur-3xl" />
       </div>
 
       {/* AI Daily Plan Section */}
@@ -84,7 +84,7 @@ export function DashboardPage() {
       {/* Language Learning Courses */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">
             Your Languages
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -109,7 +109,7 @@ export function DashboardPage() {
               return (
                 <Card
                   key={language.language.code}
-                  className="group relative flex flex-col justify-between overflow-hidden border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:border-indigo-800"
+                  className="group relative flex flex-col justify-between overflow-hidden border-slate-200 bg-white dark:border-[#2C2C2C] dark:bg-[#1E1E1E] transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:border-[#383838]"
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
@@ -117,7 +117,7 @@ export function DashboardPage() {
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                           {language.language.code}
                         </span>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-xl font-bold text-[#1A1A1A] dark:text-white group-hover:text-[#365314] dark:group-hover:text-[#B6F23A] transition-colors">
                           {language.language.name}
                         </h3>
                       </div>
@@ -126,42 +126,42 @@ export function DashboardPage() {
                           {language.dueCount} due
                         </Badge>
                       ) : (
-                        <Badge variant="success">Up to date</Badge>
+                        <Badge variant="tertiary">Up to date</Badge>
                       )}
                     </div>
 
                     {/* High-contrast stats container */}
-                    <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-3 text-center border border-slate-200 dark:bg-slate-800/90 dark:border-slate-700">
+                    <div className="grid grid-cols-3 gap-2 rounded-xl bg-[#F8F9FA] p-3 text-center border border-slate-200 dark:bg-[#262626] dark:border-[#333333]">
                       <div>
-                        <div className="text-base font-bold text-slate-900 dark:text-white">
+                        <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           {language.dueCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Due</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Due</div>
                       </div>
                       <div>
-                        <div className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+                        <div className="text-base font-bold text-[#365314] dark:text-[#B6F23A]">
                           {language.newCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">New</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">New</div>
                       </div>
                       <div>
-                        <div className="text-base font-bold text-slate-900 dark:text-white">
+                        <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           ~{language.estimatedMinutes}m
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Time</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Time</div>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                         <span>Retention rate</span>
-                        <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                        <span className="text-[#365314] dark:text-[#B6F23A] font-bold">
                           {language.retentionPercent.toFixed(0)}%
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
                         <div
-                          className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500"
+                          className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-500"
                           style={{ width: `${Math.min(100, Math.max(5, language.retentionPercent))}%` }}
                         />
                       </div>
@@ -170,7 +170,7 @@ export function DashboardPage() {
 
                   <div className="pt-5">
                     <Link to={`/review?language=${language.language.code}`} className="block">
-                      <Button className="w-full gap-2 justify-center shadow-sm font-semibold">
+                      <Button variant="primary" className="w-full gap-2 justify-center shadow-xs font-semibold">
                         <IconReview size={16} />
                         <span>Start review</span>
                         <IconArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -185,12 +185,12 @@ export function DashboardPage() {
       </div>
 
       {/* Quick Progress Overview */}
-      <Card className="space-y-5 border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+      <Card className="space-y-5 border-slate-200 dark:border-[#2C2C2C] dark:bg-[#1E1E1E]">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
             <IconProgress size={18} />
           </div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          <h2 className="text-base font-bold text-[#1A1A1A] dark:text-white">
             Progress Overview
           </h2>
         </div>

@@ -3,17 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
+  --font-sans: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* LearnFlow Design System Tokens from Specification */
+  --color-lime-primary: #B6F23A;
+  --color-lime-secondary: #93D620;
+  --color-lime-tertiary: #EDFBD8;
+  --color-lime-forest: #365314;
+  --color-lime-darkforest: #23370d;
+
+  --color-neutral-dark: #1A1A1A;
+  --color-neutral-surface: #242424;
+  --color-neutral-border: #333333;
 }
 
 @layer base {
@@ -21,10 +22,8 @@
     border-color: var(--color-slate-200, #e2e8f0);
   }
 
-  @media (prefers-color-scheme: dark) {
-    * {
-      border-color: var(--color-slate-800, #1e293b);
-    }
+  .dark * {
+    border-color: var(--color-neutral-border, #333333);
   }
 
   body {
@@ -33,13 +32,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color-scheme: light dark;
-    background-color: #f8fafc;
+    background-color: #f1f3f5;
+    color: #1A1A1A;
   }
 
-  @media (prefers-color-scheme: dark) {
-    body {
-      background-color: #090d16;
-    }
+  .dark body,
+  body.dark {
+    background-color: #121212;
+    color: #f5f5f5;
   }
 }
 
@@ -50,21 +50,21 @@
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pulseSubtle {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  50% { opacity: 0.75; }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-pulse-subtle {
@@ -92,9 +92,9 @@
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #333333;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: #444444;
   }
 }

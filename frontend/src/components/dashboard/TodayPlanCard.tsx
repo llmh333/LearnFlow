@@ -69,14 +69,14 @@ export function TodayPlanCard() {
 
   if (!plan || showForm) {
     return (
-      <Card className="relative overflow-hidden border-indigo-100 bg-gradient-to-br from-white via-indigo-50/30 to-white dark:border-indigo-900/40 dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900">
+      <Card className="relative overflow-hidden border-slate-200 bg-white dark:border-[#2C2C2C] dark:bg-[#1E1E1E]">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
               <IconSparkles size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">
                 Generate Today's Study Plan
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -86,7 +86,7 @@ export function TodayPlanCard() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Quick presets
             </label>
             <div className="flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export function TodayPlanCard() {
                   type="button"
                   onClick={() => handleQuickSelect(min)}
                   disabled={generatePlan.isPending}
-                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:border-indigo-400 hover:text-indigo-600 transition-all active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-500 cursor-pointer"
+                  className="rounded-full border border-slate-200 bg-[#F0F2F5] px-4 py-1.5 text-xs font-semibold text-[#1A1A1A] shadow-2xs hover:bg-[#EDFBD8] hover:text-[#365314] hover:border-[#93D620] transition-all active:scale-95 dark:border-[#383838] dark:bg-[#262626] dark:text-white dark:hover:bg-[#333333] dark:hover:border-[#B6F23A]/50 cursor-pointer"
                 >
                   ⚡ {min} minutes
                 </button>
@@ -130,6 +130,7 @@ export function TodayPlanCard() {
               )}
               <Button
                 type="submit"
+                variant="primary"
                 disabled={generatePlan.isPending}
                 className="flex-1 sm:flex-none font-semibold"
               >
@@ -156,18 +157,18 @@ export function TodayPlanCard() {
   const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
 
   return (
-    <Card className="flex flex-col gap-5 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+    <Card className="flex flex-col gap-5 border-slate-200 dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-[#2C2C2C]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">
               Today's Plan
             </h2>
-            <Badge variant="primary" className="font-semibold">
+            <Badge variant="primary" className="font-bold">
               <IconClock size={12} /> {plan.availableMinutes} min
             </Badge>
             {completedItems === totalItems && totalItems > 0 && (
-              <Badge variant="success">All done! 🎉</Badge>
+              <Badge variant="tertiary">All done! 🎉</Badge>
             )}
           </div>
           {plan.intro && (
@@ -191,11 +192,11 @@ export function TodayPlanCard() {
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
             <span>Progress: {completedItems} of {totalItems} completed</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">{progressPercent}%</span>
+            <span className="font-bold text-[#365314] dark:text-[#B6F23A]">{progressPercent}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-500 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -211,10 +212,10 @@ export function TodayPlanCard() {
           {Array.from(groups.entries()).map(([languageCode, items]) => (
             <div
               key={languageCode}
-              className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/50"
+              className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-[#F8F9FA] p-4 dark:border-[#303030] dark:bg-[#242424]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {languageCode}
                 </span>
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -232,13 +233,13 @@ export function TodayPlanCard() {
                   return (
                     <li
                       key={item.id}
-                      className="group flex items-start gap-3 rounded-lg bg-white p-2.5 shadow-2xs transition-all hover:shadow-xs dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                      className="group flex items-start gap-3 rounded-lg bg-white p-2.5 shadow-2xs transition-all hover:shadow-xs dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#333333]"
                     >
                       <label className="flex cursor-pointer items-start gap-3 w-full">
                         <div className="relative mt-0.5 flex h-4 w-4 items-center justify-center">
                           <input
                             type="checkbox"
-                            className="peer h-4 w-4 cursor-pointer appearance-none rounded-md border border-slate-300 transition-colors checked:border-emerald-500 checked:bg-emerald-500 focus:outline-none dark:border-slate-600"
+                            className="peer h-4 w-4 cursor-pointer appearance-none rounded-md border border-slate-300 transition-colors checked:border-[#365314] checked:bg-[#365314] dark:checked:border-[#B6F23A] dark:checked:bg-[#B6F23A] focus:outline-none dark:border-slate-600"
                             checked={item.completed}
                             onChange={(e) =>
                               updateItem.mutate({ itemId: item.id, completed: e.target.checked })
@@ -246,7 +247,7 @@ export function TodayPlanCard() {
                           />
                           <IconCheck
                             size={12}
-                            className="pointer-events-none absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                            className="pointer-events-none absolute text-white dark:text-[#1A1A1A] opacity-0 peer-checked:opacity-100 transition-opacity"
                           />
                         </div>
 

@@ -16,7 +16,7 @@ interface ModeTabsProps {
 
 export function ModeTabs({ active, onChange }: ModeTabsProps) {
   return (
-    <div className="flex gap-1.5 rounded-2xl bg-slate-100 p-1.5 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+    <div className="flex gap-1.5 rounded-2xl bg-[#F0F2F5] p-1.5 dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#2C2C2C]">
       {TABS.map((tab) => {
         const Icon = tab.icon
         const isActive = active === tab.mode
@@ -28,11 +28,14 @@ export function ModeTabs({ active, onChange }: ModeTabsProps) {
             className={cn(
               'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none',
               isActive
-                ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-800 dark:text-indigo-400'
-                : 'text-slate-700 hover:text-slate-900 hover:bg-white/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60',
+                ? 'bg-[#365314] text-white shadow-xs dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
+                : 'text-slate-700 hover:text-[#1A1A1A] hover:bg-white/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#262626]',
             )}
           >
-            <Icon size={16} className={isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'} />
+            <Icon
+              size={16}
+              className={isActive ? 'text-[#B6F23A] dark:text-[#1A1A1A]' : 'text-slate-500 dark:text-slate-400'}
+            />
             <span>{tab.label}</span>
           </button>
         )

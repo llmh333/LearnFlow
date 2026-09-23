@@ -90,7 +90,7 @@ export function ProgressPage() {
             label="Total Words"
             value={summary.total}
             icon={IconBook}
-            colorClass="bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400"
+            colorClass="bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/40 dark:text-[#B6F23A]"
           />
           <StatTile
             label="New"
@@ -121,10 +121,10 @@ export function ProgressPage() {
 
       {/* Retention Rate Card */}
       {retention && (
-        <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+        <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-slate-200 dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-xs">
           <div className="space-y-1">
             <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              <IconProgress size={16} className="text-indigo-600 dark:text-indigo-400" />
+              <IconProgress size={16} className="text-[#365314] dark:text-[#B6F23A]" />
               <span>Retention Rate (Last 30 Days)</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -134,16 +134,16 @@ export function ProgressPage() {
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+              <p className="text-3xl font-black text-[#365314] dark:text-[#B6F23A]">
                 {retention.ratePercent.toFixed(1)}%
               </p>
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 Target: &gt; 85%
               </span>
             </div>
-            <div className="h-12 w-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div className="h-12 w-2 rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A] overflow-hidden">
               <div
-                className="w-full bg-indigo-600 rounded-full transition-all duration-500"
+                className="w-full bg-[#93D620] dark:bg-[#B6F23A] rounded-full transition-all duration-500"
                 style={{ height: `${Math.min(100, Math.max(5, retention.ratePercent))}%` }}
               />
             </div>
@@ -228,9 +228,9 @@ export function ProgressPage() {
       </div>
 
       {/* Recent Sessions */}
-      <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+      <Card className="flex flex-col gap-4 border-slate-200 dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-xs">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-          <IconClock size={16} className="text-indigo-600 dark:text-indigo-400" />
+          <IconClock size={16} className="text-[#365314] dark:text-[#B6F23A]" />
           <span>Recent Study Sessions</span>
         </h2>
 
@@ -239,7 +239,7 @@ export function ProgressPage() {
             {history.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-100/70 p-3.5 text-xs dark:border-slate-700 dark:bg-slate-800"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-[#F8F9FA] p-3.5 text-xs dark:border-[#303030] dark:bg-[#242424]"
               >
                 <div>
                   <p className="font-bold text-slate-900 dark:text-white">
@@ -257,7 +257,7 @@ export function ProgressPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                  <span className="font-bold text-[#365314] dark:text-[#B6F23A]">
                     {session.wordsReviewed} words
                   </span>
                   <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">

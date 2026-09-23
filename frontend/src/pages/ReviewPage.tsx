@@ -43,7 +43,7 @@ const RATING_OPTIONS: {
     label: 'Good',
     key: '3',
     colorClass:
-      'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700',
+      'bg-[#EDFBD8] text-[#365314] border-[#cbebb0] hover:bg-[#e2f7c2] hover:border-[#93D620] dark:bg-[#1E2B11] dark:text-[#B6F23A] dark:border-[#365314]',
     subtitle: 'Standard',
   },
   {
@@ -51,7 +51,7 @@ const RATING_OPTIONS: {
     label: 'Easy',
     key: '4',
     colorClass:
-      'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100 hover:border-sky-300 dark:bg-sky-950/80 dark:text-sky-200 dark:border-sky-700',
+      'bg-[#B6F23A]/20 text-[#2b440e] border-[#B6F23A]/50 hover:bg-[#B6F23A]/35 hover:border-[#93D620] dark:bg-[#B6F23A]/15 dark:text-[#B6F23A] dark:border-[#B6F23A]/40',
     subtitle: 'Extended',
   },
 ]
@@ -244,18 +244,18 @@ export function ReviewPage() {
     return (
       <div className="flex flex-col gap-6 max-w-2xl mx-auto w-full">
         {header}
-        <Card className="flex flex-col items-center gap-6 py-12 text-center border-indigo-100 bg-gradient-to-b from-white to-indigo-50/20 dark:border-indigo-900/40 dark:from-slate-900 dark:to-indigo-950/20 shadow-md">
+        <Card className="flex flex-col items-center gap-6 py-12 text-center border-slate-200 bg-white dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-sm">
           <div className="relative">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-500 text-white shadow-lg shadow-amber-500/30">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#365314] text-[#B6F23A] shadow-md dark:bg-[#B6F23A] dark:text-[#1A1A1A]">
               <IconTrophy size={40} />
             </div>
             <div className="absolute -top-2 -right-2">
-              <IconSparkles size={24} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
+              <IconSparkles size={24} className="text-[#93D620] dark:text-[#B6F23A] animate-pulse" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-black tracking-tight text-[#1A1A1A] dark:text-white">
               Session complete!
             </h2>
             <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 max-w-md mx-auto">
@@ -267,7 +267,7 @@ export function ReviewPage() {
 
           <div className="flex gap-3">
             <Link to="/">
-              <Button className="gap-2 font-semibold">
+              <Button variant="primary" className="gap-2 font-semibold">
                 <span>Go to Dashboard</span>
                 <IconArrowRight size={14} />
               </Button>
@@ -288,16 +288,16 @@ export function ReviewPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
           <span className="flex items-center gap-1.5">
-            <IconCheckCircle size={14} className="text-indigo-600 dark:text-indigo-400" />
+            <IconCheckCircle size={14} className="text-[#365314] dark:text-[#B6F23A]" />
             <span>
               {reviewedCount} / {totalCount} reviewed · {queue.length} remaining in queue
             </span>
           </span>
-          <span className="font-bold text-indigo-600 dark:text-indigo-400">{progress}%</span>
+          <span className="font-bold text-[#365314] dark:text-[#B6F23A]">{progress}%</span>
         </div>
-        <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-300 ease-out"
+            className="h-full rounded-full bg-[#93D620] dark:bg-[#B6F23A] transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -305,25 +305,25 @@ export function ReviewPage() {
 
       {/* Main Study Flashcard */}
       <div className="relative">
-        <Card className="relative flex min-h-72 flex-col items-center justify-center gap-5 p-8 sm:p-12 text-center shadow-md border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all">
+        <Card className="relative flex min-h-72 flex-col items-center justify-center gap-5 p-8 sm:p-12 text-center shadow-md border-slate-200 bg-white dark:border-[#2C2C2C] dark:bg-[#1E1E1E] transition-all">
           <div className="flex items-center gap-2">
             <Badge variant="primary" className="text-xs font-bold">
               {current.language.name}
             </Badge>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1A1A1A] dark:text-white">
             {current.word}
           </h2>
 
           {revealed ? (
             <div className="flex flex-col items-center gap-4 w-full animate-fade-in">
               <div className="h-px w-24 bg-slate-200 dark:bg-slate-700 my-1" />
-              <p className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+              <p className="text-xl sm:text-2xl font-bold text-[#365314] dark:text-[#B6F23A]">
                 {current.meaning}
               </p>
               {current.example && (
-                <div className="w-full max-w-md rounded-xl bg-slate-100 p-3.5 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                <div className="w-full max-w-md rounded-xl bg-[#F8F9FA] p-3.5 border border-slate-200 dark:bg-[#262626] dark:border-[#383838]">
                   <p className="text-sm italic text-slate-700 dark:text-slate-300 leading-relaxed">
                     "{current.example}"
                   </p>
@@ -333,12 +333,13 @@ export function ReviewPage() {
           ) : (
             <div className="pt-4">
               <Button
+                variant="primary"
                 size="lg"
                 onClick={reveal}
-                className="shadow-md shadow-indigo-600/20 gap-2 font-semibold"
+                className="shadow-xs gap-2 font-semibold"
               >
                 <span>Show answer</span>
-                <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-xs font-mono">
+                <span className="rounded-md bg-white/20 dark:bg-black/20 px-1.5 py-0.5 text-xs font-mono">
                   Space
                 </span>
               </Button>

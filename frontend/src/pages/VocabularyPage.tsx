@@ -177,7 +177,7 @@ export function VocabularyPage() {
       <Card className="p-0 overflow-hidden border-slate-200/90 shadow-xs">
         {isLoading ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3">
-            <div className="h-7 w-7 animate-spin rounded-full border-3 border-indigo-600 border-t-transparent" />
+            <div className="h-7 w-7 animate-spin rounded-full border-3 border-[#365314] border-t-transparent dark:border-[#B6F23A]" />
             <p className="text-sm text-neutral-500">Loading words...</p>
           </div>
         ) : vocabularies.length === 0 ? (
@@ -236,7 +236,7 @@ export function VocabularyPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEditDialog(vocabulary)}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-[#365314] dark:hover:text-[#B6F23A]"
                           title="Edit"
                         >
                           <IconEdit size={15} />
