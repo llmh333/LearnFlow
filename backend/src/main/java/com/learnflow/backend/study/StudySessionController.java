@@ -2,6 +2,7 @@ package com.learnflow.backend.study;
 
 import com.learnflow.backend.study.dto.StartStudySessionRequest;
 import com.learnflow.backend.study.dto.StudySessionResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,13 +20,15 @@ public class StudySessionController {
     }
 
     @PostMapping("/start")
-    public StudySessionResponse start(@RequestBody(required = false) StartStudySessionRequest request) {
+    public StudySessionResponse start(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody(required = false) StartStudySessionRequest request) {
         String languageCode = request == null ? null : request.languageCode();
-        return studySessionService.start(languageCode);
+        return studySessionService.start(userId, languageCode);
     }
 
     @PostMapping("/{id}/end")
-    public StudySessionResponse end(@PathVariable Long id) {
-        return studySessionService.end(id);
+    public StudySessionResponse end(@AuthenticationPrincipal Long userId, @PathVariable Long id) {
+        return studySessionService.end(userId, id);
     }
 }
