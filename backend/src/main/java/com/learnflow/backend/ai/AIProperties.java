@@ -10,7 +10,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "app.ai")
 public record AIProperties(
-        String provider, String anthropicApiKey, String geminiApiKey, String model, int timeoutSeconds) {
+        String provider,
+        String anthropicApiKey,
+        String geminiApiKey,
+        String groqApiKey,
+        String model,
+        int timeoutSeconds) {
 
     private static final int DEFAULT_TIMEOUT_SECONDS = 60;
 

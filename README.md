@@ -59,15 +59,17 @@ Cần các GitHub Secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (deploy key ri�
 mkdir -p /opt/learnflow && cd /opt/learnflow
 # copy docker-compose.yml lên đây, tạo .env với các biến:
 #   GHCR_OWNER, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD (mật khẩu mạnh, khác default dev),
-#   JWT_SECRET, AI_PROVIDER (claude|gemini), ANTHROPIC_API_KEY hoặc GEMINI_API_KEY, DOMAIN, ACME_EMAIL
+#   JWT_SECRET, AI_PROVIDER (claude|gemini|groq), key tương ứng, DOMAIN, ACME_EMAIL
 docker compose --profile prod up -d
 ```
 
 ### AI provider
 
-AI Tutor hỗ trợ 2 provider chọn được qua `AI_PROVIDER` trong `.env` (không cần đổi code hay build
-lại image) — `claude` (mặc định, cần `ANTHROPIC_API_KEY`) hoặc `gemini` (cần `GEMINI_API_KEY`, dùng
-key từ Google AI Studio). Đổi xong, `docker compose --profile prod up -d backend` để áp dụng.
+AI Tutor hỗ trợ 3 provider chọn được qua `AI_PROVIDER` trong `.env` (không cần đổi code hay build
+lại image) — `claude` (mặc định, cần `ANTHROPIC_API_KEY`), `gemini` (cần `GEMINI_API_KEY`, key từ
+Google AI Studio — lưu ý free tier chỉ 20 request/ngày cho model mặc định), hoặc `groq` (cần
+`GROQ_API_KEY`, key từ console.groq.com). Đổi xong, `docker compose --profile prod up -d backend`
+để áp dụng.
 
 ### Backup
 
