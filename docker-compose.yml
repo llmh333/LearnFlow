@@ -44,7 +44,11 @@ services:
       # Spring relaxed binding needs the full property-path env var name under the prod profile
       # (application-local.yml has an explicit ${JWT_SECRET} placeholder, application-prod.yml does not).
       APP_AUTH_JWT_SECRET: ${JWT_SECRET}
+      # AI provider is swappable without a redeploy: set AI_PROVIDER=gemini + GEMINI_API_KEY in
+      # .env to switch, no code change needed (see backend ai.provider.GeminiAIProvider).
+      APP_AI_PROVIDER: ${AI_PROVIDER:-claude}
       APP_AI_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      APP_AI_GEMINI_API_KEY: ${GEMINI_API_KEY}
       APP_CORS_ALLOWED_ORIGINS: https://${DOMAIN}
       # application-prod.yml hardcodes registration-enabled=false (register once, then lock down),
       # but that leaves no way to ever create the first account. Default stays false/locked; flip
