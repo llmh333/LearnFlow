@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DailyPlanRepository extends JpaRepository<DailyPlan, Long> {
 
-    Optional<DailyPlan> findByPlanDate(LocalDate planDate);
+    Optional<DailyPlan> findByUser_IdAndPlanDate(Long userId, LocalDate planDate);
 }

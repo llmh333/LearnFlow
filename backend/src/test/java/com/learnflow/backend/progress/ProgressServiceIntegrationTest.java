@@ -23,9 +23,9 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
  * Runs against the same shared Testcontainers Postgres as every other integration test in the
- * suite, so absolute counts ("there are exactly 3 English words") would be flaky. Instead, every
- * assertion measures the *delta* this test's own seed data produces (before vs. after), which is
- * accurate regardless of what other test classes created in "en" before or after this one runs.
+ * suite, but every domain table is scoped per account (decision D18, reversing D7), and this
+ * class's {@code @BeforeEach} registers a brand-new account per test method — so absolute counts
+ * are safe: this account has never touched any other test's data.
  */
 class ProgressServiceIntegrationTest extends AbstractIntegrationTest {
 
@@ -55,9 +55,6 @@ class ProgressServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void summaryRetentionAndWeakAreas_matchHandComputedSeedData() {
-        ProgressSummaryResponse before = fetchSummary();
-        RetentionResponse retentionBefore = fetchRetention();
-
         String suffix = "-" + System.nanoTime();
         Long word1 = createVocab("achieve" + suffix); // GOOD then AGAIN -> learning, weak
         Long word2 = createVocab("banana" + suffix); // 4x GOOD -> mastered (interval>=21, ease=2.5)
@@ -71,16 +68,16 @@ class ProgressServiceIntegrationTest extends AbstractIntegrationTest {
         submit(word2, SrsRating.GOOD); // interval 15
         submit(word2, SrsRating.GOOD); // interval 37.5, ease 2.5 -> mastered
 
-        ProgressSummaryResponse after = fetchSummary();
-        assertThat(after.total() - before.total()).isEqualTo(3);
-        assertThat(after.newCount() - before.newCount()).isEqualTo(1); // word3
-        assertThat(after.masteredCount() - before.masteredCount()).isEqualTo(1); // word2
-        assertThat(after.learningCount() - before.learningCount()).isEqualTo(1); // word1
-        assertThat(after.dueCount() - before.dueCount()).isEqualTo(1); // word3 (never reviewed yet)
+        ProgressSummaryResponse summary = fetchSummary();
+        assertThat(summary.total()).isEqualTo(3);
+        assertThat(summary.newCount()).isEqualTo(1); // word3
+        assertThat(summary.masteredCount()).isEqualTo(1); // word2
+        assertThat(summary.learningCount()).isEqualTo(1); // word1
+        assertThat(summary.dueCount()).isEqualTo(1); // word3 (never reviewed yet)
 
-        RetentionResponse retentionAfter = fetchRetention();
-        assertThat(retentionAfter.successCount() - retentionBefore.successCount()).isEqualTo(5);
-        assertThat(retentionAfter.totalCount() - retentionBefore.totalCount()).isEqualTo(6);
+        RetentionResponse retention = fetchRetention();
+        assertThat(retention.successCount()).isEqualTo(5);
+        assertThat(retention.totalCount()).isEqualTo(6);
 
         List<WeakAreaResponse> weakAreas = fetchWeakAreas(500);
         int word1Index = indexOfVocabularyId(weakAreas, word1);
@@ -90,6 +87,39 @@ class ProgressServiceIntegrationTest extends AbstractIntegrationTest {
         assertThat(word1Index).isLessThan(word2Index); // word1 (ease 2.30) is weaker than word2 (2.50)
         assertThat(weakAreas.get(word1Index).easeFactor()).isEqualByComparingTo("2.30");
         assertThat(weakAreas.get(word1Index).failureCount()).isEqualTo(1);
+    }
+
+    @Test
+    void anotherUsersActivity_neverAppearsInMyProgress() {
+        createVocab("isolated-" + System.nanoTime());
+        submit(createVocab("isolated2-" + System.nanoTime()), SrsRating.GOOD);
+
+        String otherEmail = "progress-other-" + System.nanoTime() + "@example.com";
+        AuthResponse otherAuth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(new RegisterRequest(otherEmail, "password123", "Other Progress Tester"))
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        String otherHeader = "Bearer " + otherAuth.token();
+
+        ProgressSummaryResponse othersSummary =
+                client.get()
+                        .uri("/api/progress/summary?language=en")
+                        .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(ProgressSummaryResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        assertThat(othersSummary.total()).isZero();
+        assertThat(othersSummary.dueCount()).isZero();
     }
 
     private Long createVocab(String word) {

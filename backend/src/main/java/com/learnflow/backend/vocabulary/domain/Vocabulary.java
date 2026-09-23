@@ -1,5 +1,6 @@
 package com.learnflow.backend.vocabulary.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +34,10 @@ public class Vocabulary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -74,6 +79,7 @@ public class Vocabulary {
     private Instant updatedAt;
 
     public Vocabulary(
+            User user,
             Language language,
             String word,
             String meaning,
@@ -82,6 +88,7 @@ public class Vocabulary {
             Map<String, Object> attributes,
             Instant createdAt,
             Instant updatedAt) {
+        this.user = user;
         this.language = language;
         this.word = word;
         this.meaning = meaning;

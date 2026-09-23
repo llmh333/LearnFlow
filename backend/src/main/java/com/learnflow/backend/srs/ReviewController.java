@@ -6,6 +6,7 @@ import com.learnflow.backend.srs.dto.ReviewSubmitRequest;
 import com.learnflow.backend.srs.dto.ReviewSubmitResponse;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,20 +27,28 @@ public class ReviewController {
 
     @GetMapping("/due")
     public List<DueVocabularyResponse> due(
+            @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) String language,
             @RequestParam(defaultValue = "20") int limit) {
-        return reviewService.findDue(language, limit);
+        return reviewService.findDue(userId, language, limit);
     }
 
     @PostMapping("/{vocabularyId}/submit")
     public ReviewSubmitResponse submit(
-            @PathVariable Long vocabularyId, @Valid @RequestBody ReviewSubmitRequest request) {
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long vocabularyId,
+            @Valid @RequestBody ReviewSubmitRequest request) {
         return reviewService.submit(
-                vocabularyId, request.rating(), request.responseTimeMs(), request.studySessionId());
+                userId,
+                vocabularyId,
+                request.rating(),
+                request.responseTimeMs(),
+                request.studySessionId());
     }
 
     @GetMapping("/history/{vocabularyId}")
-    public List<ReviewHistoryResponse> history(@PathVariable Long vocabularyId) {
-        return reviewService.historyOf(vocabularyId);
+    public List<ReviewHistoryResponse> history(
+            @AuthenticationPrincipal Long userId, @PathVariable Long vocabularyId) {
+        return reviewService.historyOf(userId, vocabularyId);
     }
 }

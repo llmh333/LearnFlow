@@ -10,30 +10,36 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewHistoryRepository extends JpaRepository<ReviewHistory, Long> {
 
-    List<ReviewHistory> findByVocabulary_IdOrderByReviewedAtDesc(Long vocabularyId);
+    List<ReviewHistory> findByVocabulary_IdAndUser_IdOrderByReviewedAtDesc(
+            Long vocabularyId, Long userId);
 
-    List<ReviewHistory> findByStudySessionId(Long studySessionId);
+    List<ReviewHistory> findByStudySessionIdAndUser_Id(Long studySessionId, Long userId);
 
-    long countByReviewedAtGreaterThanEqual(Instant since);
+    long countByUser_IdAndReviewedAtGreaterThanEqual(Long userId, Instant since);
 
-    long countByReviewedAtGreaterThanEqualAndRatingNot(Instant since, SrsRating rating);
+    long countByUser_IdAndReviewedAtGreaterThanEqualAndRatingNot(
+            Long userId, Instant since, SrsRating rating);
 
     @Query(
-            "SELECT COUNT(h) FROM ReviewHistory h WHERE h.reviewedAt >= :since AND h.vocabulary.language.code = :languageCode")
-    long countByLanguageCodeAndReviewedAtGreaterThanEqual(
-            @Param("languageCode") String languageCode, @Param("since") Instant since);
+            "SELECT COUNT(h) FROM ReviewHistory h WHERE h.user.id = :userId AND h.reviewedAt >= :since AND h.vocabulary.language.code = :languageCode")
+    long countByUserIdAndLanguageCodeAndReviewedAtGreaterThanEqual(
+            @Param("userId") Long userId,
+            @Param("languageCode") String languageCode,
+            @Param("since") Instant since);
 
     @Query(
             """
             SELECT COUNT(h) FROM ReviewHistory h
-            WHERE h.reviewedAt >= :since AND h.rating <> :excludedRating
+            WHERE h.user.id = :userId AND h.reviewedAt >= :since AND h.rating <> :excludedRating
               AND h.vocabulary.language.code = :languageCode
             """)
-    long countByLanguageCodeAndReviewedAtGreaterThanEqualAndRatingNot(
+    long countByUserIdAndLanguageCodeAndReviewedAtGreaterThanEqualAndRatingNot(
+            @Param("userId") Long userId,
             @Param("languageCode") String languageCode,
             @Param("since") Instant since,
             @Param("excludedRating") SrsRating excludedRating);
 
-    @Query("SELECT h.reviewedAt FROM ReviewHistory h WHERE h.reviewedAt >= :since")
-    List<Instant> findReviewedTimestampsSince(@Param("since") Instant since);
+    @Query("SELECT h.reviewedAt FROM ReviewHistory h WHERE h.user.id = :userId AND h.reviewedAt >= :since")
+    List<Instant> findReviewedTimestampsSince(
+            @Param("userId") Long userId, @Param("since") Instant since);
 }

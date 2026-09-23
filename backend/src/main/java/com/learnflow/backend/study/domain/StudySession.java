@@ -1,5 +1,6 @@
 package com.learnflow.backend.study.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,10 @@ public class StudySession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id")
     private Language language;
@@ -49,7 +54,8 @@ public class StudySession {
     @Column(name = "mistakes_count", nullable = false)
     private int mistakesCount;
 
-    public StudySession(Language language, Instant startedAt) {
+    public StudySession(User user, Language language, Instant startedAt) {
+        this.user = user;
         this.language = language;
         this.startedAt = startedAt;
         this.wordsReviewed = 0;

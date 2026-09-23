@@ -55,6 +55,50 @@ class MistakeIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void sameTopicAcrossTwoUsers_doesNotMergeAndIsNotVisibleToTheOther() {
+        String topic = "Shared topic name" + System.nanoTime();
+        MistakeResponse mine = createMistake(topic, "I go yesterday.", "I went yesterday.");
+        assertThat(mine.timesRepeated()).isEqualTo(1);
+
+        String otherEmail = "mistake-other-" + System.nanoTime() + "@example.com";
+        AuthResponse otherAuth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(new RegisterRequest(otherEmail, "password123", "Other Mistake Tester"))
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        String otherHeader = "Bearer " + otherAuth.token();
+
+        CreateMistakeRequest request =
+                new CreateMistakeRequest(
+                        "en", null, "Grammar", topic, "She go yesterday.", "She went yesterday.", "explanation");
+        MistakeResponse theirs =
+                client.post()
+                        .uri("/api/mistakes")
+                        .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                        .body(request)
+                        .exchange()
+                        .expectStatus()
+                        .isCreated()
+                        .expectBody(MistakeResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        // A different row, not a merge — same topic name, two different accounts.
+        assertThat(theirs.id()).isNotEqualTo(mine.id());
+        assertThat(theirs.timesRepeated()).isEqualTo(1);
+
+        // Neither account sees the other's mistake in its own list.
+        List<MistakeResponse> mineList = fetchList("en", "Grammar");
+        assertThat(indexOfTopic(mineList, topic)).isGreaterThanOrEqualTo(0);
+        assertThat(mineList).extracting(MistakeResponse::id).doesNotContain(theirs.id());
+    }
+
+    @Test
     void recurring_ordersByTimesRepeatedDescending() {
         String frequentTopic = "Frequent" + System.nanoTime();
         String rareTopic = "Rare" + System.nanoTime();

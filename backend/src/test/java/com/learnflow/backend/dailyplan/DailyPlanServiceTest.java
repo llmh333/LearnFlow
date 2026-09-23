@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.learnflow.backend.ai.provider.AIProvider;
 import com.learnflow.backend.ai.provider.AIProviderException;
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.dailyplan.domain.DailyPlan;
 import com.learnflow.backend.dailyplan.dto.DailyPlanResponse;
@@ -39,6 +40,7 @@ class DailyPlanServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
+    private static final Long USER_ID = 1L;
 
     @Mock private LanguageService languageService;
     @Mock private ReviewService reviewService;
@@ -69,15 +71,17 @@ class DailyPlanServiceTest {
     void generate_aiProviderFails_stillReturnsAPlanWithoutIntro() {
         LanguageResponse english = new LanguageResponse((short) 1, "en", "English");
         when(languageService.listAll()).thenReturn(List.of(english));
-        when(reviewService.countDue("en")).thenReturn(10L);
-        when(mistakeService.recurring("en", 1)).thenReturn(List.of());
+        when(reviewService.countDue(USER_ID, "en")).thenReturn(10L);
+        when(mistakeService.recurring(USER_ID, "en", 1)).thenReturn(List.of());
         when(aiProvider.generateDailyPlan(any())).thenThrow(new AIProviderException("boom"));
-        when(planRepository.findByPlanDate(LocalDate.now(FIXED_CLOCK))).thenReturn(Optional.empty());
+        when(planRepository.findByUser_IdAndPlanDate(USER_ID, LocalDate.now(FIXED_CLOCK)))
+                .thenReturn(Optional.empty());
         when(planRepository.save(any(DailyPlan.class))).thenAnswer(inv -> inv.getArgument(0));
         when(entityManager.getReference(com.learnflow.backend.language.domain.Language.class, (short) 1))
                 .thenReturn(null);
+        when(entityManager.getReference(User.class, USER_ID)).thenReturn(null);
 
-        DailyPlanResponse response = service.generate(45);
+        DailyPlanResponse response = service.generate(USER_ID, 45);
 
         assertThat(response).isNotNull();
         assertThat(response.intro()).isNull();
@@ -89,19 +93,21 @@ class DailyPlanServiceTest {
     void generate_usesTopRecurringMistakeAsWeakTopicForGrammarExercise() {
         LanguageResponse english = new LanguageResponse((short) 1, "en", "English");
         when(languageService.listAll()).thenReturn(List.of(english));
-        when(reviewService.countDue("en")).thenReturn(0L);
-        when(mistakeService.recurring("en", 1))
+        when(reviewService.countDue(USER_ID, "en")).thenReturn(0L);
+        when(mistakeService.recurring(USER_ID, "en", 1))
                 .thenReturn(
                         List.of(
                                 new MistakeResponse(
                                         1L, null, null, "Grammar", "Past tense", "orig", "fixed", "why", 5, NOW)));
         when(aiProvider.generateDailyPlan(any())).thenReturn("You've got this!");
-        when(planRepository.findByPlanDate(LocalDate.now(FIXED_CLOCK))).thenReturn(Optional.empty());
+        when(planRepository.findByUser_IdAndPlanDate(USER_ID, LocalDate.now(FIXED_CLOCK)))
+                .thenReturn(Optional.empty());
         when(planRepository.save(any(DailyPlan.class))).thenAnswer(inv -> inv.getArgument(0));
         when(entityManager.getReference(com.learnflow.backend.language.domain.Language.class, (short) 1))
                 .thenReturn(null);
+        when(entityManager.getReference(User.class, USER_ID)).thenReturn(null);
 
-        DailyPlanResponse response = service.generate(30);
+        DailyPlanResponse response = service.generate(USER_ID, 30);
 
         assertThat(response.intro()).isEqualTo("You've got this!");
         assertThat(response.items())
@@ -115,8 +121,9 @@ class DailyPlanServiceTest {
 
     @Test
     void today_noPlanForToday_throwsNotFound() {
-        when(planRepository.findByPlanDate(LocalDate.now(FIXED_CLOCK))).thenReturn(Optional.empty());
+        when(planRepository.findByUser_IdAndPlanDate(USER_ID, LocalDate.now(FIXED_CLOCK)))
+                .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.today()).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> service.today(USER_ID)).isInstanceOf(NotFoundException.class);
     }
 }

@@ -37,10 +37,10 @@ public class ProgressService {
         this.studySessionService = studySessionService;
     }
 
-    public ProgressSummaryResponse summary(String languageCode) {
-        long total = vocabularyService.countByLanguage(languageCode);
-        long dueCount = reviewService.countDue(languageCode);
-        List<ScheduleSnapshot> schedules = reviewService.allSchedules(languageCode);
+    public ProgressSummaryResponse summary(Long userId, String languageCode) {
+        long total = vocabularyService.countByLanguage(userId, languageCode);
+        long dueCount = reviewService.countDue(userId, languageCode);
+        List<ScheduleSnapshot> schedules = reviewService.allSchedules(userId, languageCode);
 
         long newCount = schedules.stream().filter(s -> s.reviewCount() == 0).count();
         long masteredCount =
@@ -52,14 +52,14 @@ public class ProgressService {
         return new ProgressSummaryResponse(total, newCount, learningCount, masteredCount, dueCount);
     }
 
-    public RetentionResponse retention(String languageCode, int days) {
-        RetentionStats stats = reviewService.retentionStats(languageCode, days);
+    public RetentionResponse retention(Long userId, String languageCode, int days) {
+        RetentionStats stats = reviewService.retentionStats(userId, languageCode, days);
         return new RetentionResponse(stats.successCount(), stats.totalCount(), stats.rate() * 100);
     }
 
     /** Lowest ease factor first (weakest), tie-broken by highest failure rate. */
-    public List<WeakAreaResponse> weakAreas(String languageCode, int limit) {
-        return reviewService.allSchedules(languageCode).stream()
+    public List<WeakAreaResponse> weakAreas(Long userId, String languageCode, int limit) {
+        return reviewService.allSchedules(userId, languageCode).stream()
                 .filter(s -> s.reviewCount() > 0)
                 .sorted(
                         Comparator.comparing(ScheduleSnapshot::easeFactor)
@@ -77,8 +77,9 @@ public class ProgressService {
                 .toList();
     }
 
-    public List<StudySessionResponse> history(String languageCode, Instant from, Instant to) {
-        return studySessionService.listBetween(languageCode, from, to);
+    public List<StudySessionResponse> history(
+            Long userId, String languageCode, Instant from, Instant to) {
+        return studySessionService.listBetween(userId, languageCode, from, to);
     }
 
     private double failureRate(ScheduleSnapshot snapshot) {

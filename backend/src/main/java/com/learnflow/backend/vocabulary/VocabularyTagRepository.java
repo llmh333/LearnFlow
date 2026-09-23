@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VocabularyTagRepository extends JpaRepository<VocabularyTag, Integer> {
 
-    Optional<VocabularyTag> findByName(String name);
+    Optional<VocabularyTag> findByUser_IdAndName(Long userId, String name);
 
-    List<VocabularyTag> findAllByOrderByNameAsc();
+    List<VocabularyTag> findAllByUser_IdOrderByNameAsc(Long userId);
 }

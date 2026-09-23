@@ -165,10 +165,62 @@ class DailyPlanIntegrationTest extends AbstractIntegrationTest {
         assertThat(updated.completed()).isTrue();
     }
 
-    // Note: a "no plan generated yet -> 404" test is deliberately NOT here. daily_plan is keyed by
-    // plan_date globally (no user scoping, per decision D7 — single-user app), and this test class's
-    // own other methods call /generate for "today" against the same shared Testcontainers Postgres
-    // (no per-test rollback in this suite's AbstractIntegrationTest). Whether a plan for today exists
-    // yet would depend on JUnit's method execution order, so that case is covered deterministically
-    // instead by DailyPlanServiceTest#today_noPlanForToday_throwsNotFound with a mocked repository.
+    @Test
+    void today_noPlanGeneratedYetForThisAccount_returns404() {
+        // Safe now that daily_plan is scoped per user (decision D18, reversing D7): this test's
+        // @BeforeEach-registered account is brand new and has never called /generate, regardless
+        // of what other test methods in this class did against their own accounts.
+        client.get()
+                .uri("/api/daily-plan/today")
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void anotherUsersPlan_isInvisibleAndItsItemsInaccessible() {
+        DailyPlanResponse plan =
+                client.post()
+                        .uri("/api/daily-plan/generate")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .body(new GenerateDailyPlanRequest(30))
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(DailyPlanResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        Long firstItemId = plan.items().get(0).id();
+
+        String otherEmail = "dailyplan-other-" + System.nanoTime() + "@example.com";
+        AuthResponse otherAuth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(new RegisterRequest(otherEmail, "password123", "Other Daily Plan Tester"))
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        String otherHeader = "Bearer " + otherAuth.token();
+
+        // Same calendar date, different account — not the 409/collision it would have been under
+        // the old global UNIQUE(plan_date) constraint.
+        client.get()
+                .uri("/api/daily-plan/today")
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        client.patch()
+                .uri("/api/daily-plan/item/" + firstItemId)
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .body(new UpdateDailyPlanItemRequest(true))
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
 }

@@ -2,10 +2,12 @@ package com.learnflow.backend.mistake;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
 import com.learnflow.backend.mistake.domain.Mistake;
@@ -28,6 +30,7 @@ class MistakeServiceTest {
 
     private static final Clock FIXED_CLOCK =
             Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC);
+    private static final Long USER_ID = 1L;
 
     @Mock private MistakeRepository mistakeRepository;
     @Mock private MistakeCategoryRepository categoryRepository;
@@ -49,7 +52,8 @@ class MistakeServiceTest {
         MistakeCategory grammar = newCategory(2, "Grammar");
         when(languageService.getByCode("en")).thenReturn(english);
         when(categoryRepository.findByNameIgnoreCase("Grammar")).thenReturn(Optional.of(grammar));
-        when(mistakeRepository.findExisting("en", 2, "Past tense")).thenReturn(Optional.empty());
+        when(mistakeRepository.findExisting(USER_ID, "en", 2, "Past tense")).thenReturn(Optional.empty());
+        when(entityManager.getReference(eq(User.class), any())).thenReturn(null);
         when(mistakeRepository.save(any(Mistake.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CreateMistakeRequest request =
@@ -62,7 +66,7 @@ class MistakeServiceTest {
                         "I went yesterday.",
                         "Use past tense.");
 
-        MistakeResponse response = mistakeService.createOrIncrement(request);
+        MistakeResponse response = mistakeService.createOrIncrement(USER_ID, request);
 
         assertThat(response.timesRepeated()).isEqualTo(1);
         assertThat(response.topic()).isEqualTo("Past tense");
@@ -75,6 +79,7 @@ class MistakeServiceTest {
         MistakeCategory grammar = newCategory(2, "Grammar");
         Mistake existing =
                 new Mistake(
+                        null,
                         english,
                         null,
                         grammar,
@@ -85,7 +90,7 @@ class MistakeServiceTest {
                         Instant.parse("2025-12-01T00:00:00Z"));
         when(languageService.getByCode("en")).thenReturn(english);
         when(categoryRepository.findByNameIgnoreCase("Grammar")).thenReturn(Optional.of(grammar));
-        when(mistakeRepository.findExisting("en", 2, "past tense")).thenReturn(Optional.of(existing));
+        when(mistakeRepository.findExisting(USER_ID, "en", 2, "past tense")).thenReturn(Optional.of(existing));
 
         CreateMistakeRequest request =
                 new CreateMistakeRequest(
@@ -97,7 +102,7 @@ class MistakeServiceTest {
                         "I went home yesterday.",
                         "Still past tense.");
 
-        MistakeResponse response = mistakeService.createOrIncrement(request);
+        MistakeResponse response = mistakeService.createOrIncrement(USER_ID, request);
 
         assertThat(response.timesRepeated()).isEqualTo(2);
         assertThat(response.corrected()).isEqualTo("I went home yesterday.");
@@ -112,14 +117,15 @@ class MistakeServiceTest {
         when(languageService.getByCode("en")).thenReturn(english);
         when(categoryRepository.findByNameIgnoreCase("NotARealCategory")).thenReturn(Optional.empty());
         when(categoryRepository.findByNameIgnoreCase("Other")).thenReturn(Optional.of(other));
-        when(mistakeRepository.findExisting("en", 8, "General")).thenReturn(Optional.empty());
+        when(mistakeRepository.findExisting(USER_ID, "en", 8, "General")).thenReturn(Optional.empty());
+        when(entityManager.getReference(eq(User.class), any())).thenReturn(null);
         when(mistakeRepository.save(any(Mistake.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CreateMistakeRequest request =
                 new CreateMistakeRequest(
                         "en", null, "NotARealCategory", null, "orig", "fixed", "explanation");
 
-        MistakeResponse response = mistakeService.createOrIncrement(request);
+        MistakeResponse response = mistakeService.createOrIncrement(USER_ID, request);
 
         assertThat(response.category()).isEqualTo("Other");
         assertThat(response.topic()).isEqualTo("General"); // blank topic defaults to "General"

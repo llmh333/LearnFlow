@@ -24,12 +24,14 @@ import com.learnflow.backend.ai.provider.MistakeAnalysis;
 import com.learnflow.backend.ai.provider.MistakeAnalysisRequest;
 import com.learnflow.backend.ai.provider.SentenceCorrection;
 import com.learnflow.backend.ai.provider.SentenceCorrectionRequest;
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
 import com.learnflow.backend.mistake.MistakeService;
 import com.learnflow.backend.mistake.dto.CreateMistakeRequest;
 import com.learnflow.backend.mistake.dto.MistakeResponse;
+import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -43,6 +45,9 @@ import org.springframework.transaction.annotation.Transactional;
  * AIProvider}, and persists conversation turns. Never touches {@code srs} beyond what {@link
  * AIContextBuilder} already reads — this service itself has no SRS dependency at all, so it
  * structurally cannot write a review schedule.
+ *
+ * <p>Every method takes {@code userId} first and every conversation lookup is ownership-checked
+ * (see decision D18) so one account can never read or continue another account's conversation.
  */
 @Service
 @Transactional
@@ -56,6 +61,7 @@ public class AiTutorService {
     private final MistakeService mistakeService;
     private final AIConversationRepository conversationRepository;
     private final AIMessageRepository messageRepository;
+    private final EntityManager entityManager;
     private final Clock clock;
 
     public AiTutorService(
@@ -65,6 +71,7 @@ public class AiTutorService {
             MistakeService mistakeService,
             AIConversationRepository conversationRepository,
             AIMessageRepository messageRepository,
+            EntityManager entityManager,
             Clock clock) {
         this.aiProvider = aiProvider;
         this.contextBuilder = contextBuilder;
@@ -72,23 +79,25 @@ public class AiTutorService {
         this.mistakeService = mistakeService;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
+        this.entityManager = entityManager;
         this.clock = clock;
     }
 
-    public String explainGrammar(String languageCode, String question) {
-        LearnerContext context = contextBuilder.build(languageCode);
+    public String explainGrammar(Long userId, String languageCode, String question) {
+        LearnerContext context = contextBuilder.build(userId, languageCode);
         return aiProvider.explainGrammar(
                 new GrammarExplainRequest(languageCode, question, context.currentLevel()));
     }
 
-    public List<String> generateExamples(String languageCode, String word) {
-        LearnerContext context = contextBuilder.build(languageCode);
+    public List<String> generateExamples(Long userId, String languageCode, String word) {
+        LearnerContext context = contextBuilder.build(userId, languageCode);
         return aiProvider.generateExamples(
                 new ExampleGenerationRequest(languageCode, word, context.currentLevel()));
     }
 
-    public SentenceCorrectionApiResponse correctSentence(String languageCode, String text) {
-        LearnerContext context = contextBuilder.build(languageCode);
+    public SentenceCorrectionApiResponse correctSentence(
+            Long userId, String languageCode, String text) {
+        LearnerContext context = contextBuilder.build(userId, languageCode);
         SentenceCorrection correction =
                 aiProvider.correctSentence(
                         new SentenceCorrectionRequest(languageCode, text, context.currentLevel()));
@@ -109,15 +118,15 @@ public class AiTutorService {
     }
 
     public ConversationMessageResponse sendMessage(
-            Long conversationId, String languageCode, String scenario, String message) {
+            Long userId, Long conversationId, String languageCode, String scenario, String message) {
         AIConversation conversation =
                 conversationId != null
-                        ? findConversationOrThrow(conversationId)
-                        : startConversation(languageCode, scenario);
+                        ? findConversationOrThrow(userId, conversationId)
+                        : startConversation(userId, languageCode, scenario);
 
         appendUserMessage(conversation, message);
         List<ConversationTurn> history = historyOf(conversation);
-        LearnerContext context = contextBuilder.build(languageOf(conversation));
+        LearnerContext context = contextBuilder.build(userId, languageOf(conversation));
         String reply =
                 aiProvider.continueConversation(
                         new ConversationRequest(
@@ -136,11 +145,12 @@ public class AiTutorService {
      * it all at once. Requires an existing conversation — the first message of a conversation still
      * goes through {@link #sendMessage} to establish the conversation id.
      */
-    public void streamMessage(Long conversationId, String message, Consumer<String> onDelta) {
-        AIConversation conversation = findConversationOrThrow(conversationId);
+    public void streamMessage(
+            Long userId, Long conversationId, String message, Consumer<String> onDelta) {
+        AIConversation conversation = findConversationOrThrow(userId, conversationId);
         appendUserMessage(conversation, message);
         List<ConversationTurn> history = historyOf(conversation);
-        LearnerContext context = contextBuilder.build(languageOf(conversation));
+        LearnerContext context = contextBuilder.build(userId, languageOf(conversation));
 
         StringBuilder fullReply = new StringBuilder();
         aiProvider.streamConversation(
@@ -155,8 +165,8 @@ public class AiTutorService {
                                 new AIMessage(conversation, "ASSISTANT", fullReply.toString(), Instant.now(clock))));
     }
 
-    public ConversationSummaryResponse endConversation(Long conversationId) {
-        AIConversation conversation = findConversationOrThrow(conversationId);
+    public ConversationSummaryResponse endConversation(Long userId, Long conversationId) {
+        AIConversation conversation = findConversationOrThrow(userId, conversationId);
         if (conversation.getEndedAt() != null) {
             return ConversationSummaryResponse.alreadyEnded(conversation);
         }
@@ -165,7 +175,7 @@ public class AiTutorService {
                 aiProvider.summarizeConversation(
                         new ConversationSummaryRequest(languageOf(conversation), historyOf(conversation)));
 
-        List<MistakeResponse> pushedMistakes = pushMistakes(conversation, summary.mistakes());
+        List<MistakeResponse> pushedMistakes = pushMistakes(userId, conversation, summary.mistakes());
 
         conversation.setSummary(renderSummaryText(summary));
         conversation.setEndedAt(Instant.now(clock));
@@ -186,15 +196,15 @@ public class AiTutorService {
     }
 
     @Transactional(readOnly = true)
-    public List<ConversationListItemResponse> listConversations() {
-        return conversationRepository.findAllByOrderByStartedAtDesc().stream()
+    public List<ConversationListItemResponse> listConversations(Long userId) {
+        return conversationRepository.findAllByUser_IdOrderByStartedAtDesc(userId).stream()
                 .map(ConversationListItemResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ConversationDetailResponse getConversation(Long conversationId) {
-        AIConversation conversation = findConversationOrThrow(conversationId);
+    public ConversationDetailResponse getConversation(Long userId, Long conversationId) {
+        AIConversation conversation = findConversationOrThrow(userId, conversationId);
         List<ConversationMessageItem> messages =
                 messageRepository.findByConversation_IdOrderByCreatedAtAsc(conversationId).stream()
                         .map(ConversationMessageItem::from)
@@ -208,16 +218,17 @@ public class AiTutorService {
     }
 
     /** Package-visible so a controller-level integration test can seed a conversation directly if needed. */
-    AIConversation findConversationOrThrow(Long id) {
+    AIConversation findConversationOrThrow(Long userId, Long id) {
         return conversationRepository
-                .findById(id)
+                .findByIdAndUser_Id(id, userId)
                 .orElseThrow(() -> new NotFoundException("Conversation not found: " + id));
     }
 
-    private AIConversation startConversation(String languageCode, String scenario) {
+    private AIConversation startConversation(Long userId, String languageCode, String scenario) {
         Language language = languageService.getByCode(languageCode);
+        User userRef = entityManager.getReference(User.class, userId);
         AIConversation conversation =
-                new AIConversation(language, CONVERSATION_MODE, scenario, Instant.now(clock));
+                new AIConversation(userRef, language, CONVERSATION_MODE, scenario, Instant.now(clock));
         return conversationRepository.save(conversation);
     }
 
@@ -231,12 +242,14 @@ public class AiTutorService {
                 .toList();
     }
 
-    private List<MistakeResponse> pushMistakes(AIConversation conversation, List<ConversationMistake> mistakes) {
+    private List<MistakeResponse> pushMistakes(
+            Long userId, AIConversation conversation, List<ConversationMistake> mistakes) {
         String languageCode = languageOf(conversation);
         return mistakes.stream()
                 .map(
                         m ->
                                 mistakeService.createOrIncrement(
+                                        userId,
                                         new CreateMistakeRequest(
                                                 languageCode,
                                                 null,

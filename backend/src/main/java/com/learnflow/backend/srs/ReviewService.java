@@ -1,5 +1,6 @@
 package com.learnflow.backend.srs;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.srs.domain.ReviewHistory;
 import com.learnflow.backend.srs.domain.ReviewSchedule;
@@ -33,6 +34,10 @@ import org.springframework.transaction.annotation.Transactional;
  * Owns the SRS lifecycle for every word. Per {@code plan/phases/00-overview.md} §3 rule 1, this is
  * the *only* path that may write {@code review_schedule} — the {@code ai} module must never touch
  * it directly, even indirectly through this service's internals.
+ *
+ * <p>Every method takes {@code userId} as its first parameter and every query is scoped to it (per
+ * the multi-tenancy retrofit — see decision D18) so one account's SRS state is never visible or
+ * mutable from another account.
  */
 @Service
 @Transactional
@@ -65,33 +70,39 @@ public class ReviewService {
 
     /**
      * Called by {@code VocabularyService} right after a new word is persisted. Uses {@link
-     * EntityManager#getReference} instead of {@code VocabularyRepository} so this module never
-     * depends on another module's repository (00-overview.md §1.1 rule 2).
+     * EntityManager#getReference} instead of {@code VocabularyRepository}/{@code UserRepository} so
+     * this module never depends on another module's repository (00-overview.md §1.1 rule 2).
      */
-    public void createScheduleFor(Long vocabularyId) {
+    public void createScheduleFor(Long userId, Long vocabularyId) {
         if (scheduleRepository.existsById(vocabularyId)) {
             return;
         }
         Vocabulary vocabularyRef = entityManager.getReference(Vocabulary.class, vocabularyId);
-        scheduleRepository.save(new ReviewSchedule(vocabularyRef, Instant.now(clock)));
+        User userRef = entityManager.getReference(User.class, userId);
+        scheduleRepository.save(new ReviewSchedule(vocabularyRef, userRef, Instant.now(clock)));
     }
 
     @Transactional(readOnly = true)
-    public List<DueVocabularyResponse> findDue(String languageCode, int limit) {
+    public List<DueVocabularyResponse> findDue(Long userId, String languageCode, int limit) {
         Instant now = Instant.now(clock);
         Pageable pageable = PageRequest.of(0, limit);
         List<ReviewSchedule> due =
                 (languageCode == null || languageCode.isBlank())
-                        ? scheduleRepository.findDue(now, pageable)
-                        : scheduleRepository.findDueByLanguageCode(languageCode, now, pageable);
+                        ? scheduleRepository.findDueByUserId(userId, now, pageable)
+                        : scheduleRepository.findDueByUserIdAndLanguageCode(
+                                userId, languageCode, now, pageable);
         return due.stream().map(DueVocabularyResponse::from).toList();
     }
 
     public ReviewSubmitResponse submit(
-            Long vocabularyId, SrsRating rating, Integer responseTimeMs, Long studySessionId) {
+            Long userId,
+            Long vocabularyId,
+            SrsRating rating,
+            Integer responseTimeMs,
+            Long studySessionId) {
         ReviewSchedule schedule =
                 scheduleRepository
-                        .findById(vocabularyId)
+                        .findByVocabularyIdAndUser_Id(vocabularyId, userId)
                         .orElseThrow(
                                 () ->
                                         new NotFoundException(
@@ -107,6 +118,7 @@ public class ReviewService {
         historyRepository.save(
                 new ReviewHistory(
                         schedule.getVocabulary(),
+                        schedule.getUser(),
                         studySessionId,
                         now,
                         rating,
@@ -118,60 +130,64 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewHistoryResponse> historyOf(Long vocabularyId) {
-        return historyRepository.findByVocabulary_IdOrderByReviewedAtDesc(vocabularyId).stream()
+    public List<ReviewHistoryResponse> historyOf(Long userId, Long vocabularyId) {
+        return historyRepository
+                .findByVocabulary_IdAndUser_IdOrderByReviewedAtDesc(vocabularyId, userId)
+                .stream()
                 .map(ReviewHistoryResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public long countDue(String languageCode) {
+    public long countDue(Long userId, String languageCode) {
         Instant now = Instant.now(clock);
         return (languageCode == null || languageCode.isBlank())
-                ? scheduleRepository.countByNextReviewLessThanEqual(now)
-                : scheduleRepository.countDueByLanguageCode(languageCode, now);
+                ? scheduleRepository.countByUser_IdAndNextReviewLessThanEqual(userId, now)
+                : scheduleRepository.countByUserIdAndLanguageCode(userId, languageCode, now);
     }
 
     /** Words never reviewed yet — the pool of "new" words a learner could start today. */
     @Transactional(readOnly = true)
-    public long countNew(String languageCode) {
+    public long countNew(Long userId, String languageCode) {
         return (languageCode == null || languageCode.isBlank())
-                ? scheduleRepository.countByReviewCount(0)
-                : scheduleRepository.countNewByLanguageCode(languageCode);
+                ? scheduleRepository.countByUser_IdAndReviewCount(userId, 0)
+                : scheduleRepository.countNewByUserIdAndLanguageCode(userId, languageCode);
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleSnapshot> allSchedules(String languageCode) {
+    public List<ScheduleSnapshot> allSchedules(Long userId, String languageCode) {
         List<ReviewSchedule> schedules =
                 (languageCode == null || languageCode.isBlank())
-                        ? scheduleRepository.findAll()
-                        : scheduleRepository.findAllByVocabulary_Language_Code(languageCode);
+                        ? scheduleRepository.findAllByUser_Id(userId)
+                        : scheduleRepository.findAllByUser_IdAndVocabulary_Language_Code(
+                                userId, languageCode);
         return schedules.stream().map(ScheduleSnapshot::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public RetentionStats retentionStats(String languageCode, int days) {
+    public RetentionStats retentionStats(Long userId, String languageCode, int days) {
         Instant since = Instant.now(clock).minus(Duration.ofDays(days));
         long total =
                 (languageCode == null || languageCode.isBlank())
-                        ? historyRepository.countByReviewedAtGreaterThanEqual(since)
-                        : historyRepository.countByLanguageCodeAndReviewedAtGreaterThanEqual(
-                                languageCode, since);
+                        ? historyRepository.countByUser_IdAndReviewedAtGreaterThanEqual(userId, since)
+                        : historyRepository.countByUserIdAndLanguageCodeAndReviewedAtGreaterThanEqual(
+                                userId, languageCode, since);
         long success =
                 (languageCode == null || languageCode.isBlank())
-                        ? historyRepository.countByReviewedAtGreaterThanEqualAndRatingNot(
-                                since, SrsRating.AGAIN)
-                        : historyRepository.countByLanguageCodeAndReviewedAtGreaterThanEqualAndRatingNot(
-                                languageCode, since, SrsRating.AGAIN);
+                        ? historyRepository.countByUser_IdAndReviewedAtGreaterThanEqualAndRatingNot(
+                                userId, since, SrsRating.AGAIN)
+                        : historyRepository
+                                .countByUserIdAndLanguageCodeAndReviewedAtGreaterThanEqualAndRatingNot(
+                                        userId, languageCode, since, SrsRating.AGAIN);
         return new RetentionStats(success, total);
     }
 
     /** Consecutive days (ending today, UTC) with at least one review. */
     @Transactional(readOnly = true)
-    public int currentStreakDays() {
+    public int currentStreakDays(Long userId) {
         Instant since = Instant.now(clock).minus(Duration.ofDays(STREAK_LOOKBACK_DAYS));
         Set<LocalDate> activeDays = new HashSet<>();
-        for (Instant reviewedAt : historyRepository.findReviewedTimestampsSince(since)) {
+        for (Instant reviewedAt : historyRepository.findReviewedTimestampsSince(userId, since)) {
             activeDays.add(reviewedAt.atZone(ZoneOffset.UTC).toLocalDate());
         }
 
@@ -185,8 +201,9 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public SessionSummary summarizeSession(Long studySessionId) {
-        List<ReviewHistory> entries = historyRepository.findByStudySessionId(studySessionId);
+    public SessionSummary summarizeSession(Long userId, Long studySessionId) {
+        List<ReviewHistory> entries =
+                historyRepository.findByStudySessionIdAndUser_Id(studySessionId, userId);
         long wordsReviewed = entries.stream().map(h -> h.getVocabulary().getId()).distinct().count();
         long wordsLearned =
                 entries.stream()

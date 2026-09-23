@@ -5,6 +5,7 @@ import com.learnflow.backend.mistake.dto.MistakeResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,20 +26,25 @@ public class MistakeController {
 
     @GetMapping
     public List<MistakeResponse> list(
-            @RequestParam(required = false) String language, @RequestParam(required = false) String category) {
-        return mistakeService.list(language, category);
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) String category) {
+        return mistakeService.list(userId, language, category);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MistakeResponse create(@Valid @RequestBody CreateMistakeRequest request) {
-        return mistakeService.createOrIncrement(request);
+    public MistakeResponse create(
+            @AuthenticationPrincipal Long userId, @Valid @RequestBody CreateMistakeRequest request) {
+        return mistakeService.createOrIncrement(userId, request);
     }
 
     @GetMapping("/recurring")
     public List<MistakeResponse> recurring(
-            @RequestParam(required = false) String language, @RequestParam(defaultValue = "10") int limit) {
-        return mistakeService.recurring(language, limit);
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(required = false) String language,
+            @RequestParam(defaultValue = "10") int limit) {
+        return mistakeService.recurring(userId, language, limit);
     }
 
     @GetMapping("/categories")

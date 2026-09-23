@@ -5,6 +5,7 @@ import com.learnflow.backend.dailyplan.dto.DailyPlanResponse;
 import com.learnflow.backend.dailyplan.dto.GenerateDailyPlanRequest;
 import com.learnflow.backend.dailyplan.dto.UpdateDailyPlanItemRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,18 +25,21 @@ public class DailyPlanController {
     }
 
     @PostMapping("/generate")
-    public DailyPlanResponse generate(@Valid @RequestBody GenerateDailyPlanRequest request) {
-        return dailyPlanService.generate(request.availableMinutes());
+    public DailyPlanResponse generate(
+            @AuthenticationPrincipal Long userId, @Valid @RequestBody GenerateDailyPlanRequest request) {
+        return dailyPlanService.generate(userId, request.availableMinutes());
     }
 
     @GetMapping("/today")
-    public DailyPlanResponse today() {
-        return dailyPlanService.today();
+    public DailyPlanResponse today(@AuthenticationPrincipal Long userId) {
+        return dailyPlanService.today(userId);
     }
 
     @PatchMapping("/item/{id}")
     public DailyPlanItemResponse updateItem(
-            @PathVariable Long id, @Valid @RequestBody UpdateDailyPlanItemRequest request) {
-        return dailyPlanService.setCompleted(id, request.completed());
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateDailyPlanItemRequest request) {
+        return dailyPlanService.setCompleted(userId, id, request.completed());
     }
 }
