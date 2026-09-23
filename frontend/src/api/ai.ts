@@ -76,6 +76,14 @@ export async function streamConversationMessage(
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let eventData: string[] = []
+
+  function flushEvent() {
+    if (eventData.length > 0) {
+      onDelta(eventData.join('\n'))
+      eventData = []
+    }
+  }
 
   while (true) {
     const { done, value } = await reader.read()
@@ -84,12 +92,25 @@ export async function streamConversationMessage(
 
     const lines = buffer.split('\n')
     buffer = lines.pop() ?? ''
-    for (const line of lines) {
+    for (const rawLine of lines) {
+      const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
       if (line.startsWith('data:')) {
-        onDelta(line.slice(5).trimStart())
+        // SSE payload is everything after 'data:'.
+        // Note: Spring SseEmitter does NOT put a delimiter space after 'data:'.
+        // Any leading space is part of the original token (e.g. " hello").
+        // We must NEVER call trimStart() as that deletes all spaces between words.
+        eventData.push(line.slice(5))
+      } else if (line === '') {
+        flushEvent()
       }
     }
   }
+
+  if (buffer.startsWith('data:')) {
+    const line = buffer.endsWith('\r') ? buffer.slice(0, -1) : buffer
+    eventData.push(line.slice(5))
+  }
+  flushEvent()
 }
 
 export interface PushedMistake {

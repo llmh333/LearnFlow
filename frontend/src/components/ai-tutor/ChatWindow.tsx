@@ -39,9 +39,9 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex h-[32rem] flex-col gap-3 rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 dark:border-slate-800 dark:bg-slate-900/50 shadow-xs">
+    <div className="flex h-[32rem] flex-col gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-[#2C2C2C] dark:bg-[#1E1E1E]/60 shadow-xs">
       {/* Messages Scroll Area */}
-      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+      <div className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden pr-1">
         {messages.length === 0 && !streamingReply && (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center p-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
@@ -70,13 +70,13 @@ export function ChatWindow({
       </div>
 
       {/* Input form */}
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+      <form onSubmit={handleSubmit} className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[#2C2C2C]">
         <Input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder={ended ? 'This conversation has ended.' : 'Type your message in target language...'}
           disabled={ended || isSending}
-          className="flex-1 bg-white dark:bg-slate-900"
+          className="flex-1 bg-white dark:bg-[#1A1A1A]"
         />
         <Button
           type="submit"
