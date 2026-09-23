@@ -156,7 +156,7 @@ frontend/src/
 | **— MỐC A: app dùng được hằng ngày, không cần AI —** | | | | | |
 | P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [x] |
 | **— MỐC B: MVP đủ 5 màn hình theo PROJECT.md §9 —** | | | | | |
-| P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [ ] |
+| P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [x] |
 | P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [ ] |
 | P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [ ] |
 

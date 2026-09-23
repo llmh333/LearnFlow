@@ -9,12 +9,15 @@ import com.learnflow.backend.ai.dto.ConversationListItemResponse;
 import com.learnflow.backend.ai.dto.ConversationMessageItem;
 import com.learnflow.backend.ai.dto.ConversationMessageResponse;
 import com.learnflow.backend.ai.dto.ConversationSummaryResponse;
+import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
 import com.learnflow.backend.ai.provider.AIProvider;
 import com.learnflow.backend.ai.provider.ConversationRequest;
 import com.learnflow.backend.ai.provider.ConversationSummaryRequest;
 import com.learnflow.backend.ai.provider.ConversationTurn;
 import com.learnflow.backend.ai.provider.ExampleGenerationRequest;
 import com.learnflow.backend.ai.provider.GrammarExplainRequest;
+import com.learnflow.backend.ai.provider.MistakeAnalysis;
+import com.learnflow.backend.ai.provider.MistakeAnalysisRequest;
 import com.learnflow.backend.ai.provider.SentenceCorrection;
 import com.learnflow.backend.ai.provider.SentenceCorrectionRequest;
 import com.learnflow.backend.common.error.NotFoundException;
@@ -73,10 +76,25 @@ public class AiTutorService {
                 new ExampleGenerationRequest(languageCode, word, context.currentLevel()));
     }
 
-    public SentenceCorrection correctSentence(String languageCode, String text) {
+    public SentenceCorrectionApiResponse correctSentence(String languageCode, String text) {
         LearnerContext context = contextBuilder.build(languageCode);
-        return aiProvider.correctSentence(
-                new SentenceCorrectionRequest(languageCode, text, context.currentLevel()));
+        SentenceCorrection correction =
+                aiProvider.correctSentence(
+                        new SentenceCorrectionRequest(languageCode, text, context.currentLevel()));
+
+        String suggestedCategory = null;
+        String suggestedTopic = null;
+        if (!correction.corrected().trim().equalsIgnoreCase(text.trim())) {
+            MistakeAnalysis analysis =
+                    aiProvider.analyzeMistake(
+                            new MistakeAnalysisRequest(
+                                    languageCode, text, correction.corrected(), correction.explanation()));
+            suggestedCategory = analysis.category();
+            suggestedTopic = analysis.topic();
+        }
+
+        return new SentenceCorrectionApiResponse(
+                correction.corrected(), correction.explanation(), suggestedCategory, suggestedTopic);
     }
 
     public ConversationMessageResponse sendMessage(

@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/review', label: 'Review' },
   { to: '/ai-tutor', label: 'AI Tutor' },
   { to: '/progress', label: 'Progress' },
+  { to: '/mistakes', label: 'Mistake Book' },
 ]
 
 export function AppLayout() {

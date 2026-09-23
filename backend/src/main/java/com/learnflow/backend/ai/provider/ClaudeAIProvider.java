@@ -114,6 +114,45 @@ public class ClaudeAIProvider implements AIProvider {
     }
 
     @Override
+    public MistakeAnalysis analyzeMistake(MistakeAnalysisRequest request) {
+        String system =
+                """
+                You are a friendly, encouraging language tutor classifying a %s mistake for the
+                learner's Mistake Book. Respond only via the analyze_mistake tool.
+                """
+                        .formatted(request.languageCode());
+        String userMessage =
+                "Original: %s\nCorrected: %s\nExplanation: %s"
+                        .formatted(request.original(), request.corrected(), request.explanation());
+        Map<String, Object> schema =
+                Map.of(
+                        "type", "object",
+                        "properties",
+                                Map.of(
+                                        "category",
+                                        Map.of(
+                                                "type", "string",
+                                                "enum",
+                                                        List.of(
+                                                                "Vocabulary",
+                                                                "Grammar",
+                                                                "Word order",
+                                                                "Pronunciation",
+                                                                "Usage",
+                                                                "Spelling",
+                                                                "Tone",
+                                                                "Other")),
+                                        "topic", Map.of("type", "string", "description", "Short label, 2-4 words")),
+                        "required", List.of("category", "topic"));
+        Map<String, Object> input =
+                callTool(
+                        system,
+                        userMessage,
+                        toolSpec("analyze_mistake", "Classify the mistake's category and topic", schema));
+        return new MistakeAnalysis(String.valueOf(input.get("category")), String.valueOf(input.get("topic")));
+    }
+
+    @Override
     public String continueConversation(ConversationRequest request) {
         String scenario =
                 request.scenario() == null || request.scenario().isBlank()

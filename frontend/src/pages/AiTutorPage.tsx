@@ -15,6 +15,7 @@ import {
   useExplainGrammar,
   useSendConversationMessage,
 } from '@/hooks/useAiTutor'
+import { useCreateMistake } from '@/hooks/useMistakes'
 import { useUiStore } from '@/stores/uiStore'
 import { ApiError } from '@/api/client'
 import type { ConversationMessageItem } from '@/api/ai'
@@ -63,11 +64,25 @@ function AskTab({ languageCode }: { languageCode: string }) {
 function CorrectTab({ languageCode }: { languageCode: string }) {
   const [text, setText] = useState('')
   const correctSentence = useCorrectSentence()
+  const createMistake = useCreateMistake()
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!text.trim()) return
+    createMistake.reset()
     correctSentence.mutate({ languageCode, text: text.trim() })
+  }
+
+  function handleSaveToMistakeBook() {
+    if (!correctSentence.data || !correctSentence.data.suggestedCategory) return
+    createMistake.mutate({
+      languageCode,
+      category: correctSentence.data.suggestedCategory,
+      topic: correctSentence.data.suggestedTopic,
+      original: text.trim(),
+      corrected: correctSentence.data.corrected,
+      explanation: correctSentence.data.explanation,
+    })
   }
 
   return (
@@ -85,7 +100,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
       </form>
       <ErrorNotice error={correctSentence.error} />
       {correctSentence.data && (
-        <Card className="flex flex-col gap-2">
+        <Card className="flex flex-col gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-neutral-400">Correct</p>
             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -98,6 +113,26 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
               {correctSentence.data.explanation}
             </p>
           </div>
+          {correctSentence.data.suggestedCategory && (
+            <div className="flex items-center justify-between gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+              <span className="text-xs text-neutral-500">
+                Mistake type: {correctSentence.data.suggestedCategory} ·{' '}
+                {correctSentence.data.suggestedTopic}
+              </span>
+              {createMistake.isSuccess ? (
+                <span className="text-xs text-neutral-500">Saved ✓</span>
+              ) : (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSaveToMistakeBook}
+                  disabled={createMistake.isPending}
+                >
+                  {createMistake.isPending ? 'Saving...' : 'Save to Mistake Book'}
+                </Button>
+              )}
+            </div>
+          )}
         </Card>
       )}
     </div>

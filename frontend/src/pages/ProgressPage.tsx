@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
+import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { useProgressHistory, useProgressSummary, useRetention, useWeakAreas } from '@/hooks/useProgress'
+import { useRecurringMistakes } from '@/hooks/useMistakes'
 import { useUiStore } from '@/stores/uiStore'
 
 function StatTile({ label, value }: { label: string; value: ReactNode }) {
@@ -22,6 +24,7 @@ export function ProgressPage() {
   const { data: retention } = useRetention(language)
   const { data: weakAreas } = useWeakAreas(language)
   const { data: history } = useProgressHistory(language)
+  const { data: recurringMistakes } = useRecurringMistakes(language)
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,6 +85,30 @@ export function ProgressPage() {
           </ul>
         ) : (
           <p className="text-sm text-neutral-500">No weak areas yet.</p>
+        )}
+      </Card>
+
+      <Card>
+        <h2 className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Recurring mistakes
+        </h2>
+        {recurringMistakes && recurringMistakes.length > 0 ? (
+          <ul className="flex flex-col gap-1 text-sm">
+            {recurringMistakes.slice(0, 5).map((mistake) => (
+              <li
+                key={mistake.id}
+                className="flex items-center justify-between gap-2 text-neutral-600 dark:text-neutral-400"
+              >
+                <span className="flex items-center gap-2">
+                  {mistake.category && <Badge>{mistake.category}</Badge>}
+                  {mistake.topic}
+                </span>
+                <span>{mistake.timesRepeated}x</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-neutral-500">No recurring mistakes yet.</p>
         )}
       </Card>
 
