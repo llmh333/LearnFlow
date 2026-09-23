@@ -41,23 +41,23 @@ public class DashboardService {
         this.reviewService = reviewService;
     }
 
-    public DashboardTodayResponse today() {
+    public DashboardTodayResponse today(Long userId) {
         var languages =
-                languageService.listAll().stream().map(this::summarize).toList();
+                languageService.listAll().stream().map(language -> summarize(userId, language)).toList();
         int totalEstimatedMinutes =
                 languages.stream().mapToInt(LanguageTodaySummary::estimatedMinutes).sum();
-        int streakDays = reviewService.currentStreakDays();
+        int streakDays = reviewService.currentStreakDays(userId);
 
         return new DashboardTodayResponse(languages, totalEstimatedMinutes, streakDays);
     }
 
-    private LanguageTodaySummary summarize(LanguageResponse language) {
+    private LanguageTodaySummary summarize(Long userId, LanguageResponse language) {
         String code = language.code();
-        long dueCount = reviewService.countDue(code);
-        long newCount = reviewService.countNew(code);
-        long total = vocabularyService.countByLanguage(code);
+        long dueCount = reviewService.countDue(userId, code);
+        long newCount = reviewService.countNew(userId, code);
+        long total = vocabularyService.countByLanguage(userId, code);
         long knownWords = total - newCount;
-        RetentionStats retention = reviewService.retentionStats(code, RETENTION_WINDOW_DAYS);
+        RetentionStats retention = reviewService.retentionStats(userId, code, RETENTION_WINDOW_DAYS);
         int estimatedMinutes =
                 (int) Math.ceil(dueCount * MINUTES_PER_DUE_WORD + newCount * MINUTES_PER_NEW_WORD);
 
