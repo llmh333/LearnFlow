@@ -12,6 +12,10 @@ final class VocabularySpecifications {
 
     private VocabularySpecifications() {}
 
+    static Specification<Vocabulary> hasUserId(Long userId) {
+        return (root, query, cb) -> cb.equal(root.get("user").get("id"), userId);
+    }
+
     static Specification<Vocabulary> hasLanguageCode(String languageCode) {
         return (root, query, cb) ->
                 cb.equal(cb.lower(root.get("language").get("code")), languageCode.toLowerCase(Locale.ROOT));

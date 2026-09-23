@@ -1,5 +1,6 @@
 package com.learnflow.backend.srs.domain;
 
+import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.srs.engine.SrsRating;
 import com.learnflow.backend.vocabulary.domain.Vocabulary;
 import jakarta.persistence.Column;
@@ -41,6 +42,10 @@ public class ReviewHistory {
     @JoinColumn(name = "vocabulary_id", nullable = false)
     private Vocabulary vocabulary;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
+
     /** No FK yet — the study_session table doesn't exist until Phase 4 (see V4 migration note). */
     @Column(name = "study_session_id")
     private Long studySessionId;
@@ -63,6 +68,7 @@ public class ReviewHistory {
 
     public ReviewHistory(
             Vocabulary vocabulary,
+            User user,
             Long studySessionId,
             Instant reviewedAt,
             SrsRating rating,
@@ -70,6 +76,7 @@ public class ReviewHistory {
             BigDecimal newInterval,
             Integer responseTimeMs) {
         this.vocabulary = vocabulary;
+        this.user = user;
         this.studySessionId = studySessionId;
         this.reviewedAt = reviewedAt;
         this.rating = rating;

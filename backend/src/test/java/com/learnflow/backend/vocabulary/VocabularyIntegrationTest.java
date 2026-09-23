@@ -162,6 +162,51 @@ class VocabularyIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void anotherUsersVocabulary_isInvisibleAndInaccessible() {
+        String suffix = "-" + System.nanoTime();
+        VocabularyResponse mine =
+                client.post()
+                        .uri("/api/vocabulary")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .body(
+                                new VocabularyRequest(
+                                        "en", "private" + suffix, "riêng tư", null, null, List.of(), Map.of()))
+                        .exchange()
+                        .expectStatus()
+                        .isCreated()
+                        .expectBody(VocabularyResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        String otherHeader = registerAnotherUser();
+
+        PageResponse<VocabularyResponse> othersList = listAs(otherHeader, "");
+        assertThat(othersList.content()).extracting(VocabularyResponse::id).doesNotContain(mine.id());
+
+        client.get()
+                .uri("/api/vocabulary/" + mine.id())
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        client.delete()
+                .uri("/api/vocabulary/" + mine.id())
+                .header(HttpHeaders.AUTHORIZATION, otherHeader)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        // still there for its real owner — the other user's failed delete had no effect
+        client.get()
+                .uri("/api/vocabulary/" + mine.id())
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
+    @Test
     void tags_returnsAllKnownTagNames() {
         String suffix = "-" + System.nanoTime();
         create("en", "achieve" + suffix, "đạt được", List.of("work" + suffix, "common" + suffix));
@@ -192,14 +237,35 @@ class VocabularyIntegrationTest extends AbstractIntegrationTest {
     }
 
     private PageResponse<VocabularyResponse> list(String query) {
+        return listAs(authHeader, query);
+    }
+
+    private PageResponse<VocabularyResponse> listAs(String header, String query) {
         return client.get()
                 .uri("/api/vocabulary?" + query)
-                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .header(HttpHeaders.AUTHORIZATION, header)
                 .exchange()
                 .expectStatus()
                 .isOk()
                 .expectBody(new ParameterizedTypeReference<PageResponse<VocabularyResponse>>() {})
                 .returnResult()
                 .getResponseBody();
+    }
+
+    /** Registers a second, independent account and returns its {@code Authorization} header. */
+    private String registerAnotherUser() {
+        String email = "vocab-other-" + System.nanoTime() + "@example.com";
+        RegisterRequest register = new RegisterRequest(email, "password123", "Other Vocab Tester");
+        AuthResponse auth =
+                client.post()
+                        .uri("/api/auth/register")
+                        .body(register)
+                        .exchange()
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(AuthResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        return "Bearer " + auth.token();
     }
 }
