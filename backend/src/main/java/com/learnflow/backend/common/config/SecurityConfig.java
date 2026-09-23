@@ -1,6 +1,8 @@
 package com.learnflow.backend.common.config;
 
 import com.learnflow.backend.auth.JwtAuthenticationFilter;
+import com.learnflow.backend.auth.LoginRateLimitFilter;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -21,7 +23,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            ObjectProvider<LoginRateLimitFilter> loginRateLimitFilter)
+            throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -34,6 +39,8 @@ public class SecurityConfig {
                 .exceptionHandling(
                         ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        loginRateLimitFilter.ifAvailable(
+                filter -> http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class));
         return http.build();
     }
 

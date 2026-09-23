@@ -1,4 +1,5 @@
-import { apiFetch } from './client'
+import { apiFetch, ApiError } from './client'
+import { useAuthStore } from '@/stores/authStore'
 import type { Language } from '@/types/domain'
 
 export function explainGrammar(languageCode: string, question: string): Promise<{ explanation: string }> {
@@ -22,6 +23,15 @@ export function correctSentence(languageCode: string, text: string): Promise<Sen
   })
 }
 
+export interface Scenario {
+  code: string
+  label: string
+}
+
+export function fetchScenarios(languageCode: string): Promise<Scenario[]> {
+  return apiFetch(`/ai/scenarios?language=${languageCode}`)
+}
+
 export interface ConversationMessageResult {
   conversationId: number
   reply: string
@@ -42,9 +52,67 @@ export function sendConversationMessage(
   })
 }
 
+/**
+ * Consumes the SSE stream manually via fetch()+ReadableStream instead of native EventSource,
+ * because EventSource can't send an Authorization header and our auth is Bearer-token-based.
+ */
+export async function streamConversationMessage(
+  conversationId: number,
+  message: string,
+  onDelta: (delta: string) => void,
+): Promise<void> {
+  const token = useAuthStore.getState().token
+  const params = new URLSearchParams({ message })
+  const response = await fetch(`/api/ai/conversation/${conversationId}/stream?${params.toString()}`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  })
+
+  if (!response.ok || !response.body) {
+    throw new ApiError(response.status, 'Failed to start streaming reply')
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+    for (const line of lines) {
+      if (line.startsWith('data:')) {
+        onDelta(line.slice(5).trimStart())
+      }
+    }
+  }
+}
+
+export interface PushedMistake {
+  id: number
+  category: string | null
+  topic: string | null
+  original: string
+  corrected: string
+  timesRepeated: number
+}
+
+export interface SuggestedVocabulary {
+  word: string
+  meaningVietnamese: string
+}
+
 export interface ConversationSummaryResult {
   conversationId: number
-  summary: string
+  overview: string
+  pushedMistakes: PushedMistake[]
+  suggestedVocabulary: SuggestedVocabulary[]
+  betterExpressions: string[]
+  grammarProblems: string[]
   endedAt: string
 }
 

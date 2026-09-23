@@ -2,10 +2,11 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { ChatWindow } from '@/components/ai-tutor/ChatWindow'
 import { ConversationList } from '@/components/ai-tutor/ConversationList'
+import { ConversationSummaryCard } from '@/components/ai-tutor/ConversationSummaryCard'
 import { ModeTabs, type AiTutorMode } from '@/components/ai-tutor/ModeTabs'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import {
   useConversation,
@@ -13,12 +14,14 @@ import {
   useCorrectSentence,
   useEndConversation,
   useExplainGrammar,
+  useScenarios,
   useSendConversationMessage,
 } from '@/hooks/useAiTutor'
 import { useCreateMistake } from '@/hooks/useMistakes'
 import { useUiStore } from '@/stores/uiStore'
 import { ApiError } from '@/api/client'
-import type { ConversationMessageItem } from '@/api/ai'
+import { streamConversationMessage } from '@/api/ai'
+import type { ConversationMessageItem, ConversationSummaryResult } from '@/api/ai'
 
 function ErrorNotice({ error }: { error: unknown }) {
   if (!error) return null
@@ -143,9 +146,12 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null)
   const [scenario, setScenario] = useState('')
   const [messages, setMessages] = useState<ConversationMessageItem[]>([])
+  const [streamingReply, setStreamingReply] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
   const [ended, setEnded] = useState(false)
-  const [summary, setSummary] = useState<string | null>(null)
+  const [summary, setSummary] = useState<ConversationSummaryResult | null>(null)
 
+  const { data: scenarios } = useScenarios(languageCode)
   const conversationList = useConversationList()
   const conversationDetail = useConversation(activeConversationId ?? undefined)
   const sendMessage = useSendConversationMessage()
@@ -155,7 +161,6 @@ function ChatTab({ languageCode }: { languageCode: string }) {
     if (conversationDetail.data) {
       setMessages(conversationDetail.data.messages)
       setEnded(Boolean(conversationDetail.data.endedAt))
-      setSummary(conversationDetail.data.summary)
     }
   }, [conversationDetail.data])
 
@@ -167,22 +172,46 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   }
 
   function handleSend(message: string) {
-    setMessages((prev) => [
-      ...prev,
-      { role: 'USER', content: message, createdAt: new Date().toISOString() },
-    ])
-    sendMessage.mutate(
-      { conversationId: activeConversationId, languageCode, scenario: scenario || null, message },
-      {
-        onSuccess: (result) => {
-          setActiveConversationId(result.conversationId)
+    const userTurn: ConversationMessageItem = {
+      role: 'USER',
+      content: message,
+      createdAt: new Date().toISOString(),
+    }
+    setMessages((prev) => [...prev, userTurn])
+
+    if (activeConversationId === null) {
+      // First message of a new conversation: use the non-streaming endpoint so we get the new
+      // conversation's id back in the response.
+      sendMessage.mutate(
+        { conversationId: null, languageCode, scenario: scenario || null, message },
+        {
+          onSuccess: (result) => {
+            setActiveConversationId(result.conversationId)
+            setMessages((prev) => [
+              ...prev,
+              { role: 'ASSISTANT', content: result.reply, createdAt: new Date().toISOString() },
+            ])
+          },
+        },
+      )
+      return
+    }
+
+    setIsStreaming(true)
+    setStreamingReply('')
+    streamConversationMessage(activeConversationId, message, (delta) =>
+      setStreamingReply((prev) => prev + delta),
+    )
+      .then(() => {
+        setStreamingReply((finalReply) => {
           setMessages((prev) => [
             ...prev,
-            { role: 'ASSISTANT', content: result.reply, createdAt: new Date().toISOString() },
+            { role: 'ASSISTANT', content: finalReply, createdAt: new Date().toISOString() },
           ])
-        },
-      },
-    )
+          return ''
+        })
+      })
+      .finally(() => setIsStreaming(false))
   }
 
   function handleEnd() {
@@ -190,7 +219,7 @@ function ChatTab({ languageCode }: { languageCode: string }) {
     endConversation.mutate(activeConversationId, {
       onSuccess: (result) => {
         setEnded(true)
-        setSummary(result.summary)
+        setSummary(result)
       },
     })
   }
@@ -199,11 +228,14 @@ function ChatTab({ languageCode }: { languageCode: string }) {
     <div className="grid gap-4 md:grid-cols-[16rem_1fr]">
       <div className="flex flex-col gap-3">
         {activeConversationId === null && (
-          <Input
-            value={scenario}
-            onChange={(e) => setScenario(e.target.value)}
-            placeholder="Scenario (e.g. restaurant, interview)"
-          />
+          <Select value={scenario} onChange={(e) => setScenario(e.target.value)}>
+            <option value="">Scenario: daily conversation</option>
+            {(scenarios ?? []).map((s) => (
+              <option key={s.code} value={s.label}>
+                {s.label}
+              </option>
+            ))}
+          </Select>
         )}
         <ConversationList
           conversations={conversationList.data ?? []}
@@ -212,17 +244,18 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           onNew={handleNew}
         />
       </div>
-      <div>
+      <div className="flex flex-col gap-3">
         <ErrorNotice error={sendMessage.error} />
         <ChatWindow
           messages={messages}
+          streamingReply={streamingReply}
           onSend={handleSend}
-          isSending={sendMessage.isPending}
+          isSending={sendMessage.isPending || isStreaming}
           onEnd={handleEnd}
           isEnding={endConversation.isPending}
           ended={ended}
-          summary={summary}
         />
+        {ended && summary && <ConversationSummaryCard summary={summary} languageCode={languageCode} />}
       </div>
     </div>
   )

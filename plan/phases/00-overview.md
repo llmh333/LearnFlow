@@ -162,7 +162,7 @@ frontend/src/
 | **— MỐC B: MVP đủ 5 màn hình theo PROJECT.md §9 —** | | | | | |
 | P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [x] |
 | P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [x] |
-| P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [ ] |
+| P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [x] |
 
 **Vì sao thứ tự này nhanh nhất & ổn định nhất:** toàn bộ giá trị lõi (vocabulary + SRS + lịch sử học) là deterministic, test được 100%, không phụ thuộc dịch vụ ngoài. Làm xong P4 là đã có app học thật sự dùng được mỗi ngày. AI — phần rủi ro nhất về chi phí, latency và tính ổn định — được đẩy xuống sau, khi nền dữ liệu đã chắc và AI có context thật để làm việc.
 

@@ -6,29 +6,30 @@ import type { ConversationMessageItem } from '@/api/ai'
 
 interface ChatWindowProps {
   messages: ConversationMessageItem[]
+  /** In-progress assistant reply being streamed in, shown as an extra trailing bubble. */
+  streamingReply?: string
   onSend: (message: string) => void
   isSending: boolean
   onEnd: () => void
   isEnding: boolean
   ended: boolean
-  summary: string | null
 }
 
 export function ChatWindow({
   messages,
+  streamingReply,
   onSend,
   isSending,
   onEnd,
   isEnding,
   ended,
-  summary,
 }: ChatWindowProps) {
   const [draft, setDraft] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length])
+  }, [messages.length, streamingReply])
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -43,18 +44,12 @@ export function ChatWindow({
         {messages.map((message, index) => (
           <MessageBubble key={index} role={message.role} content={message.content} />
         ))}
-        {messages.length === 0 && (
+        {streamingReply && <MessageBubble role="ASSISTANT" content={streamingReply} />}
+        {messages.length === 0 && !streamingReply && (
           <p className="text-sm text-neutral-400">Say hello to start practicing!</p>
         )}
         <div ref={bottomRef} />
       </div>
-
-      {ended && summary && (
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-          <p className="mb-1 font-medium text-neutral-900 dark:text-neutral-100">Summary</p>
-          <p>{summary}</p>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <Input

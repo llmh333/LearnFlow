@@ -4,6 +4,7 @@ import * as aiApi from '@/api/ai'
 export const aiTutorKeys = {
   conversations: ['ai', 'conversations'] as const,
   conversation: (id: number) => ['ai', 'conversations', id] as const,
+  scenarios: (language: string) => ['ai', 'scenarios', language] as const,
 }
 
 export function useExplainGrammar() {
@@ -17,6 +18,14 @@ export function useCorrectSentence() {
   return useMutation({
     mutationFn: ({ languageCode, text }: { languageCode: string; text: string }) =>
       aiApi.correctSentence(languageCode, text),
+  })
+}
+
+export function useScenarios(languageCode: string) {
+  return useQuery({
+    queryKey: aiTutorKeys.scenarios(languageCode),
+    queryFn: () => aiApi.fetchScenarios(languageCode),
+    enabled: Boolean(languageCode),
   })
 }
 
