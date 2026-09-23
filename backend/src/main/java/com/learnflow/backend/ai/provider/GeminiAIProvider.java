@@ -36,7 +36,7 @@ public class GeminiAIProvider implements AIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiAIProvider.class);
     private static final String API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
-    private static final String DEFAULT_MODEL = "gemini-2.5-flash";
+    private static final String DEFAULT_MODEL = "gemini-3.6-flash";
     private static final int MAX_ATTEMPTS = 2; // 1 retry, same policy as ClaudeAIProvider
 
     private final RestClient restClient;

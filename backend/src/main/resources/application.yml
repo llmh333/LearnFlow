@@ -22,5 +22,7 @@ app:
     allowed-origins: http://localhost:5173
   ai:
     provider: claude
-    model: claude-sonnet-5
+    # No default `model` here — it's provider-specific (ClaudeAIProvider/GeminiAIProvider each
+    # apply their own default when app.ai.model is blank), a shared default would silently pick
+    # the wrong model name for whichever provider is actually active.
     timeout-seconds: 60
