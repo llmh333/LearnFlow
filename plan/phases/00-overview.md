@@ -25,6 +25,7 @@
 | D10 | Trường `meaning` | Luôn là **văn bản tiếng Việt**, với mọi ngôn ngữ (kể cả UI hardcode tiếng Anh ở D2) | Không đổi D2 (UI copy vẫn tiếng Anh) — chỉ riêng dữ liệu `vocabulary.meaning` là tiếng Việt. Validate ở `VocabularyService` (không bắt buộc kiểm tra ngôn ngữ ký tự, chỉ là quy ước nhập liệu). |
 | D11 | Trình độ hiện tại (CEFR/HSK/JLPT) cho AI | **Suy ra tự động** từ `attributes.cefrLevel`/`hskLevel`/`jlptLevel` của các từ đã có review (`reviewCount > 0`) trong mỗi ngôn ngữ — lấy mức cao nhất đã chạm tới | Không thêm bảng/màn hình Settings mới. Logic nằm trong `ai.context.AIContextBuilder`. Không có từ nào đã ôn → mặc định A1/HSK 1/N5. |
 | D12 | Tone giọng AI Tutor | **Thân thiện, khích lệ** | Đưa thẳng vào system prompt của `ClaudeAIProvider` cho mọi tác vụ (giải thích ngữ pháp, sửa câu, hội thoại, tổng kết). |
+| D13 | Số "từ mới mỗi ngày" | **Engine tự tính** theo thời gian rảnh còn lại sau khi trừ thời gian ôn từ due | Không cố định, không cần Settings. Công thức trong `dailyplan.engine.PlanningEngine`: 40% thời gian còn lại (sau review) ÷ 1 phút/từ mới. |
 
 **Sai lệch của scaffold hiện tại cần sửa ở Phase 0:**
 - `pom.xml` **thiếu** `spring-boot-starter-data-jpa`, `flyway-core`, `flyway-database-postgresql`, JWT lib, Testcontainers.
@@ -157,7 +158,7 @@ frontend/src/
 | P5 | [phase-5-ai-tutor.md](./phase-5-ai-tutor.md) | AI Tutor | M8 | 2–3 ngày | [x] |
 | **— MỐC B: MVP đủ 5 màn hình theo PROJECT.md §9 —** | | | | | |
 | P6 | [phase-6-mistake-book.md](./phase-6-mistake-book.md) | Mistake Book | M9 | 1–2 ngày | [x] |
-| P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [ ] |
+| P7 | [phase-7-daily-plan.md](./phase-7-daily-plan.md) | Daily Plan | M11 | 2 ngày | [x] |
 | P8 | [phase-8-conversation-deploy.md](./phase-8-conversation-deploy.md) | Conversation nâng cao + Deploy | M12 | 2 ngày | [ ] |
 
 **Vì sao thứ tự này nhanh nhất & ổn định nhất:** toàn bộ giá trị lõi (vocabulary + SRS + lịch sử học) là deterministic, test được 100%, không phụ thuộc dịch vụ ngoài. Làm xong P4 là đã có app học thật sự dùng được mỗi ngày. AI — phần rủi ro nhất về chi phí, latency và tính ổn định — được đẩy xuống sau, khi nền dữ liệu đã chắc và AI có context thật để làm việc.
@@ -197,7 +198,7 @@ frontend/src/
 ## 5. Câu hỏi còn mở (không chặn P0–P4)
 
 1. ~~Trình độ hiện tại (CEFR/HSK)~~ — đã chốt ở D11 (P5): suy ra tự động từ vocabulary đã học.
-2. Số "từ mới mỗi ngày" — cố định, cấu hình trong Settings, hay engine tự tính theo thời gian rảnh? **Cần trả lời trước P7.**
+2. ~~Số "từ mới mỗi ngày"~~ — đã chốt ở D13 (P7): engine tự tính theo thời gian rảnh.
 3. ~~Tone giọng AI~~ — đã chốt ở D12 (P5): thân thiện, khích lệ.
 4. Có cần export/import dữ liệu (CSV/JSON) trong app, hay chỉ dựa vào `pg_dump`? **Cần trả lời trước P8.**
 

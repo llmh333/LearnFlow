@@ -152,3 +152,20 @@ export interface WeakArea {
   reviewCount: number
   failureCount: number
 }
+
+export interface DailyPlanItem {
+  id: number
+  languageCode: string | null
+  minutes: number
+  kind: 'REVIEW_DUE' | 'LEARN_NEW' | 'GRAMMAR_EXERCISE' | 'CONVERSATION'
+  description: string
+  completed: boolean
+}
+
+export interface DailyPlan {
+  id: number
+  planDate: string
+  availableMinutes: number
+  intro: string | null
+  items: DailyPlanItem[]
+}

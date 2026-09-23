@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { TodayPlanCard } from '@/components/dashboard/TodayPlanCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useDashboardToday } from '@/hooks/useDashboard'
@@ -24,6 +25,8 @@ export function DashboardPage() {
           </span>
         )}
       </div>
+
+      <TodayPlanCard />
 
       {data.languages.length === 0 ? (
         <Card>

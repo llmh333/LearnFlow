@@ -20,4 +20,6 @@ public interface AIProvider {
     String continueConversation(ConversationRequest request);
 
     String summarizeConversation(ConversationSummaryRequest request);
+
+    String generateDailyPlan(DailyPlanContext context);
 }

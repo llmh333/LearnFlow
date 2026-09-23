@@ -184,6 +184,21 @@ public class ClaudeAIProvider implements AIProvider {
         return extractText(post(baseBody(system, messages)));
     }
 
+    @Override
+    public String generateDailyPlan(DailyPlanContext context) {
+        String system =
+                """
+                You are a friendly, encouraging language tutor writing a short (2-3 sentence) motivating
+                intro for the learner's plan for today. The schedule below is already fixed — every
+                minute and word count was computed by the app, not you. Do not repeat the numbers back
+                mechanically; just set an encouraging tone for the session ahead.
+                """;
+        String userMessage =
+                "Total time: %d minutes.\n%s"
+                        .formatted(context.totalMinutes(), String.join("\n", context.languageSummaries()));
+        return extractText(post(baseBody(system, List.of(userMessage(userMessage)))));
+    }
+
     private List<Map<String, Object>> toMessages(List<ConversationTurn> history) {
         List<Map<String, Object>> messages = new ArrayList<>();
         for (ConversationTurn turn : history) {
