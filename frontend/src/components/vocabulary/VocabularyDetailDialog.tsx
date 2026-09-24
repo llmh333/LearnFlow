@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/Badge'
 import { Dialog } from '@/components/ui/Dialog'
 import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
-import { getPhoneticTranscription } from '@/lib/phonetics'
+import { formatPhonetic, getPhoneticTranscription } from '@/lib/phonetics'
 import { isStrokeOrderSupported } from '@/lib/strokeOrder'
 import type { Vocabulary } from '@/types/domain'
 
@@ -14,8 +14,11 @@ interface VocabularyDetailDialogProps {
  * the "revealed" layout on ReviewPage for visual consistency, minus the reveal/rating controls —
  * this is for looking a word up, not for an SRS review. */
 export function VocabularyDetailDialog({ vocabulary, onClose }: VocabularyDetailDialogProps) {
-  const phonetic = vocabulary
+  const rawPhonetic = vocabulary
     ? getPhoneticTranscription(vocabulary.language.code, vocabulary.attributes)
+    : null
+  const phonetic = rawPhonetic && vocabulary
+    ? formatPhonetic(vocabulary.language.code, rawPhonetic)
     : null
 
   return (
@@ -35,7 +38,7 @@ export function VocabularyDetailDialog({ vocabulary, onClose }: VocabularyDetail
 
           {phonetic && (
             <p className="font-mono text-sm text-slate-500 dark:text-slate-400">
-              {vocabulary.language.code === 'en' ? `/${phonetic}/` : phonetic}
+              {phonetic}
             </p>
           )}
 

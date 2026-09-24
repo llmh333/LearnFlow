@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getPhoneticTranscription } from './phonetics'
+import { formatPhonetic, getPhoneticTranscription } from './phonetics'
 
 describe('getPhoneticTranscription', () => {
   it('returns the IPA value for English', () => {
@@ -36,5 +36,24 @@ describe('getPhoneticTranscription', () => {
 
   it('trims surrounding whitespace', () => {
     expect(getPhoneticTranscription('ja', { reading: '  べんきょう  ' })).toBe('べんきょう')
+  })
+})
+
+describe('formatPhonetic', () => {
+  it('wraps unslashed English IPA in single slashes', () => {
+    expect(formatPhonetic('en', 'eɪdʒ')).toBe('/eɪdʒ/')
+  })
+
+  it('preserves already-slashed English IPA without adding duplicate slashes', () => {
+    expect(formatPhonetic('en', '/eɪdʒ/')).toBe('/eɪdʒ/')
+    expect(formatPhonetic('en', '//eɪdʒ//')).toBe('/eɪdʒ/')
+  })
+
+  it('leaves Chinese pinyin unchanged', () => {
+    expect(formatPhonetic('zh', 'xué xí')).toBe('xué xí')
+  })
+
+  it('leaves Japanese reading unchanged', () => {
+    expect(formatPhonetic('ja', 'べんきょう')).toBe('べんきょう')
   })
 })
