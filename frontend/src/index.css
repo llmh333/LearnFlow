@@ -98,3 +98,17 @@
     background: #444444;
   }
 }
+
+/* Stroke-order diagrams (Review page). AnimCJK's own embedded styles draw a pale gray silhouette
+   of the finished character (fill:#ccc) with a thin pure-black animated line on top (stroke:#000)
+   — legible on a large white canvas, but at the compact size we render them the two blend into a
+   low-contrast gray smudge, and stroke:#000 is invisible against a dark-mode card. Override with
+   !important since these rules must beat the SVG's own embedded <style>, whose source-order
+   position in the DOM isn't something we control. */
+.stroke-order-canvas svg.acjk path[id] {
+  fill: #f1f5f9 !important;
+}
+
+.stroke-order-canvas svg.acjk path[clip-path] {
+  stroke: #365314 !important;
+}

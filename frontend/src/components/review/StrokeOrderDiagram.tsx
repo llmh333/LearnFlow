@@ -54,7 +54,7 @@ export function StrokeOrderDiagram({
 
   if (failed) {
     return (
-      <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-slate-300 text-2xl text-slate-400 dark:border-slate-700">
+      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-slate-300 text-3xl text-slate-400 dark:border-slate-700">
         {character}
       </div>
     )
@@ -62,11 +62,13 @@ export function StrokeOrderDiagram({
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+      {/* Always a white "paper" background, even in dark mode: the animated stroke is drawn in a
+          fixed dark color (see index.css), which would be invisible on a dark card. */}
+      <div className="stroke-order-canvas flex h-32 w-32 items-center justify-center rounded-xl border border-slate-200 bg-white">
         {svg ? (
           <div
             key={playCount}
-            className="h-16 w-16 [&_svg]:h-full [&_svg]:w-full"
+            className="h-28 w-28 [&_svg]:h-full [&_svg]:w-full"
             // Source is always a fixed bundled asset or the AnimCJK CDN — never user input.
             dangerouslySetInnerHTML={{ __html: svg }}
           />
