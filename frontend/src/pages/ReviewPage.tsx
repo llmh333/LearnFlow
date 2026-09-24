@@ -89,7 +89,6 @@ export function ReviewPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [reviewedCount, setReviewedCount] = useState(0)
   const [revealed, setRevealed] = useState(false)
-  const [showStrokeOrder, setShowStrokeOrder] = useState(false)
   const [cardStartedAt, setCardStartedAt] = useState(() => Date.now())
   const [finishedSession, setFinishedSession] = useState<StudySession | null>(null)
 
@@ -193,7 +192,6 @@ export function ReviewPage() {
             setReviewedCount((count) => count + 1)
           }
           setRevealed(false)
-          setShowStrokeOrder(false)
           setCardStartedAt(Date.now())
         },
       },
@@ -377,18 +375,7 @@ export function ReviewPage() {
                 </div>
               )}
               {isStrokeOrderSupported(current.language.code) && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setShowStrokeOrder((shown) => !shown)}
-                    className="text-xs font-semibold text-[#365314] underline decoration-dotted underline-offset-2 dark:text-[#B6F23A]"
-                  >
-                    {showStrokeOrder ? 'Hide stroke order' : 'Show stroke order'}
-                  </button>
-                  {showStrokeOrder && (
-                    <WordStrokeOrder word={current.word} languageCode={current.language.code} />
-                  )}
-                </>
+                <WordStrokeOrder word={current.word} languageCode={current.language.code} />
               )}
             </div>
           ) : (
