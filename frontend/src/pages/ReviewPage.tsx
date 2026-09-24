@@ -10,9 +10,11 @@ import {
   IconArrowRight,
   IconCheckCircle,
 } from '@/components/ui/Icon'
+import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
 import { useDueReviews, useSubmitReview } from '@/hooks/useReviews'
-import { useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
+import { useActiveStudySession, useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
 import { getPhoneticTranscription } from '@/lib/phonetics'
+import { isStrokeOrderSupported } from '@/lib/strokeOrder'
 import { useUiStore } from '@/stores/uiStore'
 import type { DueVocabulary, SrsRating, StudySession } from '@/types/domain'
 
@@ -81,23 +83,48 @@ export function ReviewPage() {
   const submitReview = useSubmitReview()
   const startSession = useStartStudySession()
   const endSession = useEndStudySession()
+  const activeSession = useActiveStudySession(initialLanguageRef.current || undefined)
 
   const [queue, setQueue] = useState<DueVocabulary[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [reviewedCount, setReviewedCount] = useState(0)
   const [revealed, setRevealed] = useState(false)
+  const [showStrokeOrder, setShowStrokeOrder] = useState(false)
   const [cardStartedAt, setCardStartedAt] = useState(() => Date.now())
   const [finishedSession, setFinishedSession] = useState<StudySession | null>(null)
 
+  // Non-null once we know whether we resumed an in-progress session (its real wordsReviewed,
+  // computed server-side from review_history) or started a fresh one (0). Read once by the
+  // queue-seeding effect below; a language switch afterwards always starts a fresh 0 baseline
+  // (see isFirstSeed there), since a resumed session's progress belongs to its own language only.
+  const [resumedWordsReviewed, setResumedWordsReviewed] = useState<number | null>(null)
+
   const sessionIdRef = useRef<number | null>(null)
   const sessionEndedRef = useRef(false)
+  const sessionInitStartedRef = useRef(false)
+
+  // Resumes the most recent not-yet-ended session instead of always starting a new one — a hard
+  // page refresh doesn't reliably run the cleanup effect below, so a session left open by a
+  // previous visit would otherwise be abandoned and its progress lost.
+  useEffect(() => {
+    if (sessionInitStartedRef.current || !activeSession.isSuccess) return
+    sessionInitStartedRef.current = true
+
+    if (activeSession.data) {
+      sessionIdRef.current = activeSession.data.id
+      setResumedWordsReviewed(activeSession.data.wordsReviewed)
+    } else {
+      startSession.mutate(initialLanguageRef.current || undefined, {
+        onSuccess: (session) => {
+          sessionIdRef.current = session.id
+          setResumedWordsReviewed(0)
+        },
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSession.isSuccess, activeSession.data])
 
   useEffect(() => {
-    startSession.mutate(initialLanguageRef.current || undefined, {
-      onSuccess: (session) => {
-        sessionIdRef.current = session.id
-      },
-    })
     return () => {
       if (sessionIdRef.current !== null && !sessionEndedRef.current) {
         sessionEndedRef.current = true
@@ -114,15 +141,18 @@ export function ReviewPage() {
   // values mid-session, since this effect used to run on every `due` change unconditionally.
   const initializedForLanguageRef = useRef<string | null>(null)
   useEffect(() => {
-    if (due && initializedForLanguageRef.current !== selectedLanguageCode) {
-      initializedForLanguageRef.current = selectedLanguageCode
-      setQueue(due)
-      setTotalCount(due.length)
-      setReviewedCount(0)
-      setRevealed(false)
-      setCardStartedAt(Date.now())
-    }
-  }, [due, selectedLanguageCode])
+    if (!due || resumedWordsReviewed === null) return
+    if (initializedForLanguageRef.current === selectedLanguageCode) return
+
+    const isFirstSeed = initializedForLanguageRef.current === null
+    const baseline = isFirstSeed ? resumedWordsReviewed : 0
+    initializedForLanguageRef.current = selectedLanguageCode
+    setQueue(due)
+    setTotalCount(baseline + due.length)
+    setReviewedCount(baseline)
+    setRevealed(false)
+    setCardStartedAt(Date.now())
+  }, [due, selectedLanguageCode, resumedWordsReviewed])
 
   const current = queue[0]
   const phonetic = current
@@ -163,6 +193,7 @@ export function ReviewPage() {
             setReviewedCount((count) => count + 1)
           }
           setRevealed(false)
+          setShowStrokeOrder(false)
           setCardStartedAt(Date.now())
         },
       },
@@ -185,7 +216,7 @@ export function ReviewPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   })
 
-  if (isLoading) {
+  if (isLoading || resumedWordsReviewed === null) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-3">
         <div className="h-8 w-8 animate-spin rounded-full border-3 border-[#365314] border-t-transparent dark:border-[#B6F23A]" />
@@ -344,6 +375,20 @@ export function ReviewPage() {
                     "{current.example}"
                   </p>
                 </div>
+              )}
+              {isStrokeOrderSupported(current.language.code) && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowStrokeOrder((shown) => !shown)}
+                    className="text-xs font-semibold text-[#365314] underline decoration-dotted underline-offset-2 dark:text-[#B6F23A]"
+                  >
+                    {showStrokeOrder ? 'Hide stroke order' : 'Show stroke order'}
+                  </button>
+                  {showStrokeOrder && (
+                    <WordStrokeOrder word={current.word} languageCode={current.language.code} />
+                  )}
+                </>
               )}
             </div>
           ) : (

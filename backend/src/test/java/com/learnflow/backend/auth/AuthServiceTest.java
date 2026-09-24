@@ -10,6 +10,7 @@ import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
 import com.learnflow.backend.common.error.ConflictException;
+import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,6 +32,7 @@ class AuthServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private VocabularyService vocabularyService;
 
     private AuthService authService;
 
@@ -41,13 +43,15 @@ class AuthServiceTest {
                         "unit-test-secret-at-least-32-bytes-long!!", Duration.ofHours(12), true);
         JwtService jwtService = new JwtService(authProperties, FIXED_CLOCK);
         authService =
-                new AuthService(userRepository, passwordEncoder, jwtService, authProperties, FIXED_CLOCK);
+                new AuthService(
+                        userRepository, passwordEncoder, jwtService, authProperties, vocabularyService, FIXED_CLOCK);
     }
 
     @Test
     void register_hashesPasswordAndIssuesToken() {
         RegisterRequest request = new RegisterRequest("new@example.com", "password123", "New User");
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("seed@learnflow.system")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(User.class)))
                 .thenAnswer(
@@ -62,6 +66,27 @@ class AuthServiceTest {
         assertThat(response.token()).isNotBlank();
         assertThat(response.user().email()).isEqualTo("new@example.com");
         assertThat(response.user().displayName()).isEqualTo("New User");
+    }
+
+    @Test
+    void register_templateAccountExists_seedsStarterVocabularyForNewUser() {
+        RegisterRequest request = new RegisterRequest("new@example.com", "password123", "New User");
+        User templateUser = new User("seed@learnflow.system", "hashed", "Seed", Instant.now(FIXED_CLOCK));
+        setId(templateUser, 999L);
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("seed@learnflow.system")).thenReturn(Optional.of(templateUser));
+        when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(
+                        invocation -> {
+                            User saved = invocation.getArgument(0);
+                            setId(saved, 1L);
+                            return saved;
+                        });
+
+        authService.register(request);
+
+        org.mockito.Mockito.verify(vocabularyService).seedStarterVocabularyFor(1L, 999L);
     }
 
     @Test

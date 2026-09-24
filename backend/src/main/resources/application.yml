@@ -18,6 +18,8 @@ app:
   auth:
     token-ttl: PT12H
     registration-enabled: true
+  vocabulary:
+    seed-starter-pack-on-register: true
   cors:
     allowed-origins: http://localhost:5173
   ai:

@@ -1,5 +1,10 @@
 app:
   auth:
     jwt-secret: test-secret-not-for-production-use-at-least-32-bytes-long
+  vocabulary:
+    # Off by default: most integration tests register a fresh account and hand-compute exact
+    # vocabulary/progress counts, which the 300-word starter pack would otherwise break for all of
+    # them. AuthIntegrationTest's seeding test turns this back on for just that one test class.
+    seed-starter-pack-on-register: false
   ai:
     anthropic-api-key: ""
