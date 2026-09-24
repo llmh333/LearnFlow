@@ -43,10 +43,12 @@ vi.mock('@/api/reviews', () => ({
 
 const startStudySession = vi.fn()
 const endStudySession = vi.fn()
+const fetchActiveStudySession = vi.fn()
 
 vi.mock('@/api/studySessions', () => ({
   startStudySession: (...args: unknown[]) => startStudySession(...args),
   endStudySession: (...args: unknown[]) => endStudySession(...args),
+  fetchActiveStudySession: (...args: unknown[]) => fetchActiveStudySession(...args),
 }))
 
 function renderPage() {
@@ -63,6 +65,7 @@ function renderPage() {
 describe('ReviewPage', () => {
   beforeEach(() => {
     fetchDueReviews.mockReset().mockResolvedValue(dueWords)
+    fetchActiveStudySession.mockReset().mockResolvedValue(null)
     submitReview.mockReset().mockResolvedValue({
       vocabularyId: 1,
       lastReview: '2026-01-01T00:00:00Z',
@@ -130,5 +133,23 @@ describe('ReviewPage', () => {
 
     expect(await screen.findByText('Session complete!')).toBeInTheDocument()
     expect(await screen.findByText(/reviewed 2 words in 5 min/i)).toBeInTheDocument()
+  })
+
+  it('resumes an in-progress session instead of starting a new one, keeping its real progress', async () => {
+    fetchActiveStudySession.mockReset().mockResolvedValue({
+      id: 42,
+      language: { id: 1, code: 'en', name: 'English' },
+      startedAt: '2026-01-01T00:00:00Z',
+      endedAt: null,
+      wordsReviewed: 1,
+      wordsLearned: 1,
+      mistakesCount: 0,
+    })
+
+    renderPage()
+
+    // Baseline (1 already reviewed, from the server) + the 2 still-due words = 3 total.
+    expect(await screen.findByText(/1 \/ 3 reviewed/i)).toBeInTheDocument()
+    expect(startStudySession).not.toHaveBeenCalled()
   })
 })
