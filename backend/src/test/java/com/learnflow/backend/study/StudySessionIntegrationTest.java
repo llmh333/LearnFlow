@@ -170,6 +170,81 @@ class StudySessionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void active_returnsNoContentWhenNoOpenSession() {
+        client.get()
+                .uri("/api/study-sessions/active?language=en")
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+    }
+
+    @Test
+    void active_returnsTheOpenSessionWithLiveProgress() {
+        StudySessionResponse started =
+                client.post()
+                        .uri("/api/study-sessions/start")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .body(new StartStudySessionRequest("en"))
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(StudySessionResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        Long word = createVocab("resume" + System.nanoTime());
+        submit(word, SrsRating.GOOD, started.id());
+
+        // Not ended yet, but the "active" lookup must already reflect the real review just
+        // submitted — computed live from review_history, not from the (still-zero) entity column.
+        StudySessionResponse active =
+                client.get()
+                        .uri("/api/study-sessions/active?language=en")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(StudySessionResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        assertThat(active.id()).isEqualTo(started.id());
+        assertThat(active.endedAt()).isNull();
+        assertThat(active.wordsReviewed()).isEqualTo(1);
+        assertThat(active.wordsLearned()).isEqualTo(1);
+        assertThat(active.mistakesCount()).isEqualTo(0);
+    }
+
+    @Test
+    void active_doesNotReturnAnEndedSession() {
+        StudySessionResponse started =
+                client.post()
+                        .uri("/api/study-sessions/start")
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .body(new StartStudySessionRequest("en"))
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(StudySessionResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+        client.post()
+                .uri("/api/study-sessions/" + started.id() + "/end")
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        client.get()
+                .uri("/api/study-sessions/active?language=en")
+                .header(HttpHeaders.AUTHORIZATION, authHeader)
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+    }
+
+    @Test
     void end_unknownSession_returns404() {
         client.post()
                 .uri("/api/study-sessions/999999/end")

@@ -12,6 +12,8 @@ import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,5 +72,20 @@ public class StudySessionService {
         return repository.findBetween(userId, languageCode, from, to).stream()
                 .map(StudySessionResponse::from)
                 .toList();
+    }
+
+    /**
+     * The most recent not-yet-ended session, if any, with its progress computed live from {@code
+     * review_history} — lets a client resume an in-progress review session (e.g. after a page
+     * refresh) instead of starting a new one and losing track of what was already reviewed.
+     */
+    @Transactional(readOnly = true)
+    public Optional<StudySessionResponse> findActive(Long userId, String languageCode) {
+        return repository.findActive(userId, languageCode, PageRequest.of(0, 1)).stream()
+                .findFirst()
+                .map(
+                        session ->
+                                StudySessionResponse.from(
+                                        session, reviewService.summarizeSession(userId, session.getId())));
     }
 }
