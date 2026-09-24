@@ -105,7 +105,7 @@ describe('ReviewPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /show answer/i }))
     // Stroke order guide is only meaningful for zh/ja — these fixtures are all English words.
-    expect(screen.queryByText(/show stroke order/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/AnimCJK/i)).not.toBeInTheDocument()
 
     expect(screen.getByText('đạt được')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /good/i })).toBeInTheDocument()
