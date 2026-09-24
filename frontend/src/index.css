@@ -106,7 +106,7 @@
    !important since these rules must beat the SVG's own embedded <style>, whose source-order
    position in the DOM isn't something we control. */
 .stroke-order-canvas svg.acjk path[id] {
-  fill: #f1f5f9 !important;
+  fill: #cbd5e1 !important;
 }
 
 .stroke-order-canvas svg.acjk path[clip-path] {
