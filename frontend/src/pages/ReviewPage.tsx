@@ -107,15 +107,22 @@ export function ReviewPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Seeds the session's local queue/progress from the server's due list exactly once per
+  // language — not on every reference change of `due`. Without this guard, any background
+  // refetch of the same query (e.g. React Query's default refetchOnWindowFocus, or a stale
+  // invalidation elsewhere) would silently reset `reviewedCount`/`queue` back to their initial
+  // values mid-session, since this effect used to run on every `due` change unconditionally.
+  const initializedForLanguageRef = useRef<string | null>(null)
   useEffect(() => {
-    if (due) {
+    if (due && initializedForLanguageRef.current !== selectedLanguageCode) {
+      initializedForLanguageRef.current = selectedLanguageCode
       setQueue(due)
       setTotalCount(due.length)
       setReviewedCount(0)
       setRevealed(false)
       setCardStartedAt(Date.now())
     }
-  }, [due])
+  }, [due, selectedLanguageCode])
 
   const current = queue[0]
   const phonetic = current

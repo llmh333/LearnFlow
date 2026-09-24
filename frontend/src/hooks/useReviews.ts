@@ -33,7 +33,9 @@ export function useSubmitReview() {
       payload: SubmitReviewPayload
     }) => reviewsApi.submitReview(vocabularyId, payload),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      // Deliberately does NOT invalidate reviewKeys.due: ReviewPage already manages its review
+      // queue/progress locally per submission, and no other screen reads this query. Invalidating
+      // it here used to force a mid-session refetch that reset ReviewPage's local progress state.
       queryClient.invalidateQueries({ queryKey: reviewKeys.history(variables.vocabularyId) })
     },
   })
