@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import {
   IconDashboard,
@@ -30,11 +31,12 @@ const NAV_ITEMS = [
 export function AppLayout() {
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
 
   const navContent = (
-    <div className="flex h-full flex-col justify-between">
+    <div className="flex min-h-full flex-col justify-between gap-4">
       <div>
         {/* Brand Logo & Theme Toggle */}
         <div className="flex items-center justify-between px-2 py-3">
@@ -119,7 +121,7 @@ export function AppLayout() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={logout}
+            onClick={() => setLogoutConfirmOpen(true)}
             className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
             title="Logout"
             aria-label="Logout"
@@ -134,7 +136,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen bg-[#F0F2F5] text-[#1A1A1A] dark:bg-[#121212] dark:text-[#F5F5F5]">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:flex dark:border-[#282828] dark:bg-[#1A1A1A] shadow-xs">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:flex dark:border-[#282828] dark:bg-[#1A1A1A] shadow-xs overflow-y-auto z-30">
         {navContent}
       </aside>
 
@@ -166,7 +168,7 @@ export function AppLayout() {
             className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-fade-in"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl dark:bg-[#1A1A1A] animate-scale-in">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl dark:bg-[#1A1A1A] animate-scale-in overflow-y-auto">
             <div className="mb-2 flex justify-end">
               <button
                 type="button"
@@ -182,9 +184,45 @@ export function AppLayout() {
       )}
 
       {/* Main Page Area */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-7xl mx-auto animate-fade-in">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-7xl mx-auto min-w-0 animate-fade-in">
         <Outlet />
       </main>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        title="Log Out"
+      >
+        <div className="flex flex-col gap-5">
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            Are you sure you want to log out of your LearnFlow account?
+          </p>
+          <div className="flex justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={() => setLogoutConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              onClick={() => {
+                setLogoutConfirmOpen(false)
+                logout()
+              }}
+              className="gap-1.5"
+            >
+              <IconLogOut size={16} />
+              <span>Log out</span>
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

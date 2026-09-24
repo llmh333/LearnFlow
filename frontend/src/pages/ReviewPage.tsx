@@ -13,7 +13,7 @@ import {
 import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
 import { useDueReviews, useSubmitReview } from '@/hooks/useReviews'
 import { useActiveStudySession, useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
-import { getPhoneticTranscription } from '@/lib/phonetics'
+import { formatPhonetic, getPhoneticTranscription } from '@/lib/phonetics'
 import { isStrokeOrderSupported } from '@/lib/strokeOrder'
 import { useUiStore } from '@/stores/uiStore'
 import type { DueVocabulary, SrsRating, StudySession } from '@/types/domain'
@@ -154,8 +154,11 @@ export function ReviewPage() {
   }, [due, selectedLanguageCode, resumedWordsReviewed])
 
   const current = queue[0]
-  const phonetic = current
+  const rawPhonetic = current
     ? getPhoneticTranscription(current.language.code, current.attributes)
+    : null
+  const phonetic = rawPhonetic && current
+    ? formatPhonetic(current.language.code, rawPhonetic)
     : null
 
   function reveal() {
@@ -361,7 +364,7 @@ export function ReviewPage() {
               <div className="h-px w-24 bg-slate-200 dark:bg-slate-700 my-1" />
               {phonetic && (
                 <p className="font-mono text-sm text-slate-500 dark:text-slate-400">
-                  {current.language.code === 'en' ? `/${phonetic}/` : phonetic}
+                  {phonetic}
                 </p>
               )}
               <p className="text-xl sm:text-2xl font-bold text-[#365314] dark:text-[#B6F23A]">

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { IconX } from '@/components/ui/Icon'
 import { cn } from '@/lib/cn'
 
@@ -11,27 +12,38 @@ interface DialogProps {
   className?: string
 }
 
-/** A modern modal dialog without external portal dependencies. */
+/**
+ * A modern modal dialog portaled to document.body to ensure perfect viewport centering,
+ * free from any ancestor CSS transform containing blocks.
+ */
 export function Dialog({ open, onClose, title, children, className }: DialogProps) {
   useEffect(() => {
     if (!open) return
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [open, onClose])
 
   if (!open) return null
 
-  return (
+  const modal = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-modal-fade"
       onClick={onClose}
     >
       <div
         className={cn(
-          'relative w-full max-w-lg rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl animate-scale-in dark:border-slate-800 dark:bg-slate-900',
+          'relative w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xl animate-scale-in dark:border-slate-800 dark:bg-slate-900',
           className,
         )}
         onClick={(event) => event.stopPropagation()}
@@ -55,4 +67,9 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       </div>
     </div>
   )
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modal, document.body)
+  }
+  return modal
 }

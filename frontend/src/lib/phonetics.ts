@@ -19,3 +19,14 @@ export function getPhoneticTranscription(
   const value = attributes?.[key]
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
+
+/**
+ * Formats phonetic transcription for display. For English IPA, ensures exactly one set of
+ * forward slashes (/.../) to prevent accidental duplicate `//...//` slashes.
+ */
+export function formatPhonetic(languageCode: string, phonetic: string): string {
+  if (languageCode !== 'en') return phonetic
+  const trimmed = phonetic.trim()
+  const unslashed = trimmed.replace(/^\/+|\/+$/g, '')
+  return `/${unslashed}/`
+}
