@@ -12,8 +12,10 @@ import com.learnflow.backend.vocabulary.dto.VocabularyResponse;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ public class VocabularyService {
     private final VocabularyAttributesValidator attributesValidator;
     private final ReviewService reviewService;
     private final EntityManager entityManager;
+    private final VocabularyProperties vocabularyProperties;
     private final Clock clock;
 
     public VocabularyService(
@@ -40,6 +43,7 @@ public class VocabularyService {
             VocabularyAttributesValidator attributesValidator,
             ReviewService reviewService,
             EntityManager entityManager,
+            VocabularyProperties vocabularyProperties,
             Clock clock) {
         this.vocabularyRepository = vocabularyRepository;
         this.tagRepository = tagRepository;
@@ -47,6 +51,7 @@ public class VocabularyService {
         this.attributesValidator = attributesValidator;
         this.reviewService = reviewService;
         this.entityManager = entityManager;
+        this.vocabularyProperties = vocabularyProperties;
         this.clock = clock;
     }
 
@@ -116,6 +121,58 @@ public class VocabularyService {
     public void delete(Long userId, Long id) {
         Vocabulary vocabulary = findOrThrow(userId, id);
         vocabularyRepository.delete(vocabulary);
+    }
+
+    /**
+     * Clones the starter vocabulary pack (word, tags, SRS schedule) from the reserved template
+     * account into a freshly registered user's own account, so every new user starts with the same
+     * 300-word pack instead of an empty list. Called by {@code AuthService.register} right after the
+     * new account is created; {@code templateUserId} is resolved there (it owns {@code
+     * UserRepository}) so this module never has to depend on another module's repository
+     * (00-overview.md §1.1 rule 2). Mirrors the one-time backfill in
+     * V12__restore_starter_vocabulary_per_user.sql, this time run per registration instead of once.
+     */
+    public void seedStarterVocabularyFor(Long newUserId, Long templateUserId) {
+        if (!vocabularyProperties.seedStarterPackOnRegister()) {
+            return;
+        }
+        List<Vocabulary> templateWords = vocabularyRepository.findAllByUser_IdOrderByIdAsc(templateUserId);
+        if (templateWords.isEmpty()) {
+            return;
+        }
+
+        User newUserRef = entityManager.getReference(User.class, newUserId);
+        Instant now = Instant.now(clock);
+        Map<String, VocabularyTag> clonedTagsByName = new HashMap<>();
+
+        for (Vocabulary templateWord : templateWords) {
+            Vocabulary clone =
+                    new Vocabulary(
+                            newUserRef,
+                            templateWord.getLanguage(),
+                            templateWord.getWord(),
+                            templateWord.getMeaning(),
+                            templateWord.getExample(),
+                            templateWord.getDifficulty(),
+                            templateWord.getAttributes(),
+                            now,
+                            now);
+
+            Set<VocabularyTag> cloneTags = new LinkedHashSet<>();
+            for (VocabularyTag templateTag : templateWord.getTags()) {
+                cloneTags.add(
+                        clonedTagsByName.computeIfAbsent(
+                                templateTag.getName(),
+                                name ->
+                                        tagRepository
+                                                .findByUser_IdAndName(newUserId, name)
+                                                .orElseGet(() -> tagRepository.save(new VocabularyTag(newUserRef, name)))));
+            }
+            clone.replaceTags(cloneTags);
+
+            Vocabulary saved = vocabularyRepository.save(clone);
+            reviewService.createScheduleFor(newUserId, saved.getId());
+        }
     }
 
     @Transactional(readOnly = true)

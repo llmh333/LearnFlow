@@ -56,6 +56,7 @@ class VocabularyServiceTest {
                         new VocabularyAttributesValidator(),
                         reviewService,
                         entityManager,
+                        new VocabularyProperties(true),
                         FIXED_CLOCK);
         Mockito.lenient().when(entityManager.getReference(eq(User.class), any())).thenReturn(newUser(USER_ID));
     }
@@ -137,6 +138,74 @@ class VocabularyServiceTest {
         vocabularyService.delete(USER_ID, 1L);
 
         verify(vocabularyRepository).delete(vocabulary);
+    }
+
+    @Test
+    void seedStarterVocabularyFor_clonesTemplateWordsTagsAndSchedules() {
+        Long templateUserId = 999L;
+        Language english = newLanguage((short) 1, "en", "English");
+        VocabularyTag templateTag = new VocabularyTag(newUser(templateUserId), "A1");
+        Vocabulary templateWord =
+                new Vocabulary(
+                        newUser(templateUserId),
+                        english,
+                        "achieve",
+                        "đạt được",
+                        "I want to achieve my goals.",
+                        (short) 2,
+                        Map.of("cefrLevel", "A1"),
+                        Instant.now(FIXED_CLOCK),
+                        Instant.now(FIXED_CLOCK));
+        templateWord.replaceTags(java.util.Set.of(templateTag));
+        when(vocabularyRepository.findAllByUser_IdOrderByIdAsc(templateUserId)).thenReturn(List.of(templateWord));
+        when(tagRepository.findByUser_IdAndName(USER_ID, "A1")).thenReturn(Optional.empty());
+        when(tagRepository.save(any(VocabularyTag.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(vocabularyRepository.save(any(Vocabulary.class)))
+                .thenAnswer(
+                        inv -> {
+                            Vocabulary saved = inv.getArgument(0);
+                            setField(saved, Vocabulary.class, "id", 42L);
+                            return saved;
+                        });
+
+        vocabularyService.seedStarterVocabularyFor(USER_ID, templateUserId);
+
+        var vocabularyCaptor = org.mockito.ArgumentCaptor.forClass(Vocabulary.class);
+        verify(vocabularyRepository).save(vocabularyCaptor.capture());
+        Vocabulary clone = vocabularyCaptor.getValue();
+        assertThat(clone.getWord()).isEqualTo("achieve");
+        assertThat(clone.getUser().getId()).isEqualTo(USER_ID);
+        assertThat(clone.getTags()).extracting(VocabularyTag::getName).containsExactly("A1");
+        verify(reviewService).createScheduleFor(USER_ID, 42L);
+    }
+
+    @Test
+    void seedStarterVocabularyFor_disabledByProperty_doesNothing() {
+        VocabularyService disabled =
+                new VocabularyService(
+                        vocabularyRepository,
+                        tagRepository,
+                        languageService,
+                        new VocabularyAttributesValidator(),
+                        reviewService,
+                        entityManager,
+                        new VocabularyProperties(false),
+                        FIXED_CLOCK);
+
+        disabled.seedStarterVocabularyFor(USER_ID, 999L);
+
+        verify(vocabularyRepository, never()).findAllByUser_IdOrderByIdAsc(any());
+        verify(vocabularyRepository, never()).save(any(Vocabulary.class));
+    }
+
+    @Test
+    void seedStarterVocabularyFor_noTemplateWords_doesNothing() {
+        when(vocabularyRepository.findAllByUser_IdOrderByIdAsc(999L)).thenReturn(List.of());
+
+        vocabularyService.seedStarterVocabularyFor(USER_ID, 999L);
+
+        verify(vocabularyRepository, never()).save(any(Vocabulary.class));
+        verify(reviewService, never()).createScheduleFor(any(), any());
     }
 
     private static Language newLanguage(short id, String code, String name) {
