@@ -7,6 +7,7 @@ import com.learnflow.backend.auth.dto.RegisterRequest;
 import com.learnflow.backend.auth.dto.UserResponse;
 import com.learnflow.backend.common.error.ConflictException;
 import com.learnflow.backend.common.error.NotFoundException;
+import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Instant;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,10 +19,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthService {
 
+    /**
+     * Reserved system account that owns the canonical starter vocabulary pack (see
+     * V12__restore_starter_vocabulary_per_user.sql). Never logged into — no UI path creates or
+     * authenticates it.
+     */
+    private static final String STARTER_VOCABULARY_TEMPLATE_EMAIL = "seed@learnflow.system";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthProperties authProperties;
+    private final VocabularyService vocabularyService;
     private final Clock clock;
 
     public AuthService(
@@ -29,11 +38,13 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthProperties authProperties,
+            VocabularyService vocabularyService,
             Clock clock) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authProperties = authProperties;
+        this.vocabularyService = vocabularyService;
         this.clock = clock;
     }
 
@@ -52,6 +63,12 @@ public class AuthService {
                         request.displayName(),
                         Instant.now(clock));
         userRepository.save(user);
+
+        userRepository
+                .findByEmail(STARTER_VOCABULARY_TEMPLATE_EMAIL)
+                .ifPresent(
+                        templateUser ->
+                                vocabularyService.seedStarterVocabularyFor(user.getId(), templateUser.getId()));
 
         return issueAuthResponse(user);
     }
