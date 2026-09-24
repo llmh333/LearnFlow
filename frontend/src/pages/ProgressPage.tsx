@@ -180,8 +180,11 @@ export function ProgressPage() {
                     <Badge variant="warning" className="text-[10px] font-bold">
                       ease {area.easeFactor.toFixed(2)}
                     </Badge>
-                    <span className="font-bold text-rose-600 dark:text-rose-400">
-                      {area.failureCount}/{area.reviewCount} failed
+                    <span
+                      className="font-bold text-rose-600 dark:text-rose-400"
+                      title={`Rated "Again" ${area.failureCount} out of ${area.reviewCount} times you've reviewed this word`}
+                    >
+                      {area.failureCount}/{area.reviewCount} rated "Again"
                     </span>
                   </div>
                 </li>
