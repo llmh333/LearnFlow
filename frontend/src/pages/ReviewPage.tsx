@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/Icon'
 import { useDueReviews, useSubmitReview } from '@/hooks/useReviews'
 import { useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
+import { getPhoneticTranscription } from '@/lib/phonetics'
 import { useUiStore } from '@/stores/uiStore'
 import type { DueVocabulary, SrsRating, StudySession } from '@/types/domain'
 
@@ -117,6 +118,9 @@ export function ReviewPage() {
   }, [due])
 
   const current = queue[0]
+  const phonetic = current
+    ? getPhoneticTranscription(current.language.code, current.attributes)
+    : null
 
   function reveal() {
     setRevealed(true)
@@ -319,6 +323,11 @@ export function ReviewPage() {
           {revealed ? (
             <div className="flex flex-col items-center gap-4 w-full animate-fade-in">
               <div className="h-px w-24 bg-slate-200 dark:bg-slate-700 my-1" />
+              {phonetic && (
+                <p className="font-mono text-sm text-slate-500 dark:text-slate-400">
+                  {current.language.code === 'en' ? `/${phonetic}/` : phonetic}
+                </p>
+              )}
               <p className="text-xl sm:text-2xl font-bold text-[#365314] dark:text-[#B6F23A]">
                 {current.meaning}
               </p>
