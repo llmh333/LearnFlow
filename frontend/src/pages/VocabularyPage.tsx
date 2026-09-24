@@ -15,6 +15,7 @@ import {
   IconBook,
   IconChevronRight,
 } from '@/components/ui/Icon'
+import { VocabularyDetailDialog } from '@/components/vocabulary/VocabularyDetailDialog'
 import { VocabularyForm } from '@/components/vocabulary/VocabularyForm'
 import {
   useCreateVocabulary,
@@ -70,6 +71,7 @@ export function VocabularyPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Vocabulary | null>(null)
   const [formError, setFormError] = useState<string | undefined>()
+  const [viewing, setViewing] = useState<Vocabulary | null>(null)
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(searchParams)
@@ -209,7 +211,11 @@ export function VocabularyPage() {
               </TableHeader>
               <TableBody>
                 {vocabularies.map((vocabulary) => (
-                  <TableRow key={vocabulary.id}>
+                  <TableRow
+                    key={vocabulary.id}
+                    onClick={() => setViewing(vocabulary)}
+                    className="cursor-pointer"
+                  >
                     <TableCell className="font-bold text-slate-900 dark:text-slate-100">
                       {vocabulary.word}
                     </TableCell>
@@ -235,7 +241,10 @@ export function VocabularyPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => openEditDialog(vocabulary)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            openEditDialog(vocabulary)
+                          }}
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#365314] dark:hover:text-[#B6F23A]"
                           title="Edit"
                         >
@@ -244,7 +253,10 @@ export function VocabularyPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(vocabulary.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleDelete(vocabulary.id)
+                          }}
                           className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400"
                           title="Delete"
                         >
@@ -301,6 +313,8 @@ export function VocabularyPage() {
           error={formError}
         />
       </Dialog>
+
+      <VocabularyDetailDialog vocabulary={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }
