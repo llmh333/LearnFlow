@@ -4,6 +4,7 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { PronounceButton } from '@/components/ui/PronounceButton'
 import {
   IconTrophy,
   IconSparkles,
@@ -355,9 +356,12 @@ export function ReviewPage() {
             </Badge>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1A1A1A] dark:text-white">
-            {current.word}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1A1A1A] dark:text-white">
+              {current.word}
+            </h2>
+            <PronounceButton word={current.word} languageCode={current.language.code} />
+          </div>
 
           {revealed ? (
             <div className="flex flex-col items-center gap-4 w-full animate-fade-in">

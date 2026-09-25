@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/Badge'
 import { Dialog } from '@/components/ui/Dialog'
+import { PronounceButton } from '@/components/ui/PronounceButton'
 import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
 import { formatPhonetic, getPhoneticTranscription } from '@/lib/phonetics'
 import { isStrokeOrderSupported } from '@/lib/strokeOrder'
@@ -22,7 +23,18 @@ export function VocabularyDetailDialog({ vocabulary, onClose }: VocabularyDetail
     : null
 
   return (
-    <Dialog open={vocabulary !== null} onClose={onClose} title={vocabulary?.word}>
+    <Dialog
+      open={vocabulary !== null}
+      onClose={onClose}
+      title={
+        vocabulary && (
+          <span className="flex items-center gap-2">
+            {vocabulary.word}
+            <PronounceButton word={vocabulary.word} languageCode={vocabulary.language.code} />
+          </span>
+        )
+      }
+    >
       {vocabulary && (
         <div className="flex flex-col items-center gap-4 w-full text-center">
           <div className="flex flex-wrap items-center justify-center gap-1.5">
