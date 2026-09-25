@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/common/AppLayout'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AiTutorPage } from '@/pages/AiTutorPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { ExercisesPage } from '@/pages/ExercisesPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { MistakeBookPage } from '@/pages/MistakeBookPage'
 import { ProgressPage } from '@/pages/ProgressPage'
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'vocabulary', element: <VocabularyPage /> },
       { path: 'review', element: <ReviewPage /> },
+      { path: 'exercises', element: <ExercisesPage /> },
       { path: 'ai-tutor', element: <AiTutorPage /> },
       { path: 'progress', element: <ProgressPage /> },
       { path: 'mistakes', element: <MistakeBookPage /> },

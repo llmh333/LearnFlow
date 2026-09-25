@@ -10,6 +10,7 @@ import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -84,6 +85,16 @@ public class AuthService {
         }
 
         return issueAuthResponse(user);
+    }
+
+    /** Real, loggable-into accounts only — excludes the starter-vocabulary template account. Used
+     * by {@code exercise.scheduler.ExerciseGenerationScheduler} to know which users to top up AI
+     * exercises for, without that module depending on {@code UserRepository} directly. */
+    @Transactional(readOnly = true)
+    public List<Long> listActiveUserIds() {
+        return userRepository.findAllByEmailNot(STARTER_VOCABULARY_TEMPLATE_EMAIL).stream()
+                .map(User::getId)
+                .toList();
     }
 
     @Transactional(readOnly = true)
