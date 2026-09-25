@@ -31,4 +31,10 @@ public interface AIProvider {
     ConversationSummary summarizeConversation(ConversationSummaryRequest request);
 
     String generateDailyPlan(DailyPlanContext context);
+
+    /** Generates {@code request.count()} practice exercises (a mix of sentence-scramble and
+     * multiple-choice) themed around the learner's context. Used by
+     * {@code exercise.scheduler.ExerciseGenerationScheduler} to pre-generate upcoming days' AI
+     * exercises ahead of time. */
+    List<GeneratedExercise> generateExercises(ExerciseGenerationRequest request);
 }
