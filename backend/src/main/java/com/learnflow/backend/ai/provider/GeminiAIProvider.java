@@ -241,6 +241,61 @@ public class GeminiAIProvider implements AIProvider {
     }
 
     @Override
+    public List<GeneratedExercise> generateExercises(ExerciseGenerationRequest request) {
+        String system = AIPrompts.exerciseGeneration(request.context(), request.count());
+        Map<String, Object> exerciseItemSchema =
+                Map.of(
+                        "type", "OBJECT",
+                        "properties",
+                                Map.of(
+                                        "type",
+                                        Map.of(
+                                                "type", "STRING",
+                                                "enum", List.of("SENTENCE_SCRAMBLE", "MULTIPLE_CHOICE")),
+                                        "word", Map.of("type", "STRING"),
+                                        "correctSentence", Map.of("type", "STRING"),
+                                        "question", Map.of("type", "STRING"),
+                                        "options", Map.of("type", "ARRAY", "items", Map.of("type", "STRING")),
+                                        "correctOptionIndex", Map.of("type", "INTEGER")),
+                        "required", List.of("type"));
+        Map<String, Object> schema =
+                Map.of(
+                        "type", "OBJECT",
+                        "properties", Map.of("exercises", Map.of("type", "ARRAY", "items", exerciseItemSchema)),
+                        "required", List.of("exercises"));
+        Map<String, Object> result =
+                callStructured(system, "Generate %d exercises.".formatted(request.count()), schema);
+        return toGeneratedExercises(result);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<GeneratedExercise> toGeneratedExercises(Map<String, Object> input) {
+        Object raw = input.get("exercises");
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        List<GeneratedExercise> result = new ArrayList<>();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> rawMap)) {
+                continue;
+            }
+            Map<String, Object> m = (Map<String, Object>) rawMap;
+            Object options = m.get("options");
+            Object correctOptionIndex = m.get("correctOptionIndex");
+            result.add(
+                    new GeneratedExercise(
+                            String.valueOf(m.get("type")),
+                            m.get("word") == null ? null : String.valueOf(m.get("word")),
+                            m.get("correctSentence") == null ? null : String.valueOf(m.get("correctSentence")),
+                            null,
+                            m.get("question") == null ? null : String.valueOf(m.get("question")),
+                            options instanceof List<?> ol ? ol.stream().map(String::valueOf).toList() : null,
+                            correctOptionIndex instanceof Number n ? n.intValue() : null));
+        }
+        return result;
+    }
+
+    @Override
     public String generateDailyPlan(DailyPlanContext context) {
         String userMessage =
                 "Total time: %d minutes.\n%s"

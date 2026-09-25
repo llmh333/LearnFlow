@@ -1,5 +1,7 @@
 package com.learnflow.backend.ai.provider;
 
+import com.learnflow.backend.ai.context.LearnerContext;
+
 /**
  * System prompt text shared by every {@link AIProvider} implementation, so the tutor's tone (D12:
  * friendly, encouraging) stays consistent across providers instead of drifting between copies.
@@ -61,6 +63,28 @@ final class AIPrompts {
                 language practiced.
                 """
                 .formatted(languageCode);
+    }
+
+    static String exerciseGeneration(LearnerContext context, int count) {
+        String focus =
+                context.weakWords().isEmpty()
+                        ? "The learner has no tracked weak words yet — use common, general vocabulary"
+                                + " appropriate for their level instead."
+                        : "Focus on these words the learner finds difficult: "
+                                + String.join(", ", context.weakWords())
+                                + ".";
+        return """
+                You are a friendly, encouraging language tutor creating %d practice exercises for a %s
+                learner at level %s. %s
+
+                Create a mix of "SENTENCE_SCRAMBLE" (a short natural sentence using one target word,
+                given whole as "correctSentence" — do not worry about splitting it into tokens, that is
+                done separately) and "MULTIPLE_CHOICE" (ask what a target word means, with one correct
+                meaning and 3 plausible wrong meanings; meanings must be written in Vietnamese,
+                regardless of the language studied, since that is how this app always shows meanings).
+                Respond only with the requested structured data.
+                """
+                .formatted(count, context.languageCode(), context.currentLevel(), focus);
     }
 
     static final String DAILY_PLAN =

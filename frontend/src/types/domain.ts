@@ -169,3 +169,26 @@ export interface DailyPlan {
   intro: string | null
   items: DailyPlanItem[]
 }
+
+export type ExerciseType = 'SENTENCE_SCRAMBLE' | 'MULTIPLE_CHOICE'
+
+/** Never carries the answer key (correctTokens/correctOptionIndex) — that's only revealed after
+ * submitting, in ExerciseAnswerResult. */
+export interface Exercise {
+  id: number
+  languageCode: string
+  type: ExerciseType
+  source: 'DETERMINISTIC' | 'AI'
+  shuffledTokens: string[] | null
+  question: string | null
+  options: string[] | null
+  completed: boolean
+  correct: boolean | null
+}
+
+export interface ExerciseAnswerResult {
+  id: number
+  correct: boolean
+  correctTokens: string[] | null
+  correctOptionIndex: number | null
+}
