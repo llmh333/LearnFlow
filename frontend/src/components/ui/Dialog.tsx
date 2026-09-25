@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn'
 interface DialogProps {
   open: boolean
   onClose: () => void
-  title?: string
+  title?: ReactNode
   children: ReactNode
   className?: string
 }
