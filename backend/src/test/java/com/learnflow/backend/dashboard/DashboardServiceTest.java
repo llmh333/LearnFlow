@@ -58,6 +58,7 @@ class DashboardServiceTest {
         assertThat(englishSummary.newCount()).isEqualTo(5);
         assertThat(englishSummary.knownWords()).isEqualTo(1235); // total - new
         assertThat(englishSummary.retentionPercent()).isEqualTo(87.0);
+        assertThat(englishSummary.retentionSampleSize()).isEqualTo(100);
         // ceil(12 * 0.5 + 5 * 1.0) = ceil(11.0) = 11
         assertThat(englishSummary.estimatedMinutes()).isEqualTo(11);
 

@@ -121,6 +121,8 @@ export interface LanguageTodaySummary {
   newCount: number
   knownWords: number
   retentionPercent: number
+  /** How many reviews retentionPercent is computed from (last 30 days). */
+  retentionSampleSize: number
   estimatedMinutes: number
 }
 
