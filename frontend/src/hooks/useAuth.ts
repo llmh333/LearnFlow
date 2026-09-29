@@ -30,3 +30,11 @@ export function useAuth() {
     logout: clearAuth,
   }
 }
+
+export function useUpdateUserSettings() {
+  const updateUser = useAuthStore((state) => state.updateUser)
+  return useMutation({
+    mutationFn: authApi.updateUserSettings,
+    onSuccess: (user) => updateUser(user),
+  })
+}

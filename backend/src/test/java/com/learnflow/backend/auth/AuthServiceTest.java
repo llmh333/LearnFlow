@@ -9,7 +9,9 @@ import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
+import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Duration;
@@ -118,6 +120,42 @@ class AuthServiceTest {
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    void updateDailyNewWordsLimit_allowedValue_updatesAndReturnsUser() {
+        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK));
+        setId(user, 1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        var response = authService.updateDailyNewWordsLimit(1L, 30);
+
+        assertThat(response.dailyNewWordsLimit()).isEqualTo(30);
+        assertThat(user.getDailyNewWordsLimit()).isEqualTo(30);
+    }
+
+    @Test
+    void updateDailyNewWordsLimit_disallowedValue_throwsBadRequest() {
+        assertThatThrownBy(() -> authService.updateDailyNewWordsLimit(1L, 23))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void updateDailyNewWordsLimit_unknownUser_throwsNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.updateDailyNewWordsLimit(1L, 20))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getDailyNewWordsLimit_returnsUsersCurrentLimit() {
+        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK));
+        setId(user, 1L);
+        user.setDailyNewWordsLimit(35);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThat(authService.getDailyNewWordsLimit(1L)).isEqualTo(35);
     }
 
     private static void setId(User user, Long id) {
