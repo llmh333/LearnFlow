@@ -2,6 +2,7 @@ export interface User {
   id: number
   email: string
   displayName: string
+  dailyNewWordsLimit: number
 }
 
 export interface AuthResponse {
@@ -121,6 +122,8 @@ export interface LanguageTodaySummary {
   newCount: number
   knownWords: number
   retentionPercent: number
+  /** How many reviews retentionPercent is computed from (last 30 days). */
+  retentionSampleSize: number
   estimatedMinutes: number
 }
 

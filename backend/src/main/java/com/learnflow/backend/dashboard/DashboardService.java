@@ -62,6 +62,12 @@ public class DashboardService {
                 (int) Math.ceil(dueCount * MINUTES_PER_DUE_WORD + newCount * MINUTES_PER_NEW_WORD);
 
         return new LanguageTodaySummary(
-                language, dueCount, newCount, knownWords, retention.rate() * 100, estimatedMinutes);
+                language,
+                dueCount,
+                newCount,
+                knownWords,
+                retention.rate() * 100,
+                retention.totalCount(),
+                estimatedMinutes);
     }
 }

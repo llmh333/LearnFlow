@@ -25,8 +25,8 @@ import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,16 +82,51 @@ public class ReviewService {
         scheduleRepository.save(new ReviewSchedule(vocabularyRef, userRef, Instant.now(clock)));
     }
 
+    /**
+     * Already-learned words due for review are never rationed (same as any SRS app) — only
+     * brand-new (never-reviewed) words are capped, at {@code dailyNewWordsLimit} per day, minus
+     * however many new words this user already started today. {@code dailyNewWordsLimit} is
+     * fetched by the controller (see {@code AuthService.getDailyNewWordsLimit}) rather than
+     * injected here, to avoid a circular dependency: {@code VocabularyService} already depends on
+     * this service, so this service depending on {@code AuthService} (which depends on {@code
+     * VocabularyService}) would cycle back.
+     */
     @Transactional(readOnly = true)
-    public List<DueVocabularyResponse> findDue(Long userId, String languageCode, int limit) {
+    public List<DueVocabularyResponse> findDue(
+            Long userId, String languageCode, int limit, int dailyNewWordsLimit) {
+        boolean scoped = languageCode != null && !languageCode.isBlank();
         Instant now = Instant.now(clock);
-        Pageable pageable = PageRequest.of(0, limit);
-        List<ReviewSchedule> due =
-                (languageCode == null || languageCode.isBlank())
-                        ? scheduleRepository.findDueByUserId(userId, now, pageable)
-                        : scheduleRepository.findDueByUserIdAndLanguageCode(
-                                userId, languageCode, now, pageable);
-        return due.stream().map(DueVocabularyResponse::from).toList();
+
+        List<ReviewSchedule> reviewedDue =
+                scoped
+                        ? scheduleRepository.findDueReviewedByUserIdAndLanguageCode(
+                                userId, languageCode, now, PageRequest.of(0, limit))
+                        : scheduleRepository.findDueReviewedByUserId(userId, now, PageRequest.of(0, limit));
+
+        int remainingSlots = Math.max(0, limit - reviewedDue.size());
+        int newWordsAllowance = Math.max(0, dailyNewWordsLimit - countNewWordsIntroducedToday(userId, languageCode));
+        int newWordsToFetch = Math.min(remainingSlots, newWordsAllowance);
+
+        List<ReviewSchedule> newDue =
+                newWordsToFetch == 0
+                        ? List.of()
+                        : scoped
+                                ? scheduleRepository.findDueNewByUserIdAndLanguageCode(
+                                        userId, languageCode, now, PageRequest.of(0, newWordsToFetch))
+                                : scheduleRepository.findDueNewByUserId(
+                                        userId, now, PageRequest.of(0, newWordsToFetch));
+
+        return Stream.concat(reviewedDue.stream(), newDue.stream())
+                .map(DueVocabularyResponse::from)
+                .toList();
+    }
+
+    private int countNewWordsIntroducedToday(Long userId, String languageCode) {
+        Instant startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC).toInstant();
+        String scopedLanguage = (languageCode == null || languageCode.isBlank()) ? null : languageCode;
+        return historyRepository
+                .findVocabularyIdsFirstReviewedSince(userId, scopedLanguage, startOfToday)
+                .size();
     }
 
     public ReviewSubmitResponse submit(

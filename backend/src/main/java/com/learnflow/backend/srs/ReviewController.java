@@ -1,5 +1,6 @@
 package com.learnflow.backend.srs;
 
+import com.learnflow.backend.auth.AuthService;
 import com.learnflow.backend.srs.dto.DueVocabularyResponse;
 import com.learnflow.backend.srs.dto.ReviewHistoryResponse;
 import com.learnflow.backend.srs.dto.ReviewSubmitRequest;
@@ -20,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final AuthService authService;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, AuthService authService) {
         this.reviewService = reviewService;
+        this.authService = authService;
     }
 
     @GetMapping("/due")
@@ -30,7 +33,8 @@ public class ReviewController {
             @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) String language,
             @RequestParam(defaultValue = "20") int limit) {
-        return reviewService.findDue(userId, language, limit);
+        int dailyNewWordsLimit = authService.getDailyNewWordsLimit(userId);
+        return reviewService.findDue(userId, language, limit, dailyNewWordsLimit);
     }
 
     @PostMapping("/{vocabularyId}/submit")

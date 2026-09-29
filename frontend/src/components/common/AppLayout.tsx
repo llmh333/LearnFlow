@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { AccountSettingsDialog } from '@/components/common/AccountSettingsDialog'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
@@ -15,6 +16,7 @@ import {
   IconFlame,
   IconLogOut,
   IconMenu,
+  IconSettings,
   IconX,
 } from '@/components/ui/Icon'
 import { cn } from '@/lib/cn'
@@ -34,6 +36,7 @@ export function AppLayout() {
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
 
@@ -120,16 +123,28 @@ export function AppLayout() {
               {user?.email}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLogoutConfirmOpen(true)}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
-            title="Logout"
-            aria-label="Logout"
-          >
-            <IconLogOut size={16} />
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSettingsOpen(true)}
+              className="h-8 w-8 p-0 text-slate-400 hover:text-[#365314] dark:hover:text-[#B6F23A]"
+              title="Account settings"
+              aria-label="Account settings"
+            >
+              <IconSettings size={16} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLogoutConfirmOpen(true)}
+              className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <IconLogOut size={16} />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -225,6 +240,8 @@ export function AppLayout() {
           </div>
         </div>
       </Dialog>
+
+      <AccountSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }

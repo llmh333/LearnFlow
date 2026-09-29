@@ -14,6 +14,10 @@ import {
 } from '@/components/ui/Icon'
 import { useDashboardToday } from '@/hooks/useDashboard'
 
+// Below this many reviews, a retention percentage is more noise than signal (e.g. 100% from a
+// single review) — shown as a neutral "not enough data yet" state instead of a confident number.
+const MIN_RETENTION_SAMPLE_SIZE = 5
+
 export function DashboardPage() {
   const { data, isLoading } = useDashboardToday()
 
@@ -106,6 +110,7 @@ export function DashboardPage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.languages.map((language) => {
               const isUrgent = language.dueCount > 0
+              const hasEnoughRetentionData = language.retentionSampleSize >= MIN_RETENTION_SAMPLE_SIZE
               return (
                 <Card
                   key={language.language.code}
@@ -132,19 +137,19 @@ export function DashboardPage() {
 
                     {/* High-contrast stats container */}
                     <div className="grid grid-cols-3 gap-2 rounded-xl bg-[#F8F9FA] p-3 text-center border border-slate-200 dark:bg-[#262626] dark:border-[#333333]">
-                      <div>
+                      <div title="Words ready to review right now">
                         <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           {language.dueCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Due</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Due now</div>
                       </div>
-                      <div>
+                      <div title="Words you haven't studied yet">
                         <div className="text-base font-bold text-[#365314] dark:text-[#B6F23A]">
                           {language.newCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">New</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">New words</div>
                       </div>
-                      <div>
+                      <div title="Estimated minutes to review due words and learn new ones">
                         <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           ~{language.estimatedMinutes}m
                         </div>
@@ -153,18 +158,36 @@ export function DashboardPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        <span>Retention rate</span>
-                        <span className="text-[#365314] dark:text-[#B6F23A] font-bold">
-                          {language.retentionPercent.toFixed(0)}%
-                        </span>
+                      <div
+                        className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300"
+                        title="% of your reviews in the last 30 days you remembered (rated Hard/Good/Easy, not Again)"
+                      >
+                        <span>Retention (last 30 days)</span>
+                        {hasEnoughRetentionData && (
+                          <span className="text-[#365314] dark:text-[#B6F23A] font-bold">
+                            {language.retentionPercent.toFixed(0)}%
+                          </span>
+                        )}
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
                         <div
-                          className="h-full rounded-full bg-[#B6F23A] transition-all duration-500"
-                          style={{ width: `${Math.min(100, Math.max(5, language.retentionPercent))}%` }}
+                          className={
+                            hasEnoughRetentionData
+                              ? 'h-full rounded-full bg-[#B6F23A] transition-all duration-500'
+                              : 'h-full rounded-full bg-slate-300 transition-all duration-500 dark:bg-slate-600'
+                          }
+                          style={{
+                            width: hasEnoughRetentionData
+                              ? `${Math.min(100, Math.max(5, language.retentionPercent))}%`
+                              : '100%',
+                          }}
                         />
                       </div>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                        {hasEnoughRetentionData
+                          ? `Based on ${language.retentionSampleSize} reviews`
+                          : `Not enough reviews yet (${language.retentionSampleSize})`}
+                      </p>
                     </div>
                   </div>
 

@@ -10,12 +10,17 @@ import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "app_user")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
+    /** New-word introduction pacing applied to the Review queue — see
+     * {@code AuthService.updateDailyNewWordsLimit} for the allowed values. */
+    private static final int DEFAULT_DAILY_NEW_WORDS_LIMIT = 20;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +38,15 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Setter
+    @Column(name = "daily_new_words_limit", nullable = false)
+    private int dailyNewWordsLimit;
+
     public User(String email, String passwordHash, String displayName, Instant createdAt) {
         this.email = email;
         this.passwordHash = passwordHash;
         this.displayName = displayName;
         this.createdAt = createdAt;
+        this.dailyNewWordsLimit = DEFAULT_DAILY_NEW_WORDS_LIMIT;
     }
 }
