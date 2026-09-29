@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 
 interface SentenceScrambleCardProps {
@@ -9,13 +9,13 @@ interface SentenceScrambleCardProps {
 
 /** Tap-to-order sentence builder — no drag-and-drop dependency needed. Tapping a word moves it
  * from the pool into the built sentence (in tap order); tapping a word already in the sentence
- * removes it back to the pool. */
+ * removes it back to the pool.
+ *
+ * Selection state resets between exercises via the parent's `key={current.id}` (a fresh mount, not
+ * an effect watching `shuffledTokens`) — a mount-triggered effect here raced with a fast first
+ * click, occasionally wiping it out right after it landed. */
 export function SentenceScrambleCard({ shuffledTokens, disabled, onSubmit }: SentenceScrambleCardProps) {
   const [selected, setSelected] = useState<number[]>([])
-
-  useEffect(() => {
-    setSelected([])
-  }, [shuffledTokens])
 
   const available = shuffledTokens.map((_, index) => index).filter((index) => !selected.includes(index))
   const canSubmit = !disabled && selected.length === shuffledTokens.length
