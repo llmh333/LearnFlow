@@ -29,3 +29,14 @@ export function login(payload: LoginPayload): Promise<AuthResponse> {
 export function fetchMe(): Promise<User> {
   return apiFetch<User>('/auth/me')
 }
+
+export interface UpdateUserSettingsPayload {
+  dailyNewWordsLimit: number
+}
+
+export function updateUserSettings(payload: UpdateUserSettingsPayload): Promise<User> {
+  return apiFetch<User>('/auth/me/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}

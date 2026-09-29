@@ -13,23 +13,48 @@ public interface ReviewScheduleRepository extends JpaRepository<ReviewSchedule, 
 
     Optional<ReviewSchedule> findByVocabularyIdAndUser_Id(Long vocabularyId, Long userId);
 
+    // Split in two (reviewCount > 0 vs. = 0) instead of one "all due" query, so ReviewService can
+    // apply the per-user daily new-word cap only to never-studied words — already-learned words
+    // due for review are never rationed, same as every SRS app (Anki etc).
     @Query(
             """
             SELECT rs FROM ReviewSchedule rs
-            WHERE rs.user.id = :userId AND rs.nextReview <= :now
+            WHERE rs.user.id = :userId AND rs.nextReview <= :now AND rs.reviewCount > 0
             ORDER BY rs.nextReview ASC
             """)
-    List<ReviewSchedule> findDueByUserId(
+    List<ReviewSchedule> findDueReviewedByUserId(
             @Param("userId") Long userId, @Param("now") Instant now, Pageable pageable);
 
     @Query(
             """
             SELECT rs FROM ReviewSchedule rs
             WHERE rs.user.id = :userId AND rs.vocabulary.language.code = :languageCode
-              AND rs.nextReview <= :now
+              AND rs.nextReview <= :now AND rs.reviewCount > 0
             ORDER BY rs.nextReview ASC
             """)
-    List<ReviewSchedule> findDueByUserIdAndLanguageCode(
+    List<ReviewSchedule> findDueReviewedByUserIdAndLanguageCode(
+            @Param("userId") Long userId,
+            @Param("languageCode") String languageCode,
+            @Param("now") Instant now,
+            Pageable pageable);
+
+    @Query(
+            """
+            SELECT rs FROM ReviewSchedule rs
+            WHERE rs.user.id = :userId AND rs.nextReview <= :now AND rs.reviewCount = 0
+            ORDER BY rs.nextReview ASC
+            """)
+    List<ReviewSchedule> findDueNewByUserId(
+            @Param("userId") Long userId, @Param("now") Instant now, Pageable pageable);
+
+    @Query(
+            """
+            SELECT rs FROM ReviewSchedule rs
+            WHERE rs.user.id = :userId AND rs.vocabulary.language.code = :languageCode
+              AND rs.nextReview <= :now AND rs.reviewCount = 0
+            ORDER BY rs.nextReview ASC
+            """)
+    List<ReviewSchedule> findDueNewByUserIdAndLanguageCode(
             @Param("userId") Long userId,
             @Param("languageCode") String languageCode,
             @Param("now") Instant now,

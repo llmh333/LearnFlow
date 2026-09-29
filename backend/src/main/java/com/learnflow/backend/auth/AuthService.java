@@ -5,12 +5,14 @@ import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
 import com.learnflow.backend.auth.dto.UserResponse;
+import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,11 @@ public class AuthService {
      * authenticates it.
      */
     private static final String STARTER_VOCABULARY_TEMPLATE_EMAIL = "seed@learnflow.system";
+
+    /** The only values the "new words per day" setting may take (00-overview §1.5-adjacent UI
+     * decision — a fixed set of tiers is simpler for a learner to reason about than a free-form
+     * number, and simpler for the Review queue's daily cap to enforce). */
+    private static final Set<Integer> ALLOWED_DAILY_NEW_WORDS_LIMITS = Set.of(20, 25, 30, 35);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -95,6 +102,32 @@ public class AuthService {
         return userRepository.findAllByEmailNot(STARTER_VOCABULARY_TEMPLATE_EMAIL).stream()
                 .map(User::getId)
                 .toList();
+    }
+
+    public UserResponse updateDailyNewWordsLimit(Long userId, int limit) {
+        if (!ALLOWED_DAILY_NEW_WORDS_LIMITS.contains(limit)) {
+            throw new BadRequestException(
+                    "dailyNewWordsLimit must be one of " + ALLOWED_DAILY_NEW_WORDS_LIMITS);
+        }
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new NotFoundException("User not found: " + userId));
+        user.setDailyNewWordsLimit(limit);
+        return UserResponse.from(user);
+    }
+
+    /** Used by {@code srs.ReviewController} to cap new-word introduction in the Review queue.
+     * Fetched at the controller layer rather than injected into {@code ReviewService} directly —
+     * {@code VocabularyService} already depends on {@code ReviewService}, so {@code ReviewService}
+     * depending on this service (which depends on {@code VocabularyService}) would be a circular
+     * dependency. */
+    @Transactional(readOnly = true)
+    public int getDailyNewWordsLimit(Long userId) {
+        return userRepository
+                .findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId))
+                .getDailyNewWordsLimit();
     }
 
     @Transactional(readOnly = true)
