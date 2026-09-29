@@ -8,9 +8,12 @@ import org.springframework.stereotype.Component;
  * active {@link SrsAlgorithm} bean.
  *
  * <p>On {@code AGAIN} the interval resets to a short relearning step ({@link
- * #RELEARNING_INTERVAL_DAYS}, ~10 minutes) rather than exactly zero. Zero would multiply to zero
- * forever afterwards ({@code 0 * easeFactor == 0}); a small positive value instead grows back
- * geometrically over a few successful reviews, which is the intended "relearn" behavior.
+ * #RELEARNING_INTERVAL_DAYS}, ~10 minutes) rather than exactly zero — zero would multiply to zero
+ * forever afterwards ({@code 0 * easeFactor == 0}). The next successful rating then graduates
+ * straight back to {@link #FIRST_INTERVAL_DAYS}, the same as a brand-new word's first review,
+ * instead of multiplying up from that ~10-minute base — multiplying up used to take 5-7 more
+ * successful reviews to climb back past a single day, which read as the word nagging the learner
+ * every few minutes/hours right after they'd just recalled it correctly.
  */
 @Component
 public class Sm2Algorithm implements SrsAlgorithm {
@@ -59,7 +62,12 @@ public class Sm2Algorithm implements SrsAlgorithm {
         if (rating == SrsRating.AGAIN) {
             return RELEARNING_INTERVAL_DAYS;
         }
-        if (current.reviewCount() == 0) {
+        // A brand-new word (interval starts at 0) and a word mid-relearning after a lapse (interval
+        // reset to RELEARNING_INTERVAL_DAYS by an earlier AGAIN) are indistinguishable from
+        // reviewCount alone once a lapse has happened partway through a word's life — both simply
+        // have a sub-day interval right now. Either way, graduate to a full day on any successful
+        // rating instead of multiplying up from that sub-day base.
+        if (current.intervalDays() < 1.0) {
             return FIRST_INTERVAL_DAYS;
         }
         if (current.reviewCount() == 1) {

@@ -72,15 +72,34 @@ class Sm2AlgorithmTest {
         assertThat(result.successCount()).isEqualTo(5);
     }
 
-    @Test
-    void apply_again_neverLeavesIntervalStuckAtExactlyZero() {
-        // A literal 0 would multiply to 0 forever afterwards; the relearning step must be > 0 so a
-        // later GOOD/HARD/EASY can grow the interval back up geometrically.
+    @ParameterizedTest
+    @EnumSource(
+            value = SrsRating.class,
+            names = {"HARD", "GOOD", "EASY"})
+    void apply_recoveringFromLapse_graduatesToOneDayInsteadOfMultiplyingTheRelearningStep(
+            SrsRating rating) {
+        // A mature word (interval 30 days) that lapses (AGAIN) drops to the ~10-minute relearning
+        // step. The very next successful rating must jump back to a full day, not multiply that
+        // ~10-minute value up (0.007 * 2.5 ≈ 0.02 days — which used to leave the word nagging the
+        // learner every few minutes/hours despite having just recalled it correctly).
         SrsState afterLapse = algorithm.apply(new SrsState(30.0, 2.5, 5, 5, 0, 100.0), SrsRating.AGAIN);
 
-        SrsState recovered = algorithm.apply(afterLapse, SrsRating.GOOD);
+        SrsState recovered = algorithm.apply(afterLapse, rating);
 
-        assertThat(recovered.intervalDays()).isGreaterThan(0.0);
+        assertThat(recovered.intervalDays()).isEqualTo(1.0);
+    }
+
+    @Test
+    void apply_againOnBrandNewWordThenGood_graduatesToOneDayNotSixDays() {
+        // Regression case the old reviewCount==1 shortcut got wrong: a word failed on its very
+        // first-ever attempt (reviewCount 0 -> 1 via AGAIN) has never actually been recalled yet,
+        // so its first successful review should behave like any word's first success (1 day), not
+        // jump straight to the "second review" 6-day interval just because reviewCount is now 1.
+        SrsState afterFirstAttemptFailed = algorithm.apply(SrsState.initial(), SrsRating.AGAIN);
+
+        SrsState recovered = algorithm.apply(afterFirstAttemptFailed, SrsRating.GOOD);
+
+        assertThat(recovered.intervalDays()).isEqualTo(1.0);
     }
 
     @Test
