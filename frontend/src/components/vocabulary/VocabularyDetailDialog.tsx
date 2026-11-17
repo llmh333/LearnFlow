@@ -18,9 +18,8 @@ export function VocabularyDetailDialog({ vocabulary, onClose }: VocabularyDetail
   const rawPhonetic = vocabulary
     ? getPhoneticTranscription(vocabulary.language.code, vocabulary.attributes)
     : null
-  const phonetic = rawPhonetic && vocabulary
-    ? formatPhonetic(vocabulary.language.code, rawPhonetic)
-    : null
+  const phonetic =
+    rawPhonetic && vocabulary ? formatPhonetic(vocabulary.language.code, rawPhonetic) : null
 
   return (
     <Dialog
@@ -49,9 +48,7 @@ export function VocabularyDetailDialog({ vocabulary, onClose }: VocabularyDetail
           </div>
 
           {phonetic && (
-            <p className="font-mono text-sm text-slate-500 dark:text-slate-400">
-              {phonetic}
-            </p>
+            <p className="font-mono text-sm text-slate-500 dark:text-slate-400">{phonetic}</p>
           )}
 
           <p className="text-xl sm:text-2xl font-bold text-[#365314] dark:text-[#B6F23A]">

@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { PronounceButton } from '@/components/ui/PronounceButton'
-import {
-  IconTrophy,
-  IconSparkles,
-  IconArrowRight,
-  IconCheckCircle,
-} from '@/components/ui/Icon'
+import { IconTrophy, IconSparkles, IconArrowRight, IconCheckCircle } from '@/components/ui/Icon'
 import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
 import { useDueReviews, useSubmitReview } from '@/hooks/useReviews'
-import { useActiveStudySession, useEndStudySession, useStartStudySession } from '@/hooks/useStudySession'
+import {
+  useActiveStudySession,
+  useEndStudySession,
+  useStartStudySession,
+} from '@/hooks/useStudySession'
 import { formatPhonetic, getPhoneticTranscription } from '@/lib/phonetics'
 import { isStrokeOrderSupported } from '@/lib/strokeOrder'
 import { useUiStore } from '@/stores/uiStore'
@@ -158,9 +157,8 @@ export function ReviewPage() {
   const rawPhonetic = current
     ? getPhoneticTranscription(current.language.code, current.attributes)
     : null
-  const phonetic = rawPhonetic && current
-    ? formatPhonetic(current.language.code, rawPhonetic)
-    : null
+  const phonetic =
+    rawPhonetic && current ? formatPhonetic(current.language.code, rawPhonetic) : null
 
   function reveal() {
     setRevealed(true)
@@ -256,9 +254,7 @@ export function ReviewPage() {
             <IconCheckCircle size={32} />
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              All caught up!
-            </h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">All caught up!</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
               No words due for review right now.
             </p>
@@ -294,7 +290,10 @@ export function ReviewPage() {
               <IconTrophy size={40} />
             </div>
             <div className="absolute -top-2 -right-2">
-              <IconSparkles size={24} className="text-[#93D620] dark:text-[#B6F23A] animate-pulse" />
+              <IconSparkles
+                size={24}
+                className="text-[#93D620] dark:text-[#B6F23A] animate-pulse"
+              />
             </div>
           </div>
 
@@ -322,7 +321,8 @@ export function ReviewPage() {
     )
   }
 
-  const progress = totalCount > 0 ? Math.min(100, Math.round((reviewedCount / totalCount) * 100)) : 0
+  const progress =
+    totalCount > 0 ? Math.min(100, Math.round((reviewedCount / totalCount) * 100)) : 0
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto w-full">
@@ -367,9 +367,7 @@ export function ReviewPage() {
             <div className="flex flex-col items-center gap-4 w-full animate-fade-in">
               <div className="h-px w-24 bg-slate-200 dark:bg-slate-700 my-1" />
               {phonetic && (
-                <p className="font-mono text-sm text-slate-500 dark:text-slate-400">
-                  {phonetic}
-                </p>
+                <p className="font-mono text-sm text-slate-500 dark:text-slate-400">{phonetic}</p>
               )}
               <p className="text-xl sm:text-2xl font-bold text-[#365314] dark:text-[#B6F23A]">
                 {current.meaning}
@@ -414,9 +412,7 @@ export function ReviewPage() {
               onClick={() => rate(option.rating)}
               className={`flex flex-col items-center justify-center gap-1 rounded-2xl border p-3.5 transition-all duration-150 active:scale-95 cursor-pointer shadow-xs disabled:opacity-50 ${option.colorClass}`}
             >
-              <span className="text-sm font-bold">
-                {option.label}
-              </span>
+              <span className="text-sm font-bold">{option.label}</span>
               <div className="flex items-center gap-1 text-[11px] font-semibold opacity-85">
                 <span>({option.key})</span>
                 <span>·</span>

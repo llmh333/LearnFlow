@@ -14,7 +14,12 @@ interface PronounceButtonProps {
 /** Plays `word` aloud via the browser's built-in text-to-speech (see lib/speech.ts) — a "listen"
  * button for the word/meaning views on the Review and Vocabulary pages. Renders nothing if the
  * browser has no speech synthesis support. */
-export function PronounceButton({ word, languageCode, size = 15, className }: PronounceButtonProps) {
+export function PronounceButton({
+  word,
+  languageCode,
+  size = 15,
+  className,
+}: PronounceButtonProps) {
   const [speaking, setSpeaking] = useState(false)
 
   if (!isSpeechSupported()) return null

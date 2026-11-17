@@ -92,14 +92,22 @@ export function RegisterPage() {
             </div>
           )}
 
-          <Button type="submit" variant="primary" disabled={register.isPending} className="mt-2 w-full py-2.5 shadow-xs font-bold">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={register.isPending}
+            className="mt-2 w-full py-2.5 shadow-xs font-bold"
+          >
             {register.isPending ? 'Creating account...' : 'Get started'}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-xs text-slate-500">
           Already have an account?{' '}
-          <Link to="/login" className="font-bold text-[#365314] dark:text-[#B6F23A] hover:underline">
+          <Link
+            to="/login"
+            className="font-bold text-[#365314] dark:text-[#B6F23A] hover:underline"
+          >
             Log in
           </Link>
         </p>

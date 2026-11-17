@@ -3,7 +3,8 @@ import * as progressApi from '@/api/progress'
 
 export const progressKeys = {
   summary: (language?: string) => ['progress', 'summary', language] as const,
-  retention: (language?: string, days?: number) => ['progress', 'retention', language, days] as const,
+  retention: (language?: string, days?: number) =>
+    ['progress', 'retention', language, days] as const,
   weakAreas: (language?: string) => ['progress', 'weak-areas', language] as const,
   history: (language?: string) => ['progress', 'history', language] as const,
 }

@@ -14,9 +14,7 @@ function MistakeRow({ mistake }: { mistake: Mistake }) {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           {mistake.category && <Badge variant="purple">{mistake.category}</Badge>}
-          <span className="text-sm font-bold text-slate-900 dark:text-white">
-            {mistake.topic}
-          </span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white">{mistake.topic}</span>
         </div>
         <Badge variant="danger" className="text-[11px] font-bold">
           Repeated {mistake.timesRepeated}x
@@ -127,16 +125,16 @@ export function MistakeBookPage() {
           </div>
         ) : (
           <Card className="text-center py-8">
-            <p className="text-xs text-slate-500 dark:text-slate-400">No recurring mistakes logged yet.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              No recurring mistakes logged yet.
+            </p>
           </Card>
         )}
       </div>
 
       {/* All Mistakes List */}
       <div className="space-y-3">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white">
-          All Logged Mistakes
-        </h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">All Logged Mistakes</h2>
         {isLoading ? (
           <Card className="flex justify-center py-10">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#365314] border-t-transparent dark:border-[#B6F23A]" />
@@ -149,7 +147,9 @@ export function MistakeBookPage() {
           </div>
         ) : (
           <Card className="text-center py-10">
-            <p className="text-xs text-slate-500 dark:text-slate-400">No mistakes saved yet for this filter.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              No mistakes saved yet for this filter.
+            </p>
           </Card>
         )}
       </div>

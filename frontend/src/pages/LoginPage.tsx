@@ -19,10 +19,7 @@ export function LoginPage() {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    login.mutate(
-      { email, password },
-      { onSuccess: () => navigate('/', { replace: true }) },
-    )
+    login.mutate({ email, password }, { onSuccess: () => navigate('/', { replace: true }) })
   }
 
   return (
@@ -78,14 +75,22 @@ export function LoginPage() {
             </div>
           )}
 
-          <Button type="submit" variant="primary" disabled={login.isPending} className="mt-2 w-full py-2.5 shadow-xs font-bold">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={login.isPending}
+            className="mt-2 w-full py-2.5 shadow-xs font-bold"
+          >
             {login.isPending ? 'Logging in...' : 'Log in'}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-xs text-slate-500">
           No account yet?{' '}
-          <Link to="/register" className="font-bold text-[#365314] dark:text-[#B6F23A] hover:underline">
+          <Link
+            to="/register"
+            className="font-bold text-[#365314] dark:text-[#B6F23A] hover:underline"
+          >
             Register for free
           </Link>
         </p>

@@ -50,7 +50,9 @@ export function ConversationList({
                     variant={isActive ? 'outline' : 'default'}
                     className={cn(
                       'text-[10px] py-0 px-1.5',
-                      isActive ? 'border-white/40 text-white dark:border-black/30 dark:text-[#1A1A1A]' : '',
+                      isActive
+                        ? 'border-white/40 text-white dark:border-black/30 dark:text-[#1A1A1A]'
+                        : '',
                     )}
                   >
                     {conversation.language?.code.toUpperCase() ?? 'EN'}
@@ -59,7 +61,9 @@ export function ConversationList({
                 <div
                   className={cn(
                     'truncate text-[11px] font-medium',
-                    isActive ? 'text-[#EDFBD8] dark:text-[#1A1A1A]/80' : 'text-slate-500 dark:text-slate-400',
+                    isActive
+                      ? 'text-[#EDFBD8] dark:text-[#1A1A1A]/80'
+                      : 'text-slate-500 dark:text-slate-400',
                   )}
                 >
                   {new Date(conversation.startedAt).toLocaleDateString([], {

@@ -1,5 +1,10 @@
 import { apiFetch } from './client'
-import type { DueVocabulary, ReviewHistoryEntry, ReviewSubmitResult, SrsRating } from '@/types/domain'
+import type {
+  DueVocabulary,
+  ReviewHistoryEntry,
+  ReviewSubmitResult,
+  SrsRating,
+} from '@/types/domain'
 
 export interface DueParams {
   language?: string

@@ -70,11 +70,16 @@ export function ChatWindow({
       </div>
 
       {/* Input form */}
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[#2C2C2C]">
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[#2C2C2C]"
+      >
         <Input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={ended ? 'This conversation has ended.' : 'Type your message in target language...'}
+          placeholder={
+            ended ? 'This conversation has ended.' : 'Type your message in target language...'
+          }
           disabled={ended || isSending}
           className="flex-1 bg-white dark:bg-[#1A1A1A]"
         />

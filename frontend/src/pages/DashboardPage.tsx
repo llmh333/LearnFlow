@@ -88,9 +88,7 @@ export function DashboardPage() {
       {/* Language Learning Courses */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">
-            Your Languages
-          </h2>
+          <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">Your Languages</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Pick a language to review or practice
           </p>
@@ -110,7 +108,8 @@ export function DashboardPage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.languages.map((language) => {
               const isUrgent = language.dueCount > 0
-              const hasEnoughRetentionData = language.retentionSampleSize >= MIN_RETENTION_SAMPLE_SIZE
+              const hasEnoughRetentionData =
+                language.retentionSampleSize >= MIN_RETENTION_SAMPLE_SIZE
               return (
                 <Card
                   key={language.language.code}
@@ -141,19 +140,25 @@ export function DashboardPage() {
                         <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           {language.dueCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Due now</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          Due now
+                        </div>
                       </div>
                       <div title="Words you haven't studied yet">
                         <div className="text-base font-bold text-[#365314] dark:text-[#B6F23A]">
                           {language.newCount}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">New words</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          New words
+                        </div>
                       </div>
                       <div title="Estimated minutes to review due words and learn new ones">
                         <div className="text-base font-bold text-[#1A1A1A] dark:text-white">
                           ~{language.estimatedMinutes}m
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Time</div>
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          Time
+                        </div>
                       </div>
                     </div>
 
@@ -193,10 +198,16 @@ export function DashboardPage() {
 
                   <div className="pt-5">
                     <Link to={`/review?language=${language.language.code}`} className="block">
-                      <Button variant="primary" className="w-full gap-2 justify-center shadow-xs font-semibold">
+                      <Button
+                        variant="primary"
+                        className="w-full gap-2 justify-center shadow-xs font-semibold"
+                      >
                         <IconReview size={16} />
                         <span>Start review</span>
-                        <IconArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                        <IconArrowRight
+                          size={14}
+                          className="transition-transform group-hover:translate-x-1"
+                        />
                       </Button>
                     </Link>
                   </div>
@@ -213,9 +224,7 @@ export function DashboardPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EDFBD8] text-[#365314] dark:bg-[#365314]/50 dark:text-[#B6F23A]">
             <IconProgress size={18} />
           </div>
-          <h2 className="text-base font-bold text-[#1A1A1A] dark:text-white">
-            Progress Overview
-          </h2>
+          <h2 className="text-base font-bold text-[#1A1A1A] dark:text-white">Progress Overview</h2>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

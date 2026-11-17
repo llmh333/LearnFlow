@@ -123,7 +123,10 @@ export function ExercisesPage() {
               <IconTrophy size={40} />
             </div>
             <div className="absolute -top-2 -right-2">
-              <IconSparkles size={24} className="text-[#93D620] dark:text-[#B6F23A] animate-pulse" />
+              <IconSparkles
+                size={24}
+                className="text-[#93D620] dark:text-[#B6F23A] animate-pulse"
+              />
             </div>
           </div>
           <div className="space-y-2">
@@ -215,7 +218,8 @@ export function ExercisesPage() {
             </p>
             {!feedback.correct && feedback.correctTokens && (
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Correct order: <span className="font-semibold">{feedback.correctTokens.join(' ')}</span>
+                Correct order:{' '}
+                <span className="font-semibold">{feedback.correctTokens.join(' ')}</span>
               </p>
             )}
             <Button variant="primary" size="sm" className="gap-2 font-semibold" onClick={next}>
