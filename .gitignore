@@ -43,3 +43,7 @@ frontend/dist/
 
 # mise local overrides
 .mise.local.toml
+
+# Claude Code (personal settings and hook cache stay local)
+.claude/settings.local.json
+.claude/.format-cache
