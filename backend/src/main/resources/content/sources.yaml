@@ -1,0 +1,41 @@
+# Every item names one of these sources. Shown publicly on the /sources page.
+sources:
+  - key: jmdict
+    name: JMdict
+    url: https://www.edrdg.org/jmdict/j_jmdict.html
+    license: CC BY-SA 4.0
+    licenseUrl: https://www.edrdg.org/edrdg/licence.html
+    attribution: >-
+      This application uses the JMdict dictionary files. These files are the property of the
+      Electronic Dictionary Research and Development Group, and are used in conformance with the
+      Group's licence.
+  - key: kanjidic2
+    name: KANJIDIC2
+    url: https://www.edrdg.org/wiki/index.php/KANJIDIC_Project
+    license: CC BY-SA 4.0
+    licenseUrl: https://www.edrdg.org/edrdg/licence.html
+    attribution: >-
+      This application uses the KANJIDIC2 dictionary file. This file is the property of the
+      Electronic Dictionary Research and Development Group, and is used in conformance with the
+      Group's licence.
+  - key: tatoeba
+    name: Tatoeba
+    url: https://tatoeba.org
+    license: CC BY 2.0 FR
+    licenseUrl: https://creativecommons.org/licenses/by/2.0/fr/
+    attribution: Example sentences from the Tatoeba Project (tatoeba.org).
+  - key: animcjk
+    name: AnimCJK
+    url: https://github.com/parsimonhi/animCJK
+    license: Arphic Public License / LGPL
+    licenseUrl: https://github.com/parsimonhi/animCJK#licenses
+    attribution: Stroke order data © AnimCJK.
+  - key: ai
+    name: LearnFlow (AI-assisted, human-reviewed)
+    license: Apache-2.0
+    attribution: >-
+      Drafted with AI assistance and reviewed by a person before publication. JLPT levels on these
+      items are LearnFlow estimates, not taken from an official list.
+  - key: learnflow
+    name: LearnFlow (hand-written)
+    license: Apache-2.0

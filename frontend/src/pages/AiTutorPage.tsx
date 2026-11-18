@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Badge } from '@/components/ui/Badge'
-import { IconSparkles, IconCheck, IconCheckCircle, IconBookmark } from '@/components/ui/Icon'
+import { IconSparkles, IconCheck, IconCheckCircle } from '@/components/ui/Icon'
 import {
   useConversation,
   useConversationList,
@@ -19,7 +19,6 @@ import {
   useScenarios,
   useSendConversationMessage,
 } from '@/hooks/useAiTutor'
-import { useCreateMistake } from '@/hooks/useMistakes'
 import { useUiStore } from '@/stores/uiStore'
 import { ApiError } from '@/api/client'
 import { streamConversationMessage } from '@/api/ai'
@@ -98,25 +97,11 @@ function AskTab({ languageCode }: { languageCode: string }) {
 function CorrectTab({ languageCode }: { languageCode: string }) {
   const [text, setText] = useState('')
   const correctSentence = useCorrectSentence()
-  const createMistake = useCreateMistake()
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!text.trim()) return
-    createMistake.reset()
     correctSentence.mutate({ languageCode, text: text.trim() })
-  }
-
-  function handleSaveToMistakeBook() {
-    if (!correctSentence.data || !correctSentence.data.suggestedCategory) return
-    createMistake.mutate({
-      languageCode,
-      category: correctSentence.data.suggestedCategory,
-      topic: correctSentence.data.suggestedTopic,
-      original: text.trim(),
-      corrected: correctSentence.data.corrected,
-      explanation: correctSentence.data.explanation,
-    })
   }
 
   return (
@@ -191,23 +176,6 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
                   {correctSentence.data.suggestedTopic}
                 </span>
               </div>
-              {createMistake.isSuccess ? (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  <IconCheck size={15} /> Saved to Mistake Book
-                </span>
-              ) : (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleSaveToMistakeBook}
-                  disabled={createMistake.isPending}
-                  className="gap-1.5 font-semibold"
-                >
-                  <IconBookmark size={14} />
-                  <span>{createMistake.isPending ? 'Saving...' : 'Save to Mistake Book'}</span>
-                </Button>
-              )}
             </div>
           )}
         </Card>
@@ -333,9 +301,7 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           isEnding={endConversation.isPending}
           ended={ended}
         />
-        {ended && summary && (
-          <ConversationSummaryCard summary={summary} languageCode={languageCode} />
-        )}
+        {ended && summary && <ConversationSummaryCard summary={summary} />}
       </div>
     </div>
   )

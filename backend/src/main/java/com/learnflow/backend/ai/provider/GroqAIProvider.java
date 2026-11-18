@@ -24,8 +24,8 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Calls Groq's OpenAI-compatible Chat Completions API directly via {@link RestClient} (no SDK
- * dependency) — same integration style as {@link ClaudeAIProvider}/{@link GeminiAIProvider}, so
- * any of the three can be selected at deploy time via {@code app.ai.provider} with no other code
+ * dependency) — same integration style as {@link ClaudeAIProvider}/{@link GeminiAIProvider}, so any
+ * of the three can be selected at deploy time via {@code app.ai.provider} with no other code
  * changes (see {@code AiTutorService}, which only depends on the {@link AIProvider} interface).
  * Structured results use OpenAI-style {@code response_format: json_schema} in strict mode.
  */
@@ -44,7 +44,10 @@ public class GroqAIProvider implements AIProvider {
 
     public GroqAIProvider(AIProperties properties, ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.model = properties.model() == null || properties.model().isBlank() ? DEFAULT_MODEL : properties.model();
+        this.model =
+                properties.model() == null || properties.model().isBlank()
+                        ? DEFAULT_MODEL
+                        : properties.model();
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(10));
@@ -53,7 +56,8 @@ public class GroqAIProvider implements AIProvider {
         this.restClient =
                 RestClient.builder()
                         .requestFactory(requestFactory)
-                        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.groqApiKey())
+                        .defaultHeader(
+                                HttpHeaders.AUTHORIZATION, "Bearer " + properties.groqApiKey())
                         .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build();
     }
@@ -67,18 +71,30 @@ public class GroqAIProvider implements AIProvider {
     @Override
     public List<String> generateExamples(ExampleGenerationRequest request) {
         String system =
-                AIPrompts.generateExamples(request.word(), request.languageCode(), request.currentLevel());
+                AIPrompts.generateExamples(
+                        request.word(), request.languageCode(), request.currentLevel());
         Map<String, Object> schema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
-                                Map.of("examples", Map.of("type", "array", "items", Map.of("type", "string"))),
-                        "required", List.of("examples"),
-                        "additionalProperties", false);
+                        Map.of(
+                                "examples",
+                                Map.of("type", "array", "items", Map.of("type", "string"))),
+                        "required",
+                        List.of("examples"),
+                        "additionalProperties",
+                        false);
         Map<String, Object> result =
-                callStructured(system, "Generate examples for: " + request.word(), "generate_examples", schema);
+                callStructured(
+                        system,
+                        "Generate examples for: " + request.word(),
+                        "generate_examples",
+                        schema);
         Object examples = result.get("examples");
-        return examples instanceof List<?> list ? list.stream().map(String::valueOf).toList() : List.of();
+        return examples instanceof List<?> list
+                ? list.stream().map(String::valueOf).toList()
+                : List.of();
     }
 
     @Override
@@ -86,15 +102,20 @@ public class GroqAIProvider implements AIProvider {
         String system = AIPrompts.correctSentence(request.languageCode(), request.currentLevel());
         Map<String, Object> schema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
-                                Map.of(
-                                        "corrected", Map.of("type", "string"),
-                                        "explanation", Map.of("type", "string")),
-                        "required", List.of("corrected", "explanation"),
-                        "additionalProperties", false);
-        Map<String, Object> result = callStructured(system, request.text(), "correct_sentence", schema);
-        return new SentenceCorrection(String.valueOf(result.get("corrected")), String.valueOf(result.get("explanation")));
+                        Map.of(
+                                "corrected", Map.of("type", "string"),
+                                "explanation", Map.of("type", "string")),
+                        "required",
+                        List.of("corrected", "explanation"),
+                        "additionalProperties",
+                        false);
+        Map<String, Object> result =
+                callStructured(system, request.text(), "correct_sentence", schema);
+        return new SentenceCorrection(
+                String.valueOf(result.get("corrected")), String.valueOf(result.get("explanation")));
     }
 
     @Override
@@ -105,28 +126,33 @@ public class GroqAIProvider implements AIProvider {
                         .formatted(request.original(), request.corrected(), request.explanation());
         Map<String, Object> schema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
+                        Map.of(
+                                "category",
                                 Map.of(
-                                        "category",
-                                        Map.of(
-                                                "type",
-                                                "string",
-                                                "enum",
-                                                        List.of(
-                                                                "Vocabulary",
-                                                                "Grammar",
-                                                                "Word order",
-                                                                "Pronunciation",
-                                                                "Usage",
-                                                                "Spelling",
-                                                                "Tone",
-                                                                "Other")),
-                                        "topic", Map.of("type", "string", "description", "Short label, 2-4 words")),
-                        "required", List.of("category", "topic"),
-                        "additionalProperties", false);
+                                        "type",
+                                        "string",
+                                        "enum",
+                                        List.of(
+                                                "Vocabulary",
+                                                "Grammar",
+                                                "Word order",
+                                                "Pronunciation",
+                                                "Usage",
+                                                "Spelling",
+                                                "Tone",
+                                                "Other")),
+                                "topic",
+                                Map.of("type", "string", "description", "Short label, 2-4 words")),
+                        "required",
+                        List.of("category", "topic"),
+                        "additionalProperties",
+                        false);
         Map<String, Object> result = callStructured(system, userMessage, "analyze_mistake", schema);
-        return new MistakeAnalysis(String.valueOf(result.get("category")), String.valueOf(result.get("topic")));
+        return new MistakeAnalysis(
+                String.valueOf(result.get("category")), String.valueOf(result.get("topic")));
     }
 
     @Override
@@ -135,7 +161,8 @@ public class GroqAIProvider implements AIProvider {
     }
 
     @Override
-    public void streamConversation(ConversationRequest request, Consumer<String> onDelta, Runnable onComplete) {
+    public void streamConversation(
+            ConversationRequest request, Consumer<String> onDelta, Runnable onComplete) {
         Map<String, Object> body = conversationBody(request);
         body.put("stream", true);
         streamPost(body, onDelta);
@@ -147,7 +174,8 @@ public class GroqAIProvider implements AIProvider {
                 request.scenario() == null || request.scenario().isBlank()
                         ? "daily conversation"
                         : request.scenario();
-        String system = AIPrompts.conversation(request.languageCode(), request.currentLevel(), scenario);
+        String system =
+                AIPrompts.conversation(request.languageCode(), request.currentLevel(), scenario);
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage(request.userMessage()));
         return baseBody(system, messages);
@@ -158,176 +186,119 @@ public class GroqAIProvider implements AIProvider {
         String system = AIPrompts.summarizeConversation(request.languageCode());
         Map<String, Object> mistakeItemSchema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
+                        Map.of(
+                                "category",
                                 Map.of(
-                                        "category",
-                                        Map.of(
-                                                "type",
-                                                "string",
-                                                "enum",
-                                                        List.of(
-                                                                "Vocabulary",
-                                                                "Grammar",
-                                                                "Word order",
-                                                                "Pronunciation",
-                                                                "Usage",
-                                                                "Spelling",
-                                                                "Tone",
-                                                                "Other")),
-                                        "topic", Map.of("type", "string"),
-                                        "original", Map.of("type", "string"),
-                                        "corrected", Map.of("type", "string"),
-                                        "explanation", Map.of("type", "string")),
-                        "required", List.of("category", "topic", "original", "corrected", "explanation"),
-                        "additionalProperties", false);
+                                        "type",
+                                        "string",
+                                        "enum",
+                                        List.of(
+                                                "Vocabulary",
+                                                "Grammar",
+                                                "Word order",
+                                                "Pronunciation",
+                                                "Usage",
+                                                "Spelling",
+                                                "Tone",
+                                                "Other")),
+                                "topic",
+                                Map.of("type", "string"),
+                                "original",
+                                Map.of("type", "string"),
+                                "corrected",
+                                Map.of("type", "string"),
+                                "explanation",
+                                Map.of("type", "string")),
+                        "required",
+                        List.of("category", "topic", "original", "corrected", "explanation"),
+                        "additionalProperties",
+                        false);
         Map<String, Object> vocabItemSchema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
-                                Map.of(
-                                        "word", Map.of("type", "string"),
-                                        "meaningVietnamese", Map.of("type", "string")),
-                        "required", List.of("word", "meaningVietnamese"),
-                        "additionalProperties", false);
+                        Map.of(
+                                "word", Map.of("type", "string"),
+                                "meaningVietnamese", Map.of("type", "string")),
+                        "required",
+                        List.of("word", "meaningVietnamese"),
+                        "additionalProperties",
+                        false);
         Map<String, Object> schema =
                 Map.of(
-                        "type", "object",
+                        "type",
+                        "object",
                         "properties",
-                                Map.of(
-                                        "overview", Map.of("type", "string"),
-                                        "mistakes", Map.of("type", "array", "items", mistakeItemSchema),
-                                        "newVocabulary", Map.of("type", "array", "items", vocabItemSchema),
-                                        "betterExpressions", Map.of("type", "array", "items", Map.of("type", "string")),
-                                        "grammarProblems", Map.of("type", "array", "items", Map.of("type", "string"))),
+                        Map.of(
+                                "overview", Map.of("type", "string"),
+                                "mistakes", Map.of("type", "array", "items", mistakeItemSchema),
+                                "newVocabulary", Map.of("type", "array", "items", vocabItemSchema),
+                                "betterExpressions",
+                                        Map.of("type", "array", "items", Map.of("type", "string")),
+                                "grammarProblems",
+                                        Map.of("type", "array", "items", Map.of("type", "string"))),
                         "required",
-                                List.of(
-                                        "overview",
-                                        "mistakes",
-                                        "newVocabulary",
-                                        "betterExpressions",
-                                        "grammarProblems"),
-                        "additionalProperties", false);
+                        List.of(
+                                "overview",
+                                "mistakes",
+                                "newVocabulary",
+                                "betterExpressions",
+                                "grammarProblems"),
+                        "additionalProperties",
+                        false);
 
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage("Please summarize this conversation for me."));
-        Map<String, Object> result = callStructured(system, messages, "summarize_conversation", schema);
+        Map<String, Object> result =
+                callStructured(system, messages, "summarize_conversation", schema);
         return toConversationSummary(result);
     }
 
     @SuppressWarnings("unchecked")
     private ConversationSummary toConversationSummary(Map<String, Object> result) {
-        List<Map<String, Object>> mistakesRaw = (List<Map<String, Object>>) result.getOrDefault("mistakes", List.of());
+        List<Map<String, Object>> mistakesRaw =
+                (List<Map<String, Object>>) result.getOrDefault("mistakes", List.of());
         List<ConversationMistake> mistakes =
                 mistakesRaw.stream()
-                        .map(
-                                m ->
-                                        new ConversationMistake(
-                                                String.valueOf(m.get("category")),
-                                                String.valueOf(m.get("topic")),
-                                                String.valueOf(m.get("original")),
-                                                String.valueOf(m.get("corrected")),
-                                                String.valueOf(m.get("explanation"))))
+                        .map(m ->
+                                new ConversationMistake(
+                                        String.valueOf(m.get("category")),
+                                        String.valueOf(m.get("topic")),
+                                        String.valueOf(m.get("original")),
+                                        String.valueOf(m.get("corrected")),
+                                        String.valueOf(m.get("explanation"))))
                         .toList();
 
         List<Map<String, Object>> vocabRaw =
                 (List<Map<String, Object>>) result.getOrDefault("newVocabulary", List.of());
         List<SuggestedVocabulary> newVocabulary =
                 vocabRaw.stream()
-                        .map(
-                                v ->
-                                        new SuggestedVocabulary(
-                                                String.valueOf(v.get("word")), String.valueOf(v.get("meaningVietnamese"))))
+                        .map(v ->
+                                new SuggestedVocabulary(
+                                        String.valueOf(v.get("word")),
+                                        String.valueOf(v.get("meaningVietnamese"))))
                         .toList();
 
         List<String> betterExpressions =
-                ((List<?>) result.getOrDefault("betterExpressions", List.of())).stream().map(String::valueOf).toList();
+                ((List<?>) result.getOrDefault("betterExpressions", List.of()))
+                        .stream().map(String::valueOf).toList();
         List<String> grammarProblems =
-                ((List<?>) result.getOrDefault("grammarProblems", List.of())).stream().map(String::valueOf).toList();
+                ((List<?>) result.getOrDefault("grammarProblems", List.of()))
+                        .stream().map(String::valueOf).toList();
 
         return new ConversationSummary(
-                String.valueOf(result.get("overview")), mistakes, newVocabulary, betterExpressions, grammarProblems);
-    }
-
-    @Override
-    public List<GeneratedExercise> generateExercises(ExerciseGenerationRequest request) {
-        String system = AIPrompts.exerciseGeneration(request.context(), request.count());
-        // OpenAI-style strict mode requires every key in "properties" to also be listed in
-        // "required" — fields that only apply to one exercise type are made nullable instead
-        // (["string", "null"]) rather than actually optional.
-        Map<String, Object> exerciseItemSchema =
-                Map.of(
-                        "type", "object",
-                        "properties",
-                                Map.of(
-                                        "type",
-                                        Map.of(
-                                                "type", "string",
-                                                "enum", List.of("SENTENCE_SCRAMBLE", "MULTIPLE_CHOICE")),
-                                        "word", Map.of("type", List.of("string", "null")),
-                                        "correctSentence", Map.of("type", List.of("string", "null")),
-                                        "question", Map.of("type", List.of("string", "null")),
-                                        "options",
-                                                Map.of(
-                                                        "type", List.of("array", "null"),
-                                                        "items", Map.of("type", "string")),
-                                        "correctOptionIndex", Map.of("type", List.of("integer", "null"))),
-                        "required",
-                                List.of(
-                                        "type",
-                                        "word",
-                                        "correctSentence",
-                                        "question",
-                                        "options",
-                                        "correctOptionIndex"),
-                        "additionalProperties", false);
-        Map<String, Object> schema =
-                Map.of(
-                        "type", "object",
-                        "properties", Map.of("exercises", Map.of("type", "array", "items", exerciseItemSchema)),
-                        "required", List.of("exercises"),
-                        "additionalProperties", false);
-        Map<String, Object> result =
-                callStructured(
-                        system, "Generate %d exercises.".formatted(request.count()), "generate_exercises", schema);
-        return toGeneratedExercises(result);
+                String.valueOf(result.get("overview")),
+                mistakes,
+                newVocabulary,
+                betterExpressions,
+                grammarProblems);
     }
 
     @SuppressWarnings("unchecked")
-    private List<GeneratedExercise> toGeneratedExercises(Map<String, Object> input) {
-        Object raw = input.get("exercises");
-        if (!(raw instanceof List<?> list)) {
-            return List.of();
-        }
-        List<GeneratedExercise> result = new ArrayList<>();
-        for (Object item : list) {
-            if (!(item instanceof Map<?, ?> rawMap)) {
-                continue;
-            }
-            Map<String, Object> m = (Map<String, Object>) rawMap;
-            Object options = m.get("options");
-            Object correctOptionIndex = m.get("correctOptionIndex");
-            result.add(
-                    new GeneratedExercise(
-                            String.valueOf(m.get("type")),
-                            m.get("word") == null ? null : String.valueOf(m.get("word")),
-                            m.get("correctSentence") == null ? null : String.valueOf(m.get("correctSentence")),
-                            null,
-                            m.get("question") == null ? null : String.valueOf(m.get("question")),
-                            options instanceof List<?> ol ? ol.stream().map(String::valueOf).toList() : null,
-                            correctOptionIndex instanceof Number n ? n.intValue() : null));
-        }
-        return result;
-    }
-
-    @Override
-    public String generateDailyPlan(DailyPlanContext context) {
-        String userMessage =
-                "Total time: %d minutes.\n%s"
-                        .formatted(context.totalMinutes(), String.join("\n", context.languageSummaries()));
-        return extractText(post(baseBody(AIPrompts.DAILY_PLAN, List.of(userMessage(userMessage)))));
-    }
-
     private List<Map<String, Object>> toMessages(List<ConversationTurn> history) {
         List<Map<String, Object>> messages = new ArrayList<>();
         for (ConversationTurn turn : history) {
@@ -347,7 +318,10 @@ public class GroqAIProvider implements AIProvider {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> callStructured(
-            String system, List<Map<String, Object>> messages, String schemaName, Map<String, Object> schema) {
+            String system,
+            List<Map<String, Object>> messages,
+            String schemaName,
+            Map<String, Object> schema) {
         Map<String, Object> body = baseBody(system, messages);
         body.put(
                 "response_format",
@@ -390,7 +364,8 @@ public class GroqAIProvider implements AIProvider {
         RuntimeException lastError = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                Map<String, Object> response = restClient.post().uri(API_URL).body(body).retrieve().body(Map.class);
+                Map<String, Object> response =
+                        restClient.post().uri(API_URL).body(body).retrieve().body(Map.class);
                 if (response == null) {
                     throw new AIProviderException("AI response body was empty");
                 }
@@ -398,7 +373,11 @@ public class GroqAIProvider implements AIProvider {
                 return response;
             } catch (RestClientException e) {
                 lastError = e;
-                log.warn("Groq API call failed (attempt {}/{}): {}", attempt, MAX_ATTEMPTS, e.getMessage());
+                log.warn(
+                        "Groq API call failed (attempt {}/{}): {}",
+                        attempt,
+                        MAX_ATTEMPTS,
+                        e.getMessage());
             }
         }
         throw new AIProviderException("Failed to call Groq API", lastError);
@@ -416,22 +395,26 @@ public class GroqAIProvider implements AIProvider {
                         .post()
                         .uri(API_URL)
                         .body(body)
-                        .exchange(
-                                (request, response) -> {
-                                    readSseStream(response.getBody(), onDelta);
-                                    return null;
-                                });
+                        .exchange((request, response) -> {
+                            readSseStream(response.getBody(), onDelta);
+                            return null;
+                        });
                 return;
             } catch (RestClientException e) {
                 lastError = e;
-                log.warn("Groq API streaming call failed (attempt {}/{}): {}", attempt, MAX_ATTEMPTS, e.getMessage());
+                log.warn(
+                        "Groq API streaming call failed (attempt {}/{}): {}",
+                        attempt,
+                        MAX_ATTEMPTS,
+                        e.getMessage());
             }
         }
         throw new AIProviderException("Failed to stream from Groq API", lastError);
     }
 
     private void readSseStream(java.io.InputStream body, Consumer<String> onDelta) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("data:")) {
@@ -442,7 +425,8 @@ public class GroqAIProvider implements AIProvider {
                     continue;
                 }
                 JsonNode event = objectMapper.readTree(json);
-                String text = event.path("choices").path(0).path("delta").path("content").asString("");
+                String text =
+                        event.path("choices").path(0).path("delta").path("content").asString("");
                 if (!text.isEmpty()) {
                     onDelta.accept(text);
                 }

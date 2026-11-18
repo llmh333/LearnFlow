@@ -19,17 +19,20 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void list_withoutToken_returns401() {
-        RestTestClient client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+        RestTestClient client =
+                RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
         client.get().uri("/api/languages").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
     void list_returnsSeededLanguages() {
-        RestTestClient client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+        RestTestClient client =
+                RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
         RegisterRequest register =
-                new RegisterRequest("lang-" + System.nanoTime() + "@example.com", "password123", "Tester");
+                new RegisterRequest(
+                        "lang-" + System.nanoTime() + "@example.com", "password123", "Tester");
         AuthResponse auth =
                 client.post()
                         .uri("/api/auth/register")
@@ -52,6 +55,6 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
                         .returnResult()
                         .getResponseBody();
 
-        assertThat(languages).extracting(LanguageResponse::code).containsExactly("en", "zh", "ja");
+        assertThat(languages).extracting(LanguageResponse::code).containsExactly("ja");
     }
 }

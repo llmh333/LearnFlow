@@ -4,18 +4,30 @@
 
 @theme {
   --font-sans:
-    'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans',
+    'Noto Sans JP', sans-serif;
 
-  /* LearnFlow Design System Tokens from Specification */
-  --color-lime-primary: #b6f23a;
-  --color-lime-secondary: #93d620;
-  --color-lime-tertiary: #edfbd8;
-  --color-lime-forest: #365314;
-  --color-lime-darkforest: #23370d;
+  /* LearnFlow Zen & Delight Design System Tokens */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
 
-  --color-neutral-dark: #1a1a1a;
-  --color-neutral-surface: #242424;
-  --color-neutral-border: #333333;
+  --color-coral-50: #fff7ed;
+  --color-coral-500: #f97316;
+  --color-coral-600: #ea580c;
+
+  --color-matcha-50: #ecfdf5;
+  --color-matcha-100: #d1fae5;
+  --color-matcha-500: #10b981;
+  --color-matcha-600: #059669;
+  --color-matcha-700: #047857;
+
+  --color-surface-card: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-surface-dark: #1e293b;
 }
 
 @layer base {
@@ -24,7 +36,7 @@
   }
 
   .dark * {
-    border-color: var(--color-neutral-border, #333333);
+    border-color: #334155;
   }
 
   body {
@@ -33,14 +45,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color-scheme: light dark;
-    background-color: #f1f3f5;
-    color: #1a1a1a;
+    background-color: #f8fafc;
+    color: #0f172a;
   }
 
   .dark body,
   body.dark {
-    background-color: #121212;
-    color: #f5f5f5;
+    background-color: #0f172a;
+    color: #f8fafc;
   }
 }
 
@@ -77,6 +89,16 @@
   }
 }
 
+@keyframes bounceSoft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -102,6 +124,10 @@
   animation: pulseSubtle 2s infinite ease-in-out;
 }
 
+.animate-bounce-soft {
+  animation: bounceSoft 2s infinite ease-in-out;
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -123,10 +149,10 @@
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-thumb {
-    background: #333333;
+    background: #334155;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #444444;
+    background: #475569;
   }
 }
 
@@ -137,9 +163,17 @@
    !important since these rules must beat the SVG's own embedded <style>, whose source-order
    position in the DOM isn't something we control. */
 .stroke-order-canvas svg.acjk path[id] {
-  fill: #cbd5e1 !important;
+  fill: #e2e8f0 !important;
 }
 
 .stroke-order-canvas svg.acjk path[clip-path] {
-  stroke: #365314 !important;
+  stroke: #4f46e5 !important;
+}
+
+.dark .stroke-order-canvas svg.acjk path[id] {
+  fill: #334155 !important;
+}
+
+.dark .stroke-order-canvas svg.acjk path[clip-path] {
+  stroke: #818cf8 !important;
 }

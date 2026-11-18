@@ -2,7 +2,6 @@ export interface User {
   id: number
   email: string
   displayName: string
-  dailyNewWordsLimit: number
 }
 
 export interface AuthResponse {
@@ -26,172 +25,12 @@ export interface Language {
   code: string
   name: string
 }
-
-/** Whitelisted attribute keys per language (D9), enforced backend-side by VocabularyAttributesValidator. */
-export interface EnglishAttributes {
-  ipa?: string
-  partOfSpeech?: string
-  cefrLevel?: string
-  collocations?: string[]
-}
-
-export interface ChineseAttributes {
-  pinyin?: string
-  hskLevel?: number
-  examplePinyin?: string
-  measureWord?: string
-}
-
-export interface JapaneseAttributes {
-  reading?: string
-  exampleReading?: string
-  partOfSpeech?: string
-  jlptLevel?: string
-}
-
-export interface Vocabulary {
-  id: number
-  language: Language
-  word: string
-  /** Always Vietnamese, regardless of the language being studied (decision D10). */
-  meaning: string
-  example: string | null
-  difficulty: number
-  tags: string[]
-  attributes: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PageResponse<T> {
-  content: T[]
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
-}
-
-export type SrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY'
-
-export interface DueVocabulary {
-  vocabularyId: number
-  language: Language
-  word: string
-  meaning: string
-  example: string | null
-  attributes: Record<string, unknown>
-  nextReview: string
-  reviewCount: number
-  memoryStrength: number
-}
-
-export interface ReviewSubmitResult {
-  vocabularyId: number
-  lastReview: string | null
-  nextReview: string
-  intervalDays: number
-  easeFactor: number
-  reviewCount: number
-  successCount: number
-  failureCount: number
-  memoryStrength: number
-}
-
-export interface ReviewHistoryEntry {
-  id: number
-  reviewedAt: string
-  rating: SrsRating
-  previousInterval: number | null
-  newInterval: number | null
-  responseTimeMs: number | null
-}
-
-export interface StudySession {
-  id: number
-  language: Language | null
-  startedAt: string
-  endedAt: string | null
-  wordsReviewed: number
-  wordsLearned: number
-  mistakesCount: number
-}
-
-export interface LanguageTodaySummary {
-  language: Language
-  dueCount: number
-  newCount: number
-  knownWords: number
-  retentionPercent: number
-  /** How many reviews retentionPercent is computed from (last 30 days). */
-  retentionSampleSize: number
-  estimatedMinutes: number
-}
-
-export interface DashboardToday {
-  languages: LanguageTodaySummary[]
-  totalEstimatedMinutes: number
-  streakDays: number
-}
-
-export interface ProgressSummary {
-  total: number
-  newCount: number
-  learningCount: number
-  masteredCount: number
-  dueCount: number
-}
-
-export interface Retention {
-  successCount: number
-  totalCount: number
-  ratePercent: number
-}
-
-export interface WeakArea {
-  vocabularyId: number
-  word: string
-  meaning: string
-  easeFactor: number
-  reviewCount: number
-  failureCount: number
-}
-
-export interface DailyPlanItem {
-  id: number
-  languageCode: string | null
-  minutes: number
-  kind: 'REVIEW_DUE' | 'LEARN_NEW' | 'GRAMMAR_EXERCISE' | 'CONVERSATION'
-  description: string
-  completed: boolean
-}
-
-export interface DailyPlan {
-  id: number
-  planDate: string
-  availableMinutes: number
-  intro: string | null
-  items: DailyPlanItem[]
-}
-
-export type ExerciseType = 'SENTENCE_SCRAMBLE' | 'MULTIPLE_CHOICE'
-
-/** Never carries the answer key (correctTokens/correctOptionIndex) — that's only revealed after
- * submitting, in ExerciseAnswerResult. */
-export interface Exercise {
-  id: number
-  languageCode: string
-  type: ExerciseType
-  source: 'DETERMINISTIC' | 'AI'
-  shuffledTokens: string[] | null
-  question: string | null
-  options: string[] | null
-  completed: boolean
-  correct: boolean | null
-}
-
-export interface ExerciseAnswerResult {
-  id: number
-  correct: boolean
-  correctTokens: string[] | null
-  correctOptionIndex: number | null
+/** A data source and its licence, shown on the public /sources page. */
+export interface ContentSource {
+  key: string
+  name: string
+  url?: string
+  license: string
+  licenseUrl?: string
+  attribution?: string
 }

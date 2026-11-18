@@ -5,14 +5,11 @@ import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
 import com.learnflow.backend.auth.dto.UserResponse;
-import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
 import com.learnflow.backend.common.error.NotFoundException;
-import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,23 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthService {
 
-    /**
-     * Reserved system account that owns the canonical starter vocabulary pack (see
-     * V12__restore_starter_vocabulary_per_user.sql). Never logged into — no UI path creates or
-     * authenticates it.
-     */
-    private static final String STARTER_VOCABULARY_TEMPLATE_EMAIL = "seed@learnflow.system";
-
-    /** The only values the "new words per day" setting may take (00-overview §1.5-adjacent UI
-     * decision — a fixed set of tiers is simpler for a learner to reason about than a free-form
-     * number, and simpler for the Review queue's daily cap to enforce). */
-    private static final Set<Integer> ALLOWED_DAILY_NEW_WORDS_LIMITS = Set.of(20, 25, 30, 35);
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthProperties authProperties;
-    private final VocabularyService vocabularyService;
     private final Clock clock;
 
     public AuthService(
@@ -46,13 +30,11 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthProperties authProperties,
-            VocabularyService vocabularyService,
             Clock clock) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authProperties = authProperties;
-        this.vocabularyService = vocabularyService;
         this.clock = clock;
     }
 
@@ -60,23 +42,18 @@ public class AuthService {
         if (!authProperties.registrationEnabled()) {
             throw new IllegalStateException("Registration is disabled");
         }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ConflictException("Email already registered: " + request.email());
+        String email = normalizeEmail(request.email());
+        if (userRepository.existsByEmail(email)) {
+            throw new ConflictException("Email already registered: " + email);
         }
 
         User user =
                 new User(
-                        request.email(),
+                        email,
                         passwordEncoder.encode(request.password()),
                         request.displayName(),
                         Instant.now(clock));
         userRepository.save(user);
-
-        userRepository
-                .findByEmail(STARTER_VOCABULARY_TEMPLATE_EMAIL)
-                .ifPresent(
-                        templateUser ->
-                                vocabularyService.seedStarterVocabularyFor(user.getId(), templateUser.getId()));
 
         return issueAuthResponse(user);
     }
@@ -84,50 +61,15 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         User user =
                 userRepository
-                        .findByEmail(request.email())
-                        .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+                        .findByEmail(normalizeEmail(request.email()))
+                        .orElseThrow(
+                                () -> new BadCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new BadCredentialsException("Invalid email or password");
         }
 
         return issueAuthResponse(user);
-    }
-
-    /** Real, loggable-into accounts only — excludes the starter-vocabulary template account. Used
-     * by {@code exercise.scheduler.ExerciseGenerationScheduler} to know which users to top up AI
-     * exercises for, without that module depending on {@code UserRepository} directly. */
-    @Transactional(readOnly = true)
-    public List<Long> listActiveUserIds() {
-        return userRepository.findAllByEmailNot(STARTER_VOCABULARY_TEMPLATE_EMAIL).stream()
-                .map(User::getId)
-                .toList();
-    }
-
-    public UserResponse updateDailyNewWordsLimit(Long userId, int limit) {
-        if (!ALLOWED_DAILY_NEW_WORDS_LIMITS.contains(limit)) {
-            throw new BadRequestException(
-                    "dailyNewWordsLimit must be one of " + ALLOWED_DAILY_NEW_WORDS_LIMITS);
-        }
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-        user.setDailyNewWordsLimit(limit);
-        return UserResponse.from(user);
-    }
-
-    /** Used by {@code srs.ReviewController} to cap new-word introduction in the Review queue.
-     * Fetched at the controller layer rather than injected into {@code ReviewService} directly —
-     * {@code VocabularyService} already depends on {@code ReviewService}, so {@code ReviewService}
-     * depending on this service (which depends on {@code VocabularyService}) would be a circular
-     * dependency. */
-    @Transactional(readOnly = true)
-    public int getDailyNewWordsLimit(Long userId) {
-        return userRepository
-                .findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + userId))
-                .getDailyNewWordsLimit();
     }
 
     @Transactional(readOnly = true)
@@ -142,5 +84,10 @@ public class AuthService {
     private AuthResponse issueAuthResponse(User user) {
         JwtService.IssuedToken issued = jwtService.issue(user.getId(), user.getEmail());
         return new AuthResponse(issued.token(), issued.expiresAt(), UserResponse.from(user));
+    }
+
+    /** Emails are stored lower-cased (the DB has a CHECK), so Foo@x and foo@x are one account. */
+    private static String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

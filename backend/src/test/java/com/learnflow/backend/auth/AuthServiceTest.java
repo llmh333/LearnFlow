@@ -9,10 +9,7 @@ import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
-import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
-import com.learnflow.backend.common.error.NotFoundException;
-import com.learnflow.backend.vocabulary.VocabularyService;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +31,6 @@ class AuthServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
-    @Mock private VocabularyService vocabularyService;
 
     private AuthService authService;
 
@@ -46,22 +42,20 @@ class AuthServiceTest {
         JwtService jwtService = new JwtService(authProperties, FIXED_CLOCK);
         authService =
                 new AuthService(
-                        userRepository, passwordEncoder, jwtService, authProperties, vocabularyService, FIXED_CLOCK);
+                        userRepository, passwordEncoder, jwtService, authProperties, FIXED_CLOCK);
     }
 
     @Test
     void register_hashesPasswordAndIssuesToken() {
         RegisterRequest request = new RegisterRequest("new@example.com", "password123", "New User");
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
-        when(userRepository.findByEmail("seed@learnflow.system")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(User.class)))
-                .thenAnswer(
-                        invocation -> {
-                            User saved = invocation.getArgument(0);
-                            setId(saved, 1L);
-                            return saved;
-                        });
+                .thenAnswer(invocation -> {
+                    User saved = invocation.getArgument(0);
+                    setId(saved, 1L);
+                    return saved;
+                });
 
         AuthResponse response = authService.register(request);
 
@@ -71,24 +65,21 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_templateAccountExists_seedsStarterVocabularyForNewUser() {
-        RegisterRequest request = new RegisterRequest("new@example.com", "password123", "New User");
-        User templateUser = new User("seed@learnflow.system", "hashed", "Seed", Instant.now(FIXED_CLOCK));
-        setId(templateUser, 999L);
+    void register_mixedCaseEmail_isStoredLowerCase() {
+        RegisterRequest request =
+                new RegisterRequest("  New@Example.COM ", "password123", "New User");
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
-        when(userRepository.findByEmail("seed@learnflow.system")).thenReturn(Optional.of(templateUser));
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(User.class)))
-                .thenAnswer(
-                        invocation -> {
-                            User saved = invocation.getArgument(0);
-                            setId(saved, 1L);
-                            return saved;
-                        });
+                .thenAnswer(invocation -> {
+                    User saved = invocation.getArgument(0);
+                    setId(saved, 1L);
+                    return saved;
+                });
 
-        authService.register(request);
+        AuthResponse response = authService.register(request);
 
-        org.mockito.Mockito.verify(vocabularyService).seedStarterVocabularyFor(1L, 999L);
+        assertThat(response.user().email()).isEqualTo("new@example.com");
     }
 
     @Test
@@ -96,7 +87,8 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest("dup@example.com", "password123", "Dup");
         when(userRepository.existsByEmail("dup@example.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register(request)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> authService.register(request))
+                .isInstanceOf(ConflictException.class);
     }
 
     @Test
@@ -120,42 +112,6 @@ class AuthServiceTest {
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BadCredentialsException.class);
-    }
-
-    @Test
-    void updateDailyNewWordsLimit_allowedValue_updatesAndReturnsUser() {
-        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK));
-        setId(user, 1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        var response = authService.updateDailyNewWordsLimit(1L, 30);
-
-        assertThat(response.dailyNewWordsLimit()).isEqualTo(30);
-        assertThat(user.getDailyNewWordsLimit()).isEqualTo(30);
-    }
-
-    @Test
-    void updateDailyNewWordsLimit_disallowedValue_throwsBadRequest() {
-        assertThatThrownBy(() -> authService.updateDailyNewWordsLimit(1L, 23))
-                .isInstanceOf(BadRequestException.class);
-    }
-
-    @Test
-    void updateDailyNewWordsLimit_unknownUser_throwsNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> authService.updateDailyNewWordsLimit(1L, 20))
-                .isInstanceOf(NotFoundException.class);
-    }
-
-    @Test
-    void getDailyNewWordsLimit_returnsUsersCurrentLimit() {
-        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK));
-        setId(user, 1L);
-        user.setDailyNewWordsLimit(35);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        assertThat(authService.getDailyNewWordsLimit(1L)).isEqualTo(35);
     }
 
     private static void setId(User user, Long id) {

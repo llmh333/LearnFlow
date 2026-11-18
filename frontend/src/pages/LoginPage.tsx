@@ -94,6 +94,11 @@ export function LoginPage() {
             Register for free
           </Link>
         </p>
+        <p className="mt-2 text-center text-xs text-slate-500">
+          <Link to="/sources" className="hover:underline">
+            Data sources &amp; licences
+          </Link>
+        </p>
       </Card>
     </div>
   )

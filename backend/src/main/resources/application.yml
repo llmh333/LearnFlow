@@ -18,13 +18,10 @@ app:
   auth:
     token-ttl: PT12H
     registration-enabled: true
-  vocabulary:
-    seed-starter-pack-on-register: true
-  exercise:
-    deterministic-count-per-day: 5
-    ai-count-per-day: 3
-    pregenerate-days: 3
-    cron: "0 0 3 * * *"
+  content:
+    location: classpath*:content/
+    include-drafts: false
+    import-on-startup: true
   cors:
     allowed-origins: http://localhost:5173
   ai:

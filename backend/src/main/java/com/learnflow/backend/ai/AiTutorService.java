@@ -13,7 +13,6 @@ import com.learnflow.backend.ai.dto.ScenarioResponse;
 import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
 import com.learnflow.backend.ai.dto.SuggestedVocabularyResponse;
 import com.learnflow.backend.ai.provider.AIProvider;
-import com.learnflow.backend.ai.provider.ConversationMistake;
 import com.learnflow.backend.ai.provider.ConversationRequest;
 import com.learnflow.backend.ai.provider.ConversationSummary;
 import com.learnflow.backend.ai.provider.ConversationSummaryRequest;
@@ -28,9 +27,6 @@ import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
-import com.learnflow.backend.mistake.MistakeService;
-import com.learnflow.backend.mistake.dto.CreateMistakeRequest;
-import com.learnflow.backend.mistake.dto.MistakeResponse;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
@@ -58,7 +54,6 @@ public class AiTutorService {
     private final AIProvider aiProvider;
     private final AIContextBuilder contextBuilder;
     private final LanguageService languageService;
-    private final MistakeService mistakeService;
     private final AIConversationRepository conversationRepository;
     private final AIMessageRepository messageRepository;
     private final EntityManager entityManager;
@@ -68,7 +63,6 @@ public class AiTutorService {
             AIProvider aiProvider,
             AIContextBuilder contextBuilder,
             LanguageService languageService,
-            MistakeService mistakeService,
             AIConversationRepository conversationRepository,
             AIMessageRepository messageRepository,
             EntityManager entityManager,
@@ -76,7 +70,6 @@ public class AiTutorService {
         this.aiProvider = aiProvider;
         this.contextBuilder = contextBuilder;
         this.languageService = languageService;
-        this.mistakeService = mistakeService;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.entityManager = entityManager;
@@ -108,17 +101,27 @@ public class AiTutorService {
             MistakeAnalysis analysis =
                     aiProvider.analyzeMistake(
                             new MistakeAnalysisRequest(
-                                    languageCode, text, correction.corrected(), correction.explanation()));
+                                    languageCode,
+                                    text,
+                                    correction.corrected(),
+                                    correction.explanation()));
             suggestedCategory = analysis.category();
             suggestedTopic = analysis.topic();
         }
 
         return new SentenceCorrectionApiResponse(
-                correction.corrected(), correction.explanation(), suggestedCategory, suggestedTopic);
+                correction.corrected(),
+                correction.explanation(),
+                suggestedCategory,
+                suggestedTopic);
     }
 
     public ConversationMessageResponse sendMessage(
-            Long userId, Long conversationId, String languageCode, String scenario, String message) {
+            Long userId,
+            Long conversationId,
+            String languageCode,
+            String scenario,
+            String message) {
         AIConversation conversation =
                 conversationId != null
                         ? findConversationOrThrow(userId, conversationId)
@@ -141,8 +144,8 @@ public class AiTutorService {
     }
 
     /**
-     * Streams the reply via {@code onDelta} (called once per text fragment) instead of returning
-     * it all at once. Requires an existing conversation — the first message of a conversation still
+     * Streams the reply via {@code onDelta} (called once per text fragment) instead of returning it
+     * all at once. Requires an existing conversation — the first message of a conversation still
      * goes through {@link #sendMessage} to establish the conversation id.
      */
     public void streamMessage(
@@ -155,14 +158,22 @@ public class AiTutorService {
         StringBuilder fullReply = new StringBuilder();
         aiProvider.streamConversation(
                 new ConversationRequest(
-                        languageOf(conversation), conversation.getScenario(), context.currentLevel(), history, message),
+                        languageOf(conversation),
+                        conversation.getScenario(),
+                        context.currentLevel(),
+                        history,
+                        message),
                 delta -> {
                     fullReply.append(delta);
                     onDelta.accept(delta);
                 },
                 () ->
                         messageRepository.save(
-                                new AIMessage(conversation, "ASSISTANT", fullReply.toString(), Instant.now(clock))));
+                                new AIMessage(
+                                        conversation,
+                                        "ASSISTANT",
+                                        fullReply.toString(),
+                                        Instant.now(clock))));
     }
 
     public ConversationSummaryResponse endConversation(Long userId, Long conversationId) {
@@ -173,9 +184,8 @@ public class AiTutorService {
 
         ConversationSummary summary =
                 aiProvider.summarizeConversation(
-                        new ConversationSummaryRequest(languageOf(conversation), historyOf(conversation)));
-
-        List<MistakeResponse> pushedMistakes = pushMistakes(userId, conversation, summary.mistakes());
+                        new ConversationSummaryRequest(
+                                languageOf(conversation), historyOf(conversation)));
 
         conversation.setSummary(renderSummaryText(summary));
         conversation.setEndedAt(Instant.now(clock));
@@ -188,7 +198,7 @@ public class AiTutorService {
         return new ConversationSummaryResponse(
                 conversation.getId(),
                 summary.overview(),
-                pushedMistakes,
+                summary.mistakes(),
                 suggestedVocabulary,
                 summary.betterExpressions(),
                 summary.grammarProblems(),
@@ -217,7 +227,10 @@ public class AiTutorService {
         return ScenarioCatalog.forLanguage(languageCode);
     }
 
-    /** Package-visible so a controller-level integration test can seed a conversation directly if needed. */
+    /**
+     * Package-visible so a controller-level integration test can seed a conversation directly if
+     * needed.
+     */
     AIConversation findConversationOrThrow(Long userId, Long id) {
         return conversationRepository
                 .findByIdAndUser_Id(id, userId)
@@ -228,7 +241,8 @@ public class AiTutorService {
         Language language = languageService.getByCode(languageCode);
         User userRef = entityManager.getReference(User.class, userId);
         AIConversation conversation =
-                new AIConversation(userRef, language, CONVERSATION_MODE, scenario, Instant.now(clock));
+                new AIConversation(
+                        userRef, language, CONVERSATION_MODE, scenario, Instant.now(clock));
         return conversationRepository.save(conversation);
     }
 
@@ -237,27 +251,11 @@ public class AiTutorService {
     }
 
     private List<ConversationTurn> historyOf(AIConversation conversation) {
-        return messageRepository.findByConversation_IdOrderByCreatedAtAsc(conversation.getId()).stream()
-                .map(m -> new ConversationTurn(m.getRole().toLowerCase(Locale.ROOT), m.getContent()))
-                .toList();
-    }
-
-    private List<MistakeResponse> pushMistakes(
-            Long userId, AIConversation conversation, List<ConversationMistake> mistakes) {
-        String languageCode = languageOf(conversation);
-        return mistakes.stream()
-                .map(
-                        m ->
-                                mistakeService.createOrIncrement(
-                                        userId,
-                                        new CreateMistakeRequest(
-                                                languageCode,
-                                                null,
-                                                m.category(),
-                                                m.topic(),
-                                                m.original(),
-                                                m.corrected(),
-                                                m.explanation())))
+        return messageRepository
+                .findByConversation_IdOrderByCreatedAtAsc(conversation.getId())
+                .stream()
+                .map(m ->
+                        new ConversationTurn(m.getRole().toLowerCase(Locale.ROOT), m.getContent()))
                 .toList();
     }
 
@@ -265,12 +263,15 @@ public class AiTutorService {
         StringBuilder text = new StringBuilder(summary.overview());
         if (!summary.mistakes().isEmpty()) {
             text.append("\n\nMistakes:\n");
-            summary
-                    .mistakes()
-                    .forEach(
-                            m ->
-                                    text.append("- %s: %s -> %s (%s)\n"
-                                            .formatted(m.topic(), m.original(), m.corrected(), m.explanation())));
+            summary.mistakes()
+                    .forEach(m ->
+                            text.append(
+                                    "- %s: %s -> %s (%s)\n"
+                                            .formatted(
+                                                    m.topic(),
+                                                    m.original(),
+                                                    m.corrected(),
+                                                    m.explanation())));
         }
         if (!summary.newVocabulary().isEmpty()) {
             text.append("\nNew vocabulary: ")
@@ -281,10 +282,12 @@ public class AiTutorService {
                                     .orElse(""));
         }
         if (!summary.betterExpressions().isEmpty()) {
-            text.append("\n\nBetter expressions: ").append(String.join(", ", summary.betterExpressions()));
+            text.append("\n\nBetter expressions: ")
+                    .append(String.join(", ", summary.betterExpressions()));
         }
         if (!summary.grammarProblems().isEmpty()) {
-            text.append("\n\nGrammar to review: ").append(String.join(", ", summary.grammarProblems()));
+            text.append("\n\nGrammar to review: ")
+                    .append(String.join(", ", summary.grammarProblems()));
         }
         return text.toString();
     }

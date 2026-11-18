@@ -122,13 +122,12 @@ export async function streamConversationMessage(
   flushEvent()
 }
 
-export interface PushedMistake {
-  id: number
+export interface ConversationMistake {
   category: string | null
   topic: string | null
   original: string
   corrected: string
-  timesRepeated: number
+  explanation: string | null
 }
 
 export interface SuggestedVocabulary {
@@ -139,7 +138,7 @@ export interface SuggestedVocabulary {
 export interface ConversationSummaryResult {
   conversationId: number
   overview: string
-  pushedMistakes: PushedMistake[]
+  mistakes: ConversationMistake[]
   suggestedVocabulary: SuggestedVocabulary[]
   betterExpressions: string[]
   grammarProblems: string[]

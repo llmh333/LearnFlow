@@ -3,24 +3,35 @@ import { cn } from '@/lib/cn'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
-    'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'outline' | 'inverted' | 'lime'
+    | 'primary'
+    | 'secondary'
+    | 'ghost'
+    | 'danger'
+    | 'success'
+    | 'outline'
+    | 'inverted'
+    | 'lime'
+    | 'coral'
   size?: 'sm' | 'md' | 'lg' | 'icon'
 }
 
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-[#B6F23A] text-[#1A1A1A] hover:bg-[#a6e828] active:bg-[#95d71c] shadow-xs font-bold',
+  primary:
+    'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-xs border border-transparent font-semibold',
   secondary:
-    'bg-[#F0F2F5] text-[#1A1A1A] hover:bg-[#E4E7EB] active:bg-[#D8DCE1] border border-transparent dark:bg-[#262626] dark:text-white dark:hover:bg-[#333333] dark:active:bg-[#3d3d3d] font-medium',
+    'bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:active:bg-slate-600 font-medium',
   inverted:
-    'bg-[#1A1A1A] text-white hover:bg-[#282828] active:bg-[#333333] shadow-xs dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-slate-100 font-semibold',
+    'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-700 shadow-xs dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-semibold',
   outline:
-    'bg-transparent text-[#1A1A1A] border border-slate-300 hover:bg-slate-100 active:bg-slate-200 dark:border-[#404040] dark:text-white dark:hover:bg-[#262626] dark:active:bg-[#303030]',
-  lime: 'bg-[#B6F23A] text-[#1A1A1A] hover:bg-[#a6e22c] active:bg-[#94cd22] shadow-xs font-bold',
+    'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-100 active:bg-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700',
+  lime: 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-xs font-semibold',
+  coral:
+    'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 shadow-xs font-semibold',
   ghost:
-    'bg-transparent text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-[#262626] dark:hover:text-white',
-  danger: 'bg-[#B91C1C] text-white hover:bg-[#991B1B] active:bg-[#7F1D1D] shadow-xs font-semibold',
+    'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+  danger: 'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-xs font-semibold',
   success:
-    'bg-[#365314] text-white hover:bg-[#2b4210] dark:bg-[#93D620] dark:text-[#1A1A1A] dark:hover:bg-[#82c219] font-semibold',
+    'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 shadow-xs font-semibold',
 }
 
 const SIZE_CLASSES: Record<NonNullable<ButtonProps['size']>, string> = {

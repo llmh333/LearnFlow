@@ -21,9 +21,8 @@ com.learnflow.backend.<module>/
 └── engine/                     // thuật toán thuần (SRS, planning, generator): không Spring, không DB
 ```
 
-Module hiện có: `common`, `auth`, `language`, `vocabulary`, `srs`, `study`, `progress`, `dashboard`,
-`ai`, `mistake`, `dailyplan`, `exercise`. Module mới theo lộ trình R0–R7 (`curriculum`, `learning`,
-`practice`) xem `plan/2026-11-17-japanese-learning-path-refactor.md` §5.
+Module hiện có: `common`, `auth`, `language`, `curriculum`, `ai`, `health`. Module sẽ có theo lộ trình R0–R7
+(`learning`, `srs`, `practice`, `account`) xem `plan/2026-11-17-japanese-learning-path-refactor.md` §5.
 
 ## Ba luật ranh giới — không được vi phạm
 

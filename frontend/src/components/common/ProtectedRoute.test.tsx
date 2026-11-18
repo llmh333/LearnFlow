@@ -37,7 +37,7 @@ describe('ProtectedRoute', () => {
   it('renders the protected content when a token is present', () => {
     useAuthStore.setState({
       token: 'fake-token',
-      user: { id: 1, email: 'user@example.com', displayName: 'User', dailyNewWordsLimit: 20 },
+      user: { id: 1, email: 'user@example.com', displayName: 'User' },
     })
 
     renderWithRouter()

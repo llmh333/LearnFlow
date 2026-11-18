@@ -1,42 +1,19 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { AccountSettingsDialog } from '@/components/common/AccountSettingsDialog'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
-import {
-  IconDashboard,
-  IconBook,
-  IconReview,
-  IconZap,
-  IconBot,
-  IconProgress,
-  IconMistake,
-  IconSparkles,
-  IconFlame,
-  IconLogOut,
-  IconMenu,
-  IconSettings,
-  IconX,
-} from '@/components/ui/Icon'
+import { IconBot, IconSparkles, IconFlame, IconLogOut, IconMenu, IconX } from '@/components/ui/Icon'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/hooks/useAuth'
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', icon: IconDashboard },
-  { to: '/vocabulary', label: 'Vocabulary', icon: IconBook },
-  { to: '/review', label: 'Review', icon: IconReview },
-  { to: '/exercises', label: 'Exercises', icon: IconZap },
-  { to: '/ai-tutor', label: 'AI Tutor', icon: IconBot },
-  { to: '/progress', label: 'Progress', icon: IconProgress },
-  { to: '/mistakes', label: 'Mistake Book', icon: IconMistake },
-]
+// Learning pages were removed with the old schema; the new ones arrive with R2–R4.
+const NAV_ITEMS = [{ to: '/ai-tutor', label: 'AI Tutor', icon: IconBot }]
 
 export function AppLayout() {
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
 
@@ -127,16 +104,6 @@ export function AppLayout() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSettingsOpen(true)}
-              className="h-8 w-8 p-0 text-slate-400 hover:text-[#365314] dark:hover:text-[#B6F23A]"
-              title="Account settings"
-              aria-label="Account settings"
-            >
-              <IconSettings size={16} />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -239,8 +206,6 @@ export function AppLayout() {
           </div>
         </div>
       </Dialog>
-
-      <AccountSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }

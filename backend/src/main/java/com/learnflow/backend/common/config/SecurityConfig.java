@@ -30,15 +30,17 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
-                        auth ->
-                                auth.requestMatchers("/api/auth/**", "/api/health")
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
-                .exceptionHandling(
-                        ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(
+                                        "/api/auth/**", "/api/health", "/api/curriculum/sources")
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated())
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .addFilterBefore(
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         loginRateLimitFilter.ifAvailable(
                 filter -> http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class));
         return http.build();
