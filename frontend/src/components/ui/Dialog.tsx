@@ -50,9 +50,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       >
         <div className="mb-5 flex items-center justify-between">
           {title && (
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              {title}
-            </h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h2>
           )}
           <button
             type="button"

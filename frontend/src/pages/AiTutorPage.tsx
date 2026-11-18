@@ -9,12 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Badge } from '@/components/ui/Badge'
-import {
-  IconSparkles,
-  IconCheck,
-  IconCheckCircle,
-  IconBookmark,
-} from '@/components/ui/Icon'
+import { IconSparkles, IconCheck, IconCheckCircle, IconBookmark } from '@/components/ui/Icon'
 import {
   useConversation,
   useConversationList,
@@ -132,7 +127,8 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
             Sentence Checker & Error Correction
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Type any sentence you wrote to inspect grammar, vocabulary nuances, and natural phrasing.
+            Type any sentence you wrote to inspect grammar, vocabulary nuances, and natural
+            phrasing.
           </p>
         </div>
 
@@ -164,9 +160,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
               Your Input
             </p>
-            <p className="text-sm text-slate-800 dark:text-slate-200 line-through">
-              {text.trim()}
-            </p>
+            <p className="text-sm text-slate-800 dark:text-slate-200 line-through">{text.trim()}</p>
           </div>
 
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40">
@@ -363,7 +357,8 @@ export function AiTutorPage() {
             </Badge>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Ask complex grammar doubts, correct phrasing, or practice interactive roleplay scenarios.
+            Ask complex grammar doubts, correct phrasing, or practice interactive roleplay
+            scenarios.
           </p>
         </div>
         <div className="w-full sm:w-44">

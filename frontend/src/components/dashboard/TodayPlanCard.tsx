@@ -18,7 +18,11 @@ import type { DailyPlanItem } from '@/types/domain'
 
 const KIND_CONFIG: Record<
   DailyPlanItem['kind'],
-  { label: string; badgeVariant: 'warning' | 'primary' | 'purple' | 'success'; icon: typeof IconBook }
+  {
+    label: string
+    badgeVariant: 'warning' | 'primary' | 'purple' | 'success'
+    icon: typeof IconBook
+  }
 > = {
   REVIEW_DUE: { label: 'Review', badgeVariant: 'warning', icon: IconReview },
   LEARN_NEW: { label: 'New words', badgeVariant: 'primary', icon: IconBook },
@@ -104,7 +108,10 @@ export function TodayPlanCard() {
             </div>
           </div>
 
-          <form onSubmit={handleGenerate} className="flex flex-col sm:flex-row items-end gap-3 pt-2">
+          <form
+            onSubmit={handleGenerate}
+            className="flex flex-col sm:flex-row items-end gap-3 pt-2"
+          >
             <div className="w-full flex-1">
               <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
                 Or custom minutes available
@@ -161,9 +168,7 @@ export function TodayPlanCard() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-[#2C2C2C]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">
-              Today's Plan
-            </h2>
+            <h2 className="text-lg font-bold text-[#1A1A1A] dark:text-white">Today's Plan</h2>
             <Badge variant="primary" className="font-bold">
               <IconClock size={12} /> {plan.availableMinutes} min
             </Badge>
@@ -191,7 +196,9 @@ export function TodayPlanCard() {
       {totalItems > 0 && (
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
-            <span>Progress: {completedItems} of {totalItems} completed</span>
+            <span>
+              Progress: {completedItems} of {totalItems} completed
+            </span>
             <span className="font-bold text-[#365314] dark:text-[#B6F23A]">{progressPercent}%</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDFBD8] dark:bg-[#2A2A2A]">
@@ -253,7 +260,10 @@ export function TodayPlanCard() {
 
                         <div className="flex flex-1 flex-col gap-1">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <Badge variant={config.badgeVariant} className="text-[10px] py-0 px-2 font-bold">
+                            <Badge
+                              variant={config.badgeVariant}
+                              className="text-[10px] py-0 px-2 font-bold"
+                            >
                               {config.label}
                             </Badge>
                             <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">

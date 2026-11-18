@@ -3,16 +3,17 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:
+    'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* LearnFlow Design System Tokens from Specification */
-  --color-lime-primary: #B6F23A;
-  --color-lime-secondary: #93D620;
-  --color-lime-tertiary: #EDFBD8;
+  --color-lime-primary: #b6f23a;
+  --color-lime-secondary: #93d620;
+  --color-lime-tertiary: #edfbd8;
   --color-lime-forest: #365314;
   --color-lime-darkforest: #23370d;
 
-  --color-neutral-dark: #1A1A1A;
+  --color-neutral-dark: #1a1a1a;
   --color-neutral-surface: #242424;
   --color-neutral-border: #333333;
 }
@@ -33,7 +34,7 @@
     -moz-osx-font-smoothing: grayscale;
     color-scheme: light dark;
     background-color: #f1f3f5;
-    color: #1A1A1A;
+    color: #1a1a1a;
   }
 
   .dark body,
@@ -45,23 +46,44 @@
 
 /* Custom micro-animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes pulseSubtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {

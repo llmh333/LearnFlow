@@ -2,7 +2,16 @@ import type { HTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'danger' | 'purple' | 'outline'
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'purple'
+    | 'outline'
 }
 
 const BADGE_VARIANTS: Record<NonNullable<BadgeProps['variant']>, string> = {
@@ -10,8 +19,7 @@ const BADGE_VARIANTS: Record<NonNullable<BadgeProps['variant']>, string> = {
     'bg-[#F0F2F5] text-slate-800 border-slate-200 dark:bg-[#262626] dark:text-slate-200 dark:border-[#383838]',
   primary:
     'bg-[#B6F23A] text-[#1A1A1A] border-[#9fdc2b] dark:bg-[#B6F23A] dark:text-[#1A1A1A] dark:border-[#9fdc2b] font-bold shadow-2xs',
-  secondary:
-    'bg-[#93D620] text-[#1A1A1A] border-[#81bf16] font-bold',
+  secondary: 'bg-[#93D620] text-[#1A1A1A] border-[#81bf16] font-bold',
   tertiary:
     'bg-[#EDFBD8] text-[#365314] border-[#cbebb0] dark:bg-[#EDFBD8]/15 dark:text-[#B6F23A] dark:border-[#B6F23A]/30 font-semibold',
   success:

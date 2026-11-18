@@ -14,10 +14,16 @@ interface SentenceScrambleCardProps {
  * Selection state resets between exercises via the parent's `key={current.id}` (a fresh mount, not
  * an effect watching `shuffledTokens`) — a mount-triggered effect here raced with a fast first
  * click, occasionally wiping it out right after it landed. */
-export function SentenceScrambleCard({ shuffledTokens, disabled, onSubmit }: SentenceScrambleCardProps) {
+export function SentenceScrambleCard({
+  shuffledTokens,
+  disabled,
+  onSubmit,
+}: SentenceScrambleCardProps) {
   const [selected, setSelected] = useState<number[]>([])
 
-  const available = shuffledTokens.map((_, index) => index).filter((index) => !selected.includes(index))
+  const available = shuffledTokens
+    .map((_, index) => index)
+    .filter((index) => !selected.includes(index))
   const canSubmit = !disabled && selected.length === shuffledTokens.length
 
   return (

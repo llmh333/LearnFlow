@@ -105,7 +105,10 @@ export function AppLayout() {
       <div className="space-y-3 pt-4">
         <div className="rounded-2xl border border-[#D5ECC2] bg-[#EDFBD8] p-3.5 dark:border-[#365314] dark:bg-[#1E2B11]">
           <div className="flex items-center gap-2 text-[#365314] dark:text-[#B6F23A]">
-            <IconFlame size={16} className="text-[#93D620] dark:text-[#B6F23A] animate-pulse-subtle" />
+            <IconFlame
+              size={16}
+              className="text-[#93D620] dark:text-[#B6F23A] animate-pulse-subtle"
+            />
             <span className="text-xs font-bold uppercase tracking-wider">Stay Consistent</span>
           </div>
           <p className="mt-1 text-xs text-[#2b440e] dark:text-slate-200 leading-relaxed font-medium">
@@ -206,11 +209,7 @@ export function AppLayout() {
       </main>
 
       {/* Logout Confirmation Dialog */}
-      <Dialog
-        open={logoutConfirmOpen}
-        onClose={() => setLogoutConfirmOpen(false)}
-        title="Log Out"
-      >
+      <Dialog open={logoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} title="Log Out">
         <div className="flex flex-col gap-5">
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Are you sure you want to log out of your LearnFlow account?

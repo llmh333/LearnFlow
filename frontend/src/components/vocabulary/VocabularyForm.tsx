@@ -226,16 +226,10 @@ export function VocabularyForm({
               />
             </Field>
             <Field label="Example pinyin">
-              <Input
-                value={examplePinyin}
-                onChange={(e) => setExamplePinyin(e.target.value)}
-              />
+              <Input value={examplePinyin} onChange={(e) => setExamplePinyin(e.target.value)} />
             </Field>
             <Field label="Measure word">
-              <Input
-                value={measureWord}
-                onChange={(e) => setMeasureWord(e.target.value)}
-              />
+              <Input value={measureWord} onChange={(e) => setMeasureWord(e.target.value)} />
             </Field>
           </div>
         </div>
@@ -255,16 +249,10 @@ export function VocabularyForm({
               />
             </Field>
             <Field label="Part of speech">
-              <Input
-                value={partOfSpeech}
-                onChange={(e) => setPartOfSpeech(e.target.value)}
-              />
+              <Input value={partOfSpeech} onChange={(e) => setPartOfSpeech(e.target.value)} />
             </Field>
             <Field label="Example reading">
-              <Input
-                value={exampleReading}
-                onChange={(e) => setExampleReading(e.target.value)}
-              />
+              <Input value={exampleReading} onChange={(e) => setExampleReading(e.target.value)} />
             </Field>
             <Field label="JLPT level (N5-N1)">
               <Input

@@ -118,7 +118,9 @@ describe('ReviewPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /show answer/i }))
     fireEvent.click(screen.getByRole('button', { name: /good/i }))
 
-    await waitFor(() => expect(submitReview).toHaveBeenCalledWith(1, expect.objectContaining({ rating: 'GOOD' })))
+    await waitFor(() =>
+      expect(submitReview).toHaveBeenCalledWith(1, expect.objectContaining({ rating: 'GOOD' })),
+    )
     expect(await screen.findByText('banana')).toBeInTheDocument()
   })
 

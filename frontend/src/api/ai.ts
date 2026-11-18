@@ -2,7 +2,10 @@ import { apiFetch, ApiError } from './client'
 import { useAuthStore } from '@/stores/authStore'
 import type { Language } from '@/types/domain'
 
-export function explainGrammar(languageCode: string, question: string): Promise<{ explanation: string }> {
+export function explainGrammar(
+  languageCode: string,
+  question: string,
+): Promise<{ explanation: string }> {
   return apiFetch('/ai/grammar/explain', {
     method: 'POST',
     body: JSON.stringify({ languageCode, question }),
@@ -16,7 +19,10 @@ export interface SentenceCorrectionResult {
   suggestedTopic: string | null
 }
 
-export function correctSentence(languageCode: string, text: string): Promise<SentenceCorrectionResult> {
+export function correctSentence(
+  languageCode: string,
+  text: string,
+): Promise<SentenceCorrectionResult> {
   return apiFetch('/ai/sentence/correct', {
     method: 'POST',
     body: JSON.stringify({ languageCode, text }),
@@ -63,11 +69,14 @@ export async function streamConversationMessage(
 ): Promise<void> {
   const token = useAuthStore.getState().token
   const params = new URLSearchParams({ message })
-  const response = await fetch(`/api/ai/conversation/${conversationId}/stream?${params.toString()}`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const response = await fetch(
+    `/api/ai/conversation/${conversationId}/stream?${params.toString()}`,
+    {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     },
-  })
+  )
 
   if (!response.ok || !response.body) {
     throw new ApiError(response.status, 'Failed to start streaming reply')

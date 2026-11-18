@@ -13,10 +13,16 @@ export function WordStrokeOrder({ word, languageCode }: { word: string; language
         {characters.map((character, index) => (
           // Words rarely repeat a character, but nothing prevents it (e.g. some Chinese words
           // like "谢谢") — index keeps each diagram distinct.
-          <StrokeOrderDiagram key={`${character}-${index}`} character={character} languageCode={languageCode} />
+          <StrokeOrderDiagram
+            key={`${character}-${index}`}
+            character={character}
+            languageCode={languageCode}
+          />
         ))}
       </div>
-      <p className="text-[10px] text-slate-400 dark:text-slate-500">Stroke data © AnimCJK, Arphic Public License</p>
+      <p className="text-[10px] text-slate-400 dark:text-slate-500">
+        Stroke data © AnimCJK, Arphic Public License
+      </p>
     </div>
   )
 }

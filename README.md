@@ -1,10 +1,10 @@
 # LearnFlow
 
-Ứng dụng web học ngoại ngữ cá nhân (Anh + Trung + Nhật), phục vụ đúng một người dùng. Backend Java
+Ứng dụng web học ngoại ngữ có lộ trình, ưu tiên tiếng Nhật (Kana → N5 → N3). Backend Java
 Spring Boot + PostgreSQL, frontend Vite + React + TypeScript.
 
-Kế hoạch triển khai theo phase: [`plan/phases/`](./plan/phases/00-overview.md). Quy ước code bắt buộc:
-[`AGENTS.md`](./AGENTS.md).
+Kế hoạch refactor: [`plan/2026-11-17-japanese-learning-path-refactor.md`](./plan/2026-11-17-japanese-learning-path-refactor.md).
+Quy ước code bắt buộc: [`AGENTS.md`](./AGENTS.md).
 
 ## Chạy dự án (dev local)
 
@@ -34,14 +34,12 @@ cd backend  && ./mvnw verify
 cd frontend && npm run lint && npm run build && npm run test
 ```
 
-## Deploy production (Phase 8)
+## Deploy production
 
-Kiến trúc: VPS 1 vCPU/1GB chạy 3 container — `postgres` (tự host, không dùng Supabase nữa — xem
-D14 reversal), `backend` (Spring Boot JRE), và `frontend` (React build tĩnh do Caddy phục vụ, Caddy
-cũng lo HTTPS tự động qua ACME và reverse-proxy `/api/*` sang `backend:8080`). Ban đầu dùng Supabase
-free-tier (D14) nhưng đã đổi lại tự host sau khi đo được latency mạng VPS→Supabase ~300-400ms mỗi
-request (routing quốc tế của nhà cung cấp VPS không tốt) — self-host loại bỏ hoàn toàn network hop
-này. Chi tiết: [`plan/phases/00-overview.md`](./plan/phases/00-overview.md) (D14–D16 + ghi chú reversal).
+Kiến trúc: VPS 1 vCPU/1GB chạy 3 container — `postgres` (tự host), `backend` (Spring Boot JRE), và
+`frontend` (React build tĩnh do Caddy phục vụ, Caddy cũng lo HTTPS tự động qua ACME và reverse-proxy
+`/api/*` sang `backend:8080`). Postgres tự host thay vì dịch vụ managed vì latency mạng từ VPS tới
+Supabase đo được ~300-400ms mỗi request.
 
 ### CI/CD
 
@@ -75,4 +73,4 @@ Google AI Studio — lưu ý free tier chỉ 20 request/ngày cho model mặc đ
 
 `scripts/backup.sh` chạy `docker exec learnflow-postgres pg_dump` định kỳ (qua cron trên VPS), nén
 gzip, giữ lại `RETENTION_DAYS` ngày gần nhất (mặc định 14). Không có tính năng export/import trong
-app (quyết định D16) — backup hoàn toàn ở tầng hạ tầng.
+app — backup hoàn toàn ở tầng hạ tầng.

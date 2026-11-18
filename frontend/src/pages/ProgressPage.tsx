@@ -128,7 +128,8 @@ export function ProgressPage() {
               <span>Retention Rate (Last 30 Days)</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Based on {retention.successCount} successful recalls out of {retention.totalCount} total reviews.
+              Based on {retention.successCount} successful recalls out of {retention.totalCount}{' '}
+              total reviews.
             </p>
           </div>
 
@@ -159,7 +160,9 @@ export function ProgressPage() {
               <IconMistake size={16} className="text-amber-500" />
               <span>Words Needing Attention</span>
             </h2>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Low ease factor</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Low ease factor
+            </span>
           </div>
 
           {weakAreas && weakAreas.length > 0 ? (
@@ -170,11 +173,11 @@ export function ProgressPage() {
                   className="flex items-center justify-between rounded-xl bg-slate-100/80 p-3 text-xs border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
                 >
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {area.word}
-                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">{area.word}</span>
                     <span className="text-slate-400 mx-1.5">—</span>
-                    <span className="text-slate-600 dark:text-slate-300 font-medium">{area.meaning}</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-medium">
+                      {area.meaning}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="warning" className="text-[10px] font-bold">
@@ -191,7 +194,9 @@ export function ProgressPage() {
               ))}
             </ul>
           ) : (
-            <p className="py-6 text-center text-xs text-slate-400">No weak areas detected! Keep it up.</p>
+            <p className="py-6 text-center text-xs text-slate-400">
+              No weak areas detected! Keep it up.
+            </p>
           )}
         </Card>
 
@@ -202,7 +207,9 @@ export function ProgressPage() {
               <IconMistake size={16} className="text-rose-500" />
               <span>Recurring Mistake Topics</span>
             </h2>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Frequency count</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Frequency count
+            </span>
           </div>
 
           {recurringMistakes && recurringMistakes.length > 0 ? (
