@@ -18,6 +18,8 @@ app:
   auth:
     token-ttl: PT12H
     registration-enabled: true
+    # D1: closed group; codes are created with SQL (README).
+    invite-required: true
   content:
     location: classpath*:content/
     include-drafts: false
@@ -29,3 +31,5 @@ app:
     # apply their own default when app.ai.model is blank), a shared default would silently pick
     # the wrong model name for whichever provider is actually active.
     timeout-seconds: 60
+    # D8: AI calls per user per local day, across all AI features.
+    daily-quota: 50

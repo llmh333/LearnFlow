@@ -9,6 +9,7 @@ app:
     # Local dev shows draft content so authors can see it before review.
     include-drafts: true
   auth:
+    invite-required: false
     jwt-secret: ${JWT_SECRET:change-me-to-a-long-random-string-at-least-32-bytes}
   ai:
     provider: ${AI_PROVIDER:claude}

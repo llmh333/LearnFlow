@@ -17,8 +17,9 @@ public class LanguageService {
         this.languageRepository = languageRepository;
     }
 
+    /** Enabled languages only (D3). */
     public List<LanguageResponse> listAll() {
-        return languageRepository.findAllByOrderByIdAsc().stream()
+        return languageRepository.findAllByEnabledTrueOrderByIdAsc().stream()
                 .map(LanguageResponse::from)
                 .toList();
     }

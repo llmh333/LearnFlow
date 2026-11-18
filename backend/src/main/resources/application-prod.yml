@@ -8,13 +8,17 @@ spring:
       maximum-pool-size: 3
 
 server:
+  # Caddy sends X-Forwarded-For; Tomcat trusts private-network proxies by default, so
+  # request.getRemoteAddr() becomes the real client IP (login rate limit keys on it).
+  forward-headers-strategy: native
   tomcat:
     threads:
       max: 10
 
 app:
   auth:
-    jwt-secret: ${JWT_SECRET:change-me-to-a-long-random-string-at-least-32-bytes}
+    # No default: startup fails without a real secret (AuthProperties validates length >= 32).
+    jwt-secret: ${JWT_SECRET}
   ai:
     provider: ${AI_PROVIDER:claude}
     anthropic-api-key: ${ANTHROPIC_API_KEY:}

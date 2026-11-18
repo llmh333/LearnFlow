@@ -27,7 +27,8 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     @Test
     void registerThenLoginThenMe_succeeds() {
         RegisterRequest register =
-                new RegisterRequest("flow@example.com", "password123", "Flow User");
+                new RegisterRequest(
+                        "flow@example.com", "password123", "Flow User", "Asia/Ho_Chi_Minh", null);
         client.post()
                 .uri("/api/auth/register")
                 .body(register)

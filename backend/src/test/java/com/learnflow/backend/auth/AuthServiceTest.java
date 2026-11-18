@@ -5,11 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.learnflow.backend.account.AccountService;
 import com.learnflow.backend.auth.domain.User;
 import com.learnflow.backend.auth.dto.AuthResponse;
 import com.learnflow.backend.auth.dto.LoginRequest;
 import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
+import com.learnflow.backend.common.error.ForbiddenException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,6 +34,8 @@ class AuthServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private InviteCodeRepository inviteCodeRepository;
+    @Mock private AccountService accountService;
 
     private AuthService authService;
 
@@ -38,16 +43,27 @@ class AuthServiceTest {
     void setUp() {
         AuthProperties authProperties =
                 new AuthProperties(
-                        "unit-test-secret-at-least-32-bytes-long!!", Duration.ofHours(12), true);
+                        "unit-test-secret-at-least-32-bytes-long!!",
+                        Duration.ofHours(12),
+                        true,
+                        false);
         JwtService jwtService = new JwtService(authProperties, FIXED_CLOCK);
         authService =
                 new AuthService(
-                        userRepository, passwordEncoder, jwtService, authProperties, FIXED_CLOCK);
+                        userRepository,
+                        inviteCodeRepository,
+                        accountService,
+                        passwordEncoder,
+                        jwtService,
+                        authProperties,
+                        FIXED_CLOCK);
     }
 
     @Test
     void register_hashesPasswordAndIssuesToken() {
-        RegisterRequest request = new RegisterRequest("new@example.com", "password123", "New User");
+        RegisterRequest request =
+                new RegisterRequest(
+                        "new@example.com", "password123", "New User", "Asia/Ho_Chi_Minh", null);
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(User.class)))
@@ -67,7 +83,8 @@ class AuthServiceTest {
     @Test
     void register_mixedCaseEmail_isStoredLowerCase() {
         RegisterRequest request =
-                new RegisterRequest("  New@Example.COM ", "password123", "New User");
+                new RegisterRequest(
+                        "  New@Example.COM ", "password123", "New User", "Asia/Ho_Chi_Minh", null);
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(User.class)))
@@ -84,7 +101,9 @@ class AuthServiceTest {
 
     @Test
     void register_duplicateEmail_throwsConflict() {
-        RegisterRequest request = new RegisterRequest("dup@example.com", "password123", "Dup");
+        RegisterRequest request =
+                new RegisterRequest(
+                        "dup@example.com", "password123", "Dup", "Asia/Ho_Chi_Minh", null);
         when(userRepository.existsByEmail("dup@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(request))
@@ -93,7 +112,7 @@ class AuthServiceTest {
 
     @Test
     void login_wrongPassword_throwsBadCredentials() {
-        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK));
+        User user = new User("user@example.com", "hashed", "User", Instant.now(FIXED_CLOCK), null);
         setId(user, 1L);
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
@@ -122,5 +141,69 @@ class AuthServiceTest {
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private AuthService inviteOnlyService() {
+        AuthProperties properties =
+                new AuthProperties(
+                        "unit-test-secret-at-least-32-bytes-long!!",
+                        Duration.ofHours(12),
+                        true,
+                        true);
+        return new AuthService(
+                userRepository,
+                inviteCodeRepository,
+                accountService,
+                passwordEncoder,
+                new JwtService(properties, FIXED_CLOCK),
+                properties,
+                FIXED_CLOCK);
+    }
+
+    @Test
+    void register_whenClosed_throwsForbidden() {
+        AuthProperties closed =
+                new AuthProperties(
+                        "unit-test-secret-at-least-32-bytes-long!!",
+                        Duration.ofHours(12),
+                        false,
+                        false);
+        AuthService service =
+                new AuthService(
+                        userRepository,
+                        inviteCodeRepository,
+                        accountService,
+                        passwordEncoder,
+                        new JwtService(closed, FIXED_CLOCK),
+                        closed,
+                        FIXED_CLOCK);
+
+        assertThatThrownBy(() ->
+                        service.register(
+                                new RegisterRequest(
+                                        "a@example.com",
+                                        "password123",
+                                        "A",
+                                        "Asia/Ho_Chi_Minh",
+                                        null)))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void register_inviteRequiredButMissing_isAFieldError() {
+        when(userRepository.existsByEmail("a@example.com")).thenReturn(false);
+
+        assertThatThrownBy(() ->
+                        inviteOnlyService()
+                                .register(
+                                        new RegisterRequest(
+                                                "a@example.com",
+                                                "password123",
+                                                "A",
+                                                "Asia/Ho_Chi_Minh",
+                                                " ")))
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        e -> assertThat(e.getErrors()).containsKey("inviteCode"));
     }
 }

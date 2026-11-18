@@ -13,6 +13,7 @@ export function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />
@@ -21,7 +22,13 @@ export function RegisterPage() {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     register.mutate(
-      { email, password, displayName },
+      {
+        email,
+        password,
+        displayName,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        inviteCode: inviteCode.trim() || undefined,
+      },
       { onSuccess: () => navigate('/', { replace: true }) },
     )
   }
@@ -83,6 +90,23 @@ export function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="invite-code"
+              className="text-xs font-semibold text-slate-700 dark:text-slate-300"
+            >
+              Invite code
+            </label>
+            <Input
+              id="invite-code"
+              placeholder="e.g. LEARN-2026"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              autoCapitalize="characters"
+              maxLength={32}
             />
           </div>
 

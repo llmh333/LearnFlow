@@ -34,6 +34,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class AiTutorServiceTest {
@@ -48,6 +50,8 @@ class AiTutorServiceTest {
     @Mock private AIConversationRepository conversationRepository;
     @Mock private AIMessageRepository messageRepository;
     @Mock private EntityManager entityManager;
+    @Mock private AiUsageService usageService;
+    @Mock private PlatformTransactionManager transactionManager;
 
     private AiTutorService service;
 
@@ -61,6 +65,8 @@ class AiTutorServiceTest {
                         conversationRepository,
                         messageRepository,
                         entityManager,
+                        usageService,
+                        new TransactionTemplate(transactionManager),
                         FIXED_CLOCK);
     }
 
@@ -243,7 +249,7 @@ class AiTutorServiceTest {
     }
 
     private static Language newLanguage(String code, String name) {
-        Language language = new Language(code, name);
+        Language language = new Language(code, name, true);
         try {
             var field = Language.class.getDeclaredField("id");
             field.setAccessible(true);

@@ -34,3 +34,16 @@ export interface ContentSource {
   licenseUrl?: string
   attribution?: string
 }
+
+export type LearningGoal = 'JLPT' | 'CONVERSATION' | 'TRAVEL'
+
+/** Mirrors backend account.dto.ProfileResponse. */
+export interface Profile {
+  timezone: string
+  goal: LearningGoal | null
+  dailyMinutes: number
+  dailyNewItems: number
+  onboardedAt: string | null
+}
+
+export type ProfileUpdate = Partial<Omit<Profile, 'onboardedAt'>>

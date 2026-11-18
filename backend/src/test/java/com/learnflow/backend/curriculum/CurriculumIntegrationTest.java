@@ -52,7 +52,11 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
     void courses_returnsImportedTreeInOrder() {
         RegisterRequest register =
                 new RegisterRequest(
-                        "cur-" + System.nanoTime() + "@example.com", "password123", "Tester");
+                        "cur-" + System.nanoTime() + "@example.com",
+                        "password123",
+                        "Tester",
+                        "Asia/Ho_Chi_Minh",
+                        null);
         AuthResponse auth =
                 client().post()
                         .uri("/api/auth/register")

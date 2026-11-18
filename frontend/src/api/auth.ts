@@ -5,6 +5,9 @@ export interface RegisterPayload {
   email: string
   password: string
   displayName: string
+  /** IANA zone from the browser; the backend computes "today" with it (D7). */
+  timezone: string
+  inviteCode?: string
 }
 
 export interface LoginPayload {

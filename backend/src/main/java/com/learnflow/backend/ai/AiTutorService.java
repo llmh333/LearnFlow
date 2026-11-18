@@ -4,6 +4,7 @@ import com.learnflow.backend.ai.context.AIContextBuilder;
 import com.learnflow.backend.ai.context.LearnerContext;
 import com.learnflow.backend.ai.domain.AIConversation;
 import com.learnflow.backend.ai.domain.AIMessage;
+import com.learnflow.backend.ai.domain.AiFeature;
 import com.learnflow.backend.ai.dto.ConversationDetailResponse;
 import com.learnflow.backend.ai.dto.ConversationListItemResponse;
 import com.learnflow.backend.ai.dto.ConversationMessageItem;
@@ -35,6 +36,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Orchestrates AI Tutor requests: builds a bounded {@link LearnerContext}, calls {@link
@@ -45,8 +47,11 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Every method takes {@code userId} first and every conversation lookup is ownership-checked
  * (see decision D18) so one account can never read or continue another account's conversation.
  */
+/**
+ * No class-level transaction on purpose: AI calls take seconds and the prod pool has 3 connections,
+ * so each flow is read/write (short transaction) → AI call (none) → save (short).
+ */
 @Service
-@Transactional
 public class AiTutorService {
 
     private static final String CONVERSATION_MODE = "CONVERSATION";
@@ -57,6 +62,8 @@ public class AiTutorService {
     private final AIConversationRepository conversationRepository;
     private final AIMessageRepository messageRepository;
     private final EntityManager entityManager;
+    private final AiUsageService usageService;
+    private final TransactionTemplate tx;
     private final Clock clock;
 
     public AiTutorService(
@@ -66,6 +73,8 @@ public class AiTutorService {
             AIConversationRepository conversationRepository,
             AIMessageRepository messageRepository,
             EntityManager entityManager,
+            AiUsageService usageService,
+            TransactionTemplate tx,
             Clock clock) {
         this.aiProvider = aiProvider;
         this.contextBuilder = contextBuilder;
@@ -73,23 +82,29 @@ public class AiTutorService {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.entityManager = entityManager;
+        this.usageService = usageService;
+        this.tx = tx;
         this.clock = clock;
     }
 
     public String explainGrammar(Long userId, String languageCode, String question) {
+        usageService.consume(userId, AiFeature.GRAMMAR_EXPLAIN);
         LearnerContext context = contextBuilder.build(userId, languageCode);
         return aiProvider.explainGrammar(
                 new GrammarExplainRequest(languageCode, question, context.currentLevel()));
     }
 
     public List<String> generateExamples(Long userId, String languageCode, String word) {
+        usageService.consume(userId, AiFeature.EXAMPLES);
         LearnerContext context = contextBuilder.build(userId, languageCode);
         return aiProvider.generateExamples(
                 new ExampleGenerationRequest(languageCode, word, context.currentLevel()));
     }
 
+    /** One user action, so one quota unit, even though it may take two AI calls. */
     public SentenceCorrectionApiResponse correctSentence(
             Long userId, String languageCode, String text) {
+        usageService.consume(userId, AiFeature.SENTENCE_CORRECTION);
         LearnerContext context = contextBuilder.build(userId, languageCode);
         SentenceCorrection correction =
                 aiProvider.correctSentence(
@@ -122,25 +137,17 @@ public class AiTutorService {
             String languageCode,
             String scenario,
             String message) {
-        AIConversation conversation =
-                conversationId != null
-                        ? findConversationOrThrow(userId, conversationId)
-                        : startConversation(userId, languageCode, scenario);
-
-        appendUserMessage(conversation, message);
-        List<ConversationTurn> history = historyOf(conversation);
-        LearnerContext context = contextBuilder.build(userId, languageOf(conversation));
-        String reply =
-                aiProvider.continueConversation(
-                        new ConversationRequest(
-                                languageOf(conversation),
-                                conversation.getScenario(),
-                                context.currentLevel(),
-                                history,
-                                message));
-        messageRepository.save(new AIMessage(conversation, "ASSISTANT", reply, Instant.now(clock)));
-
-        return new ConversationMessageResponse(conversation.getId(), reply);
+        Turn turn =
+                tx.execute(status -> {
+                    AIConversation conversation =
+                            conversationId != null
+                                    ? findConversationOrThrow(userId, conversationId)
+                                    : startConversation(userId, languageCode, scenario);
+                    return beginTurn(userId, conversation, message);
+                });
+        String reply = aiProvider.continueConversation(turn.request(message));
+        saveAssistantMessage(turn.conversationId(), reply);
+        return new ConversationMessageResponse(turn.conversationId(), reply);
     }
 
     /**
@@ -150,45 +157,50 @@ public class AiTutorService {
      */
     public void streamMessage(
             Long userId, Long conversationId, String message, Consumer<String> onDelta) {
-        AIConversation conversation = findConversationOrThrow(userId, conversationId);
-        appendUserMessage(conversation, message);
-        List<ConversationTurn> history = historyOf(conversation);
-        LearnerContext context = contextBuilder.build(userId, languageOf(conversation));
-
+        Turn turn =
+                tx.execute(status ->
+                        beginTurn(
+                                userId, findConversationOrThrow(userId, conversationId), message));
         StringBuilder fullReply = new StringBuilder();
         aiProvider.streamConversation(
-                new ConversationRequest(
-                        languageOf(conversation),
-                        conversation.getScenario(),
-                        context.currentLevel(),
-                        history,
-                        message),
+                turn.request(message),
                 delta -> {
                     fullReply.append(delta);
                     onDelta.accept(delta);
                 },
-                () ->
-                        messageRepository.save(
-                                new AIMessage(
-                                        conversation,
-                                        "ASSISTANT",
-                                        fullReply.toString(),
-                                        Instant.now(clock))));
+                () -> saveAssistantMessage(turn.conversationId(), fullReply.toString()));
     }
 
     public ConversationSummaryResponse endConversation(Long userId, Long conversationId) {
-        AIConversation conversation = findConversationOrThrow(userId, conversationId);
-        if (conversation.getEndedAt() != null) {
-            return ConversationSummaryResponse.alreadyEnded(conversation);
+        record Pending(
+                ConversationSummaryResponse ended,
+                String language,
+                List<ConversationTurn> history) {}
+        Pending pending =
+                tx.execute(status -> {
+                    AIConversation conversation = findConversationOrThrow(userId, conversationId);
+                    if (conversation.getEndedAt() != null) {
+                        return new Pending(
+                                ConversationSummaryResponse.alreadyEnded(conversation), null, null);
+                    }
+                    usageService.consume(userId, AiFeature.CONVERSATION_SUMMARY);
+                    return new Pending(null, languageOf(conversation), historyOf(conversation));
+                });
+        if (pending.ended() != null) {
+            return pending.ended();
         }
 
         ConversationSummary summary =
                 aiProvider.summarizeConversation(
-                        new ConversationSummaryRequest(
-                                languageOf(conversation), historyOf(conversation)));
+                        new ConversationSummaryRequest(pending.language(), pending.history()));
 
-        conversation.setSummary(renderSummaryText(summary));
-        conversation.setEndedAt(Instant.now(clock));
+        Instant endedAt =
+                tx.execute(status -> {
+                    AIConversation conversation = findConversationOrThrow(userId, conversationId);
+                    conversation.setSummary(renderSummaryText(summary));
+                    conversation.setEndedAt(Instant.now(clock));
+                    return conversation.getEndedAt();
+                });
 
         List<SuggestedVocabularyResponse> suggestedVocabulary =
                 summary.newVocabulary().stream()
@@ -196,13 +208,51 @@ public class AiTutorService {
                         .toList();
 
         return new ConversationSummaryResponse(
-                conversation.getId(),
+                conversationId,
                 summary.overview(),
                 summary.mistakes(),
                 suggestedVocabulary,
                 summary.betterExpressions(),
                 summary.grammarProblems(),
-                conversation.getEndedAt());
+                endedAt);
+    }
+
+    /**
+     * What the AI call needs, captured inside the transaction so nothing lazy is touched after it.
+     */
+    private record Turn(
+            Long conversationId,
+            String language,
+            String scenario,
+            List<ConversationTurn> history,
+            String level) {
+
+        ConversationRequest request(String message) {
+            return new ConversationRequest(language, scenario, level, history, message);
+        }
+    }
+
+    /** Charges the quota first, so a rejected turn (429) rolls back the user's message too. */
+    private Turn beginTurn(Long userId, AIConversation conversation, String message) {
+        usageService.consume(userId, AiFeature.CONVERSATION);
+        appendUserMessage(conversation, message);
+        String language = languageOf(conversation);
+        return new Turn(
+                conversation.getId(),
+                language,
+                conversation.getScenario(),
+                historyOf(conversation),
+                contextBuilder.build(userId, language).currentLevel());
+    }
+
+    private void saveAssistantMessage(Long conversationId, String reply) {
+        tx.executeWithoutResult(status ->
+                messageRepository.save(
+                        new AIMessage(
+                                entityManager.getReference(AIConversation.class, conversationId),
+                                "ASSISTANT",
+                                reply,
+                                Instant.now(clock))));
     }
 
     @Transactional(readOnly = true)

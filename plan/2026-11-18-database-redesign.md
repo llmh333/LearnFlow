@@ -35,9 +35,9 @@ Cột **Phase** cho biết phase nào cần bảng đó. Mỗi bảng một migr
 | Bảng | Mục đích | Cột chính | Ràng buộc đáng chú ý | Phase |
 |---|---|---|---|---|
 | `app_user` | Đăng nhập | `id`, `email`, `password_hash`, `display_name`, `created_at` (+ `role`, `invite_code_id` ở R0) | `UNIQUE (email)` + `CHECK (email = lower(email))`, app chuẩn hoá email về chữ thường | V1 |
-| `user_profile` | Hồ sơ học (1–1 với user) | `user_id` PK/FK, `timezone`, `goal`, `daily_minutes`, `daily_new_items`, `onboarded_at`, `updated_at` | `goal IN ('JLPT','CONVERSATION','TRAVEL')`; `daily_minutes IN (5,10,15,20)`; `daily_new_items BETWEEN 0 AND 50` | R0 |
-| `invite_code` | Mã mời đăng ký (D1) | `id`, `code`, `max_uses`, `expires_at`, `created_by`, `created_at` | `UNIQUE (code)`; `max_uses > 0`. Số lượt đã dùng = đếm `app_user.invite_code_id` | R0 |
-| `ai_usage` | Đếm lượt gọi AI theo ngày (D8) | `user_id`, `local_date`, `feature`, `call_count` | PK `(user_id, local_date, feature)`; `call_count >= 0` | R0 |
+| `user_profile` | Hồ sơ học (1–1 với user) | `user_id` PK/FK, `timezone`, `goal`, `daily_minutes`, `daily_new_items`, `onboarded_at`, `updated_at` | `goal IN ('JLPT','CONVERSATION','TRAVEL')`; `daily_minutes IN (5,10,15,20)`; `daily_new_items BETWEEN 0 AND 50` | V19 (R0) |
+| `invite_code` | Mã mời đăng ký (D1) | `id`, `code`, `max_uses`, `expires_at`, `created_by`, `created_at` | `UNIQUE (code)`; `max_uses > 0`. Số lượt đã dùng = đếm `app_user.invite_code_id` | V17 (R0) |
+| `ai_usage` | Đếm lượt gọi AI theo ngày (D8) | `user_id`, `local_date`, `feature`, `call_count` | PK `(user_id, local_date, feature)`; `call_count >= 0` | V20 (R0) |
 
 ### B. Nội dung global (không có `user_id`)
 

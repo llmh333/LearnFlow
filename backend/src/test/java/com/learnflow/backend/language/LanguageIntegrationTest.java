@@ -32,7 +32,11 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
 
         RegisterRequest register =
                 new RegisterRequest(
-                        "lang-" + System.nanoTime() + "@example.com", "password123", "Tester");
+                        "lang-" + System.nanoTime() + "@example.com",
+                        "password123",
+                        "Tester",
+                        "Asia/Ho_Chi_Minh",
+                        null);
         AuthResponse auth =
                 client.post()
                         .uri("/api/auth/register")
