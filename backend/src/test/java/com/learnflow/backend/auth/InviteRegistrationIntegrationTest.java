@@ -23,7 +23,7 @@ class InviteRegistrationIntegrationTest extends AbstractIntegrationTest {
                 .baseUrl("http://localhost:" + port)
                 .build()
                 .post()
-                .uri("/api/auth/register")
+                .uri("/api/v1/auth/register")
                 .body(
                         new RegisterRequest(
                                 "inv-" + System.nanoTime() + "@example.com",

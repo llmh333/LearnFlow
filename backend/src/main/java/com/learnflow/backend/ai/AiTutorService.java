@@ -277,10 +277,11 @@ public class AiTutorService {
         return ScenarioCatalog.forLanguage(languageCode);
     }
 
-    /**
-     * Package-visible so a controller-level integration test can seed a conversation directly if
-     * needed.
-     */
+    /** Throws 404 unless the conversation exists and belongs to the user. */
+    public void requireOwnConversation(Long userId, Long id) {
+        findConversationOrThrow(userId, id);
+    }
+
     AIConversation findConversationOrThrow(Long userId, Long id) {
         return conversationRepository
                 .findByIdAndUser_Id(id, userId)

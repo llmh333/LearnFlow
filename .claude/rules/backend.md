@@ -13,7 +13,7 @@ Mỗi domain là **một package phẳng** dưới `com.learnflow.backend`:
 
 ```
 com.learnflow.backend.<module>/
-├── <Xxx>Controller.java        // @RestController — chỉ map HTTP <-> DTO, không có business logic
+├── api/v1/<Xxx>Controller.java // @RestController — chỉ map HTTP <-> DTO, không có business logic
 ├── <Xxx>Service.java           // @Service @Transactional — toàn bộ business logic
 ├── <Xxx>Repository.java        // interface extends JpaRepository<Entity, Long>
 ├── domain/<Entity>.java        // @Entity
@@ -36,9 +36,21 @@ Tránh phụ thuộc vòng giữa các Service; nếu cần, lấy dữ liệu �
 
 ## API
 
-- Base path `/api`. Mọi endpoint yêu cầu `Authorization: Bearer <jwt>`, **trừ** `/api/auth/register`,
-  `/api/auth/login`, `/api/health`.
-- Resource số nhiều, kebab-case: `/api/vocabulary`, `/api/reviews/due`, `/api/study-sessions`.
+- **Mọi API có version trong URL: `/api/v1/...`, `/api/v2/...`.**
+- **Mọi URL định nghĩa tập trung ở `common/web/ApiPaths`**, chia theo version rồi theo module:
+  `ApiPaths.V1.Account.BASE` (= `/api/v1/account`, dùng cho `@RequestMapping` của class) và các đường dẫn con
+  `ApiPaths.V1.Account.PROFILE` (= `/profile`, dùng cho `@GetMapping`…). Controller, `SecurityConfig`, filter
+  **chỉ dùng hằng số này**, không viết chuỗi đường dẫn. (Annotation cần hằng số lúc biên dịch nên dùng
+  `static final String`, không dùng được enum.) Integration test cố ý viết URL dạng chữ để bắt lỗi đổi
+  hợp đồng API ngoài ý muốn.
+- Thư mục khớp version: controller dùng `ApiPaths.V1` nằm trong `<module>/api/v1/`. `ArchitectureTest` chặn
+  controller nằm ngoài package `api.vN`.
+- Ra version mới khi đổi hợp đồng API theo cách làm hỏng client cũ (đổi/xoá trường, đổi nghĩa). Thêm trường
+  mới không cần version mới. Version mới: thêm `ApiPaths.V2`, tạo `<module>/api/v2/` (DTO riêng của v2 đặt ở
+  `api/v2/dto/`), giữ v1 chạy song song đến khi frontend chuyển xong.
+- Mọi endpoint yêu cầu `Authorization: Bearer <jwt>`, **trừ** `/api/v1/auth/register`, `/api/v1/auth/login`,
+  `/api/v1/health`, `/api/v1/curriculum/sources`.
+- Resource số nhiều, kebab-case: `/api/v1/vocabulary`, `/api/v1/reviews/due`, `/api/v1/study-sessions`.
 - Request/Response là **java `record`** tên `XxxRequest` / `XxxResponse`. Không trả entity ra ngoài.
 - JSON `camelCase`. Thời gian ISO-8601 UTC (`Instant`).
 - Lỗi: **RFC 7807 `ProblemDetail`** qua các exception trong `common/error`. Lỗi validate trả 400 kèm

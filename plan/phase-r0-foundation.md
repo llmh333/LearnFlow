@@ -21,13 +21,13 @@
 - [ ] Bắt buộc `JWT_SECRET` ≥ 32 byte (không còn giá trị mặc định ở prod)
 - [ ] Rate limit đăng nhập đọc IP thật sau Caddy (`server.forward-headers-strategy: native` ở prod)
 - [ ] ArchUnit: Service module A không dùng Repository của module B
-- [ ] `GET /api/languages` chỉ trả ngôn ngữ `enabled`
+- [ ] `GET /api/v1/languages` chỉ trả ngôn ngữ `enabled`
 
 ### B. Hồ sơ người dùng
 - [ ] Migration, mỗi bảng một file: `V17` `invite_code`, `V18` `app_user.invite_code_id`, `V19` `user_profile`,
       `V20` `ai_usage`
 - [ ] Đăng ký nhận `timezone` (từ trình duyệt), tạo `user_profile`
-- [ ] `GET`/`PATCH /api/account/profile` + test
+- [ ] `GET`/`PATCH /api/v1/account/profile` + test
 
 ### C. Mã mời
 - [ ] Đăng ký kiểm mã: tồn tại, chưa hết hạn, chưa hết lượt (khoá dòng `FOR UPDATE`)

@@ -45,7 +45,7 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void courses_withoutToken_returns401() {
-        client().get().uri("/api/curriculum/courses").exchange().expectStatus().isUnauthorized();
+        client().get().uri("/api/v1/curriculum/courses").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
@@ -59,7 +59,7 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
                         null);
         AuthResponse auth =
                 client().post()
-                        .uri("/api/auth/register")
+                        .uri("/api/v1/auth/register")
                         .body(register)
                         .exchange()
                         .expectStatus()
@@ -70,7 +70,7 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
 
         List<CourseResponse> courses =
                 client().get()
-                        .uri("/api/curriculum/courses")
+                        .uri("/api/v1/curriculum/courses")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + auth.token())
                         .exchange()
                         .expectStatus()
@@ -94,7 +94,7 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
     void sources_arePublic() {
         List<SourceResponse> sources =
                 client().get()
-                        .uri("/api/curriculum/sources")
+                        .uri("/api/v1/curriculum/sources")
                         .exchange()
                         .expectStatus()
                         .isOk()

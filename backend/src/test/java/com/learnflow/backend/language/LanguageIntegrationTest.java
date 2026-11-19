@@ -22,7 +22,7 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
         RestTestClient client =
                 RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
-        client.get().uri("/api/languages").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/v1/languages").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
@@ -39,7 +39,7 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
                         null);
         AuthResponse auth =
                 client.post()
-                        .uri("/api/auth/register")
+                        .uri("/api/v1/auth/register")
                         .body(register)
                         .exchange()
                         .expectStatus()
@@ -50,7 +50,7 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
 
         List<LanguageResponse> languages =
                 client.get()
-                        .uri("/api/languages")
+                        .uri("/api/v1/languages")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + auth.token())
                         .exchange()
                         .expectStatus()

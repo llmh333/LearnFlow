@@ -22,7 +22,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
 
     private String register(String timezone) {
         return client().post()
-                .uri("/api/auth/register")
+                .uri("/api/v1/auth/register")
                 .body(
                         new RegisterRequest(
                                 "acc-" + System.nanoTime() + "@example.com",
@@ -41,7 +41,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void profile_withoutToken_returns401() {
-        client().get().uri("/api/account/profile").exchange().expectStatus().isUnauthorized();
+        client().get().uri("/api/v1/account/profile").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
@@ -50,7 +50,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
 
         ProfileResponse profile =
                 client().get()
-                        .uri("/api/account/profile")
+                        .uri("/api/v1/account/profile")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .exchange()
                         .expectStatus()
@@ -67,7 +67,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
     @Test
     void register_withUnknownTimezone_returns400WithFieldError() {
         client().post()
-                .uri("/api/auth/register")
+                .uri("/api/v1/auth/register")
                 .body(
                         new RegisterRequest(
                                 "tz-" + System.nanoTime() + "@example.com",
@@ -89,7 +89,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
 
         ProfileResponse updated =
                 client().patch()
-                        .uri("/api/account/profile")
+                        .uri("/api/v1/account/profile")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .body(Map.of("dailyMinutes", 15, "goal", "JLPT"))
                         .exchange()
@@ -102,7 +102,7 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
         assertThat(updated.goal()).hasToString("JLPT");
 
         client().patch()
-                .uri("/api/account/profile")
+                .uri("/api/v1/account/profile")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .body(Map.of("dailyNewItems", 99))
                 .exchange()

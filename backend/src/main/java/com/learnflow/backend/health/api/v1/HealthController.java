@@ -1,5 +1,6 @@
-package com.learnflow.backend.health;
+package com.learnflow.backend.health.api.v1;
 
+import com.learnflow.backend.common.web.ApiPaths;
 import java.time.Clock;
 import java.time.Instant;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,7 @@ public class HealthController {
         this.clock = clock;
     }
 
-    @GetMapping("/api/health")
+    @GetMapping(ApiPaths.V1.Health.BASE)
     public HealthResponse health() {
         return new HealthResponse("UP", Instant.now(clock));
     }

@@ -42,8 +42,8 @@ Vì vậy chia thành hai branch:
 - [ ] Unit test `ContentBundleTest`, integration test import lặp lại không nhân bản dữ liệu
 
 ### C. API
-- [ ] `GET /api/curriculum/courses` — cây course → unit → lesson (cần đăng nhập)
-- [ ] `GET /api/curriculum/sources` — công khai, cho trang giấy phép
+- [ ] `GET /api/v1/curriculum/courses` — cây course → unit → lesson (cần đăng nhập)
+- [ ] `GET /api/v1/curriculum/sources` — công khai, cho trang giấy phép
 - [ ] Integration test: 401, dữ liệu trả đúng
 
 ### D. Frontend

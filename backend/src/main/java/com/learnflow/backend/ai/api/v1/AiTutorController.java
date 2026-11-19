@@ -1,5 +1,6 @@
-package com.learnflow.backend.ai;
+package com.learnflow.backend.ai.api.v1;
 
+import com.learnflow.backend.ai.AiTutorService;
 import com.learnflow.backend.ai.dto.ConversationDetailResponse;
 import com.learnflow.backend.ai.dto.ConversationListItemResponse;
 import com.learnflow.backend.ai.dto.ConversationMessageRequest;
@@ -12,6 +13,7 @@ import com.learnflow.backend.ai.dto.GrammarExplainResponse;
 import com.learnflow.backend.ai.dto.ScenarioResponse;
 import com.learnflow.backend.ai.dto.SentenceCorrectionApiRequest;
 import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
+import com.learnflow.backend.common.web.ApiPaths;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -28,10 +30,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping(ApiPaths.V1.Ai.BASE)
 public class AiTutorController {
 
-    /** Personal single-user app — a handful of concurrent virtual threads is plenty for streaming replies. */
+    /**
+     * Personal single-user app — a handful of concurrent virtual threads is plenty for streaming
+     * replies.
+     */
     private final ExecutorService streamingExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     private final AiTutorService aiTutorService;
@@ -40,14 +45,15 @@ public class AiTutorController {
         this.aiTutorService = aiTutorService;
     }
 
-    @PostMapping("/grammar/explain")
+    @PostMapping(ApiPaths.V1.Ai.GRAMMAR_EXPLAIN)
     public GrammarExplainResponse explainGrammar(
-            @AuthenticationPrincipal Long userId, @Valid @RequestBody GrammarExplainApiRequest request) {
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody GrammarExplainApiRequest request) {
         return new GrammarExplainResponse(
                 aiTutorService.explainGrammar(userId, request.languageCode(), request.question()));
     }
 
-    @PostMapping("/examples/generate")
+    @PostMapping(ApiPaths.V1.Ai.EXAMPLES_GENERATE)
     public ExamplesResponse generateExamples(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody ExampleGenerationApiRequest request) {
@@ -55,19 +61,19 @@ public class AiTutorController {
                 aiTutorService.generateExamples(userId, request.languageCode(), request.word()));
     }
 
-    @PostMapping("/sentence/correct")
+    @PostMapping(ApiPaths.V1.Ai.SENTENCE_CORRECT)
     public SentenceCorrectionApiResponse correctSentence(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody SentenceCorrectionApiRequest request) {
         return aiTutorService.correctSentence(userId, request.languageCode(), request.text());
     }
 
-    @GetMapping("/scenarios")
+    @GetMapping(ApiPaths.V1.Ai.SCENARIOS)
     public List<ScenarioResponse> scenarios(@RequestParam String language) {
         return aiTutorService.scenarios(language);
     }
 
-    @PostMapping("/conversation/message")
+    @PostMapping(ApiPaths.V1.Ai.CONVERSATION_START)
     public ConversationMessageResponse startConversation(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody ConversationMessageRequest request) {
@@ -75,7 +81,7 @@ public class AiTutorController {
                 userId, null, request.languageCode(), request.scenario(), request.message());
     }
 
-    @PostMapping("/conversation/{id}/message")
+    @PostMapping(ApiPaths.V1.Ai.CONVERSATION_MESSAGE)
     public ConversationMessageResponse continueConversation(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long id,
@@ -98,46 +104,47 @@ public class AiTutorController {
      * userId} itself is resolved on this same request thread and just captured by the closure below
      * — the background executor never needs its own security context.
      */
-    @GetMapping(value = "/conversation/{id}/stream", produces = "text/event-stream")
+    @GetMapping(value = ApiPaths.V1.Ai.CONVERSATION_STREAM, produces = "text/event-stream")
     public SseEmitter streamMessage(
-            @AuthenticationPrincipal Long userId, @PathVariable Long id, @RequestParam String message) {
-        aiTutorService.findConversationOrThrow(userId, id);
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long id,
+            @RequestParam String message) {
+        aiTutorService.requireOwnConversation(userId, id);
 
         SseEmitter emitter = new SseEmitter(65_000L);
-        streamingExecutor.execute(
-                () -> {
-                    try {
-                        aiTutorService.streamMessage(
-                                userId,
-                                id,
-                                message,
-                                delta -> {
-                                    try {
-                                        emitter.send(SseEmitter.event().data(delta));
-                                    } catch (IOException e) {
-                                        emitter.completeWithError(e);
-                                    }
-                                });
-                        emitter.complete();
-                    } catch (Exception e) {
-                        emitter.completeWithError(e);
-                    }
-                });
+        streamingExecutor.execute(() -> {
+            try {
+                aiTutorService.streamMessage(
+                        userId,
+                        id,
+                        message,
+                        delta -> {
+                            try {
+                                emitter.send(SseEmitter.event().data(delta));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        });
+                emitter.complete();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
         return emitter;
     }
 
-    @PostMapping("/conversation/{id}/end")
+    @PostMapping(ApiPaths.V1.Ai.CONVERSATION_END)
     public ConversationSummaryResponse endConversation(
             @AuthenticationPrincipal Long userId, @PathVariable Long id) {
         return aiTutorService.endConversation(userId, id);
     }
 
-    @GetMapping("/conversations")
+    @GetMapping(ApiPaths.V1.Ai.CONVERSATIONS)
     public List<ConversationListItemResponse> conversations(@AuthenticationPrincipal Long userId) {
         return aiTutorService.listConversations(userId);
     }
 
-    @GetMapping("/conversations/{id}")
+    @GetMapping(ApiPaths.V1.Ai.CONVERSATION)
     public ConversationDetailResponse conversation(
             @AuthenticationPrincipal Long userId, @PathVariable Long id) {
         return aiTutorService.getConversation(userId, id);

@@ -14,6 +14,7 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Enforces the module-boundary rules in {@code plan/phases/00-overview.md} §1.1 and §3 rule 1 in
@@ -92,4 +93,14 @@ class ArchitectureTest {
                     .should()
                     .dependOnClassesThat(simpleNameEndingWith("Repository"))
                     .because("Controllers must go through a Service (00-overview.md §1.1 rule 1)");
+
+    /** The folder shows the version: a controller serving ApiPaths.V1 lives in <module>.api.v1. */
+    @ArchTest
+    static final ArchRule controllers_live_in_a_versioned_api_package =
+            classes()
+                    .that()
+                    .areAnnotatedWith(RestController.class)
+                    .should()
+                    .haveNameMatching(".*\\.api\\.v\\d+\\.[^.]+")
+                    .because("controllers live in <module>.api.vN, matching ApiPaths.VN");
 }

@@ -2,6 +2,7 @@ package com.learnflow.backend.common.config;
 
 import com.learnflow.backend.auth.JwtAuthenticationFilter;
 import com.learnflow.backend.auth.LoginRateLimitFilter;
+import com.learnflow.backend.common.web.ApiPaths;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,10 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        "/api/auth/**", "/api/health", "/api/curriculum/sources")
+                                        ApiPaths.V1.Auth.BASE + "/**",
+                                        ApiPaths.V1.Health.BASE,
+                                        ApiPaths.V1.Curriculum.BASE
+                                                + ApiPaths.V1.Curriculum.SOURCES)
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())

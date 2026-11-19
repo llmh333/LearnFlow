@@ -29,7 +29,7 @@ class AiQuotaIntegrationTest extends AbstractIntegrationTest {
                 RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
         String token =
                 client.post()
-                        .uri("/api/auth/register")
+                        .uri("/api/v1/auth/register")
                         .body(
                                 new RegisterRequest(
                                         "quota-" + System.nanoTime() + "@example.com",
@@ -49,7 +49,7 @@ class AiQuotaIntegrationTest extends AbstractIntegrationTest {
 
         for (int i = 0; i < 2; i++) {
             client.post()
-                    .uri("/api/ai/grammar/explain")
+                    .uri("/api/v1/ai/grammar/explain")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .body(body)
                     .exchange()
@@ -57,7 +57,7 @@ class AiQuotaIntegrationTest extends AbstractIntegrationTest {
                     .isOk();
         }
         client.post()
-                .uri("/api/ai/grammar/explain")
+                .uri("/api/v1/ai/grammar/explain")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .body(body)
                 .exchange()
