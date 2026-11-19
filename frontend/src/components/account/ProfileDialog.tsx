@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -13,7 +14,7 @@ const GOALS: { value: LearningGoal; label: string }[] = [
   { value: 'CONVERSATION', label: 'Everyday conversation' },
   { value: 'TRAVEL', label: 'Travel' },
 ]
-const labelClass = 'text-xs font-semibold text-slate-700 dark:text-slate-300'
+const labelClass = 'text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300'
 
 interface ProfileDialogProps {
   open: boolean
@@ -36,6 +37,7 @@ export function ProfileDialog({ open, onClose }: ProfileDialogProps) {
 }
 
 function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => void }) {
+  const navigate = useNavigate()
   const update = useUpdateProfile()
   const [timezone, setTimezone] = useState(profile.timezone)
   const [goal, setGoal] = useState<LearningGoal | ''>(profile.goal ?? '')
@@ -53,6 +55,25 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Onboarding Wizard shortcut */}
+      <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-black text-slate-800 dark:text-white">Onboarding Wizard</p>
+          <p className="text-[11px] text-slate-400">Select language course, level &amp; goals</p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            onSaved()
+            navigate('/onboarding')
+          }}
+          className="text-xs font-bold"
+        >
+          Open Wizard
+        </Button>
+      </div>
       <div className="space-y-1.5">
         <label htmlFor="profile-timezone" className={labelClass}>
           Time zone (your day starts at midnight here)
@@ -128,7 +149,12 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
         </p>
       )}
 
-      <Button type="submit" disabled={update.isPending}>
+      <Button
+        type="submit"
+        variant="primary"
+        className="w-full py-2.5 font-extrabold uppercase tracking-wide"
+        disabled={update.isPending}
+      >
         {update.isPending ? 'Saving…' : 'Save'}
       </Button>
     </form>

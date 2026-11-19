@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { IconVolume2 } from '@/components/ui/Icon'
+import { IconVolume2 } from '@/assets'
 import { isSpeechSupported, speak } from '@/lib/speech'
 import { cn } from '@/lib/cn'
 

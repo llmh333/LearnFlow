@@ -2,16 +2,26 @@ import { create } from 'zustand'
 
 export type Theme = 'light' | 'dark'
 
+const THEME_KEY = 'learnflow_theme'
+const LEVELS_KEY = 'learnflow_user_levels'
+const ONBOARDED_KEY = 'learnflow_onboarded'
+
+export const DEFAULT_USER_LEVELS: Record<string, string> = {
+  en: 'B1',
+  zh: 'HSK 2',
+  ja: 'N5',
+}
+
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
   try {
-    const saved = localStorage.getItem('learnflow_theme') as Theme | null
+    const saved = localStorage.getItem(THEME_KEY) as Theme | null
     if (saved === 'light' || saved === 'dark') return saved
     if (typeof window.matchMedia === 'function') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
   } catch {
-    // ignore storage or matchMedia errors in tests/ssr
+    // ignore storage or matchMedia errors
   }
   return 'light'
 }
@@ -25,15 +35,45 @@ function applyTheme(theme: Theme) {
     root.classList.remove('dark')
   }
   try {
-    localStorage.setItem('learnflow_theme', theme)
+    localStorage.setItem(THEME_KEY, theme)
   } catch {
-    // ignore storage errors
+    // ignore
   }
+}
+
+function getInitialLevels(): Record<string, string> {
+  if (typeof window === 'undefined') return DEFAULT_USER_LEVELS
+  try {
+    const raw = localStorage.getItem(LEVELS_KEY)
+    if (raw) {
+      return { ...DEFAULT_USER_LEVELS, ...JSON.parse(raw) }
+    }
+  } catch {
+    // ignore parse error
+  }
+  return DEFAULT_USER_LEVELS
+}
+
+function getInitialOnboarded(): boolean {
+  if (typeof window === 'undefined') return true
+  try {
+    const raw = localStorage.getItem(ONBOARDED_KEY)
+    if (raw !== null) {
+      return raw === 'true'
+    }
+  } catch {
+    // ignore
+  }
+  return false
 }
 
 interface UiState {
   selectedLanguageCode: string
   setSelectedLanguageCode: (code: string) => void
+  userLevels: Record<string, string>
+  setUserLevel: (langCode: string, level: string) => void
+  isOnboarded: boolean
+  setOnboarded: (onboarded: boolean) => void
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
@@ -44,10 +84,30 @@ if (typeof document !== 'undefined') {
   applyTheme(initialTheme)
 }
 
-/** UI-only state (not server state): selected language and color theme (light/dark). */
+/** UI-only state (not server state): selected language, course levels, onboarding flag, and theme. */
 export const useUiStore = create<UiState>((set) => ({
   selectedLanguageCode: 'en',
   setSelectedLanguageCode: (code) => set({ selectedLanguageCode: code }),
+  userLevels: getInitialLevels(),
+  setUserLevel: (langCode, level) =>
+    set((state) => {
+      const nextLevels = { ...state.userLevels, [langCode]: level }
+      try {
+        localStorage.setItem(LEVELS_KEY, JSON.stringify(nextLevels))
+      } catch {
+        // ignore
+      }
+      return { userLevels: nextLevels }
+    }),
+  isOnboarded: getInitialOnboarded(),
+  setOnboarded: (onboarded) => {
+    try {
+      localStorage.setItem(ONBOARDED_KEY, onboarded ? 'true' : 'false')
+    } catch {
+      // ignore
+    }
+    set({ isOnboarded: onboarded })
+  },
   theme: initialTheme,
   toggleTheme: () =>
     set((state) => {

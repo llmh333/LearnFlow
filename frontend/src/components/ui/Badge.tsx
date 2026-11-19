@@ -13,36 +13,41 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
     | 'purple'
     | 'coral'
     | 'outline'
+    | 'sky'
+    | 'yellow'
 }
 
 const BADGE_VARIANTS: Record<NonNullable<BadgeProps['variant']>, string> = {
   default:
-    'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    'bg-slate-100 text-slate-700 border-2 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
   primary:
-    'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 font-semibold',
+    'bg-[#d7ffb8] text-[#347800] border-2 border-[#a8f274] dark:bg-[#58cc02]/20 dark:text-[#79e32a] dark:border-[#58cc02]/50 font-bold',
   secondary:
-    'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 font-semibold',
+    'bg-slate-200 text-slate-800 border-2 border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 font-bold',
   tertiary:
-    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-semibold',
+    'bg-[#ddf4ff] text-[#0d78a8] border-2 border-[#a3e2ff] dark:bg-[#1cb0f6]/20 dark:text-[#1cb0f6] dark:border-[#1cb0f6]/40 font-bold',
   success:
-    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-semibold',
+    'bg-[#d7ffb8] text-[#347800] border-2 border-[#a8f274] dark:bg-[#58cc02]/20 dark:text-[#79e32a] dark:border-[#58cc02]/50 font-bold',
   warning:
-    'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-700',
+    'bg-[#fff5cc] text-[#a16800] border-2 border-[#ffe885] dark:bg-[#ffc800]/20 dark:text-[#ffc800] dark:border-[#ffc800]/40 font-bold',
   danger:
-    'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800',
+    'bg-[#ffdfe0] text-[#c91818] border-2 border-[#ffb3b5] dark:bg-[#ff4b4b]/20 dark:text-[#ff4b4b] dark:border-[#ff4b4b]/40 font-bold',
   purple:
-    'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-200 dark:border-purple-800',
+    'bg-[#f5e6ff] text-[#8629cc] border-2 border-[#e5bfff] dark:bg-[#ce82ff]/20 dark:text-[#ce82ff] dark:border-[#ce82ff]/40 font-bold',
   coral:
-    'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/60 dark:text-orange-200 dark:border-orange-800',
+    'bg-[#ffdfe0] text-[#c91818] border-2 border-[#ffb3b5] dark:bg-[#ff4b4b]/20 dark:text-[#ff4b4b] dark:border-[#ff4b4b]/40 font-bold',
+  sky: 'bg-[#ddf4ff] text-[#0d78a8] border-2 border-[#a3e2ff] dark:bg-[#1cb0f6]/20 dark:text-[#1cb0f6] dark:border-[#1cb0f6]/40 font-bold',
+  yellow:
+    'bg-[#fff5cc] text-[#a16800] border-2 border-[#ffe885] dark:bg-[#ffc800]/20 dark:text-[#ffc800] dark:border-[#ffc800]/40 font-bold',
   outline:
-    'bg-transparent text-slate-700 border-slate-300 dark:text-slate-300 dark:border-slate-700',
+    'bg-transparent text-slate-700 border-2 border-slate-300 dark:text-slate-300 dark:border-slate-700 font-bold',
 }
 
 export function Badge({ variant = 'default', className, ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide transition-colors',
+        'inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-xs font-bold tracking-tight select-none transition-colors',
         BADGE_VARIANTS[variant],
         className,
       )}

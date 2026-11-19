@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ProfileDialog } from './ProfileDialog'
 
@@ -20,9 +21,11 @@ vi.mock('@/api/account', () => ({
 function renderDialog(onClose = vi.fn()) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
-    <QueryClientProvider client={queryClient}>
-      <ProfileDialog open onClose={onClose} />
-    </QueryClientProvider>,
+    <MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <ProfileDialog open onClose={onClose} />
+      </QueryClientProvider>
+    </MemoryRouter>,
   )
   return onClose
 }

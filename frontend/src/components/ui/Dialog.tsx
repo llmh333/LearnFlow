@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { IconX } from '@/components/ui/Icon'
+import { IconX } from '@/assets'
 import { cn } from '@/lib/cn'
 
 interface DialogProps {
@@ -43,20 +43,20 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
     >
       <div
         className={cn(
-          'relative w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xl animate-scale-in dark:border-slate-800 dark:bg-slate-900',
+          'relative w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-2xl animate-scale-in dark:border-[#2B3940] dark:bg-[#1A262C]',
           className,
         )}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
           {title && (
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h2>
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">{title}</h2>
           )}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="ml-auto rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+            className="ml-auto rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-[#202F36] dark:hover:text-slate-200 transition-colors"
           >
             <IconX size={18} />
           </button>

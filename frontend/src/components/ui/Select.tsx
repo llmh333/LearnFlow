@@ -7,7 +7,7 @@ export function Select({ className, ...props }: SelectProps) {
   return (
     <select
       className={cn(
-        'w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 transition-all duration-150 focus:border-indigo-500 focus:outline-none focus:ring-3 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/25',
+        'w-full rounded-2xl border-2 border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm font-semibold text-slate-800 transition-all duration-150 focus:border-[#58CC02] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#58CC02]/15 disabled:cursor-not-allowed disabled:bg-slate-100 dark:border-[#2B3940] dark:bg-[#1A262C] dark:text-slate-100 dark:focus:border-[#58CC02] dark:focus:bg-[#131F24] dark:focus:ring-[#58CC02]/20',
         className,
       )}
       {...props}

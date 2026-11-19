@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { IconRotate } from '@/components/ui/Icon'
+import { IconRotate } from '@/assets'
 
 // Bundled locally by scripts/vendor-stroke-order-svgs.mjs for the current seed vocabulary. Any
 // character not found there (e.g. a word the user added later) falls back to fetching live from

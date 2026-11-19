@@ -47,3 +47,48 @@ export interface Profile {
 }
 
 export type ProfileUpdate = Partial<Omit<Profile, 'onboardedAt'>>
+
+/** Mirrors backend HealthController.HealthResponse. */
+export interface HealthResponse {
+  status: string
+  time: string
+}
+
+/** Curriculum models matching backend CourseResponse. */
+export type CourseLevel =
+  'KANA' | 'N5' | 'N4' | 'N3' | 'A1' | 'A2' | 'B1' | 'B2' | 'HSK1' | 'HSK2' | 'HSK3' | string
+export type ContentStatus = 'DRAFT' | 'REVIEWED'
+
+export interface LessonSummary {
+  id: number
+  key: string
+  position: number
+  title: string
+  status: ContentStatus
+  itemCount: number
+}
+
+export interface Unit {
+  id: number
+  key: string
+  position: number
+  title: string
+  description: string
+  status: ContentStatus
+  lessons: LessonSummary[]
+}
+
+export interface Course {
+  id: number
+  key: string
+  language: string
+  level: CourseLevel
+  title: string
+  description: string
+  status: ContentStatus
+  units: Unit[]
+}
+
+export interface ExamplesResponse {
+  examples: string[]
+}
