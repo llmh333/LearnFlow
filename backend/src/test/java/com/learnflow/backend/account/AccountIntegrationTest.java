@@ -2,9 +2,9 @@ package com.learnflow.backend.account;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.account.dto.ProfileResponse;
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.account.dto.response.ProfileResponse;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -27,9 +27,9 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
                         new RegisterRequest(
                                 "acc-" + System.nanoTime() + "@example.com",
                                 "password123",
+                                "password123",
                                 "Tester",
-                                timezone,
-                                null))
+                                timezone))
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -72,9 +72,9 @@ class AccountIntegrationTest extends AbstractIntegrationTest {
                         new RegisterRequest(
                                 "tz-" + System.nanoTime() + "@example.com",
                                 "password123",
+                                "password123",
                                 "Tester",
-                                "Mars/Olympus",
-                                null))
+                                "Mars/Olympus"))
                 .exchange()
                 .expectStatus()
                 .isBadRequest()

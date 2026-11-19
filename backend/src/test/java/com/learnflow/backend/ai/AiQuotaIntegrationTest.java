@@ -4,8 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.learnflow.backend.ai.provider.AIProvider;
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -34,9 +34,9 @@ class AiQuotaIntegrationTest extends AbstractIntegrationTest {
                                 new RegisterRequest(
                                         "quota-" + System.nanoTime() + "@example.com",
                                         "password123",
+                                        "password123",
                                         "Tester",
-                                        "Asia/Ho_Chi_Minh",
-                                        null))
+                                        "Asia/Ho_Chi_Minh"))
                         .exchange()
                         .expectStatus()
                         .isOk()

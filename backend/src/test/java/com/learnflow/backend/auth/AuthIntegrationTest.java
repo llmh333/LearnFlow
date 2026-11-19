@@ -2,10 +2,10 @@ package com.learnflow.backend.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.LoginRequest;
-import com.learnflow.backend.auth.dto.RegisterRequest;
-import com.learnflow.backend.auth.dto.UserResponse;
+import com.learnflow.backend.auth.dto.request.LoginRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
+import com.learnflow.backend.auth.dto.response.UserResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,11 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     void registerThenLoginThenMe_succeeds() {
         RegisterRequest register =
                 new RegisterRequest(
-                        "flow@example.com", "password123", "Flow User", "Asia/Ho_Chi_Minh", null);
+                        "flow@example.com",
+                        "password123",
+                        "password123",
+                        "Flow User",
+                        "Asia/Ho_Chi_Minh");
         client.post()
                 .uri("/api/v1/auth/register")
                 .body(register)

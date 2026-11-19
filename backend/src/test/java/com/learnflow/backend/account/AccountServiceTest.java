@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.learnflow.backend.account.domain.UserProfile;
-import com.learnflow.backend.account.dto.UpdateProfileRequest;
+import com.learnflow.backend.account.dto.request.UpdateProfileRequest;
 import com.learnflow.backend.common.error.BadRequestException;
 import java.time.Clock;
 import java.time.Instant;

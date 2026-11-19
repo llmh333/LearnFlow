@@ -31,6 +31,9 @@ public final class ApiPaths {
             public static final String BASE = V1.ROOT + "/auth";
             public static final String REGISTER = "/register";
             public static final String LOGIN = "/login";
+            public static final String REFRESH = "/refresh";
+            public static final String LOGOUT = "/logout";
+            public static final String CHANGE_PASSWORD = "/change-password";
             public static final String ME = "/me";
 
             private Auth() {}

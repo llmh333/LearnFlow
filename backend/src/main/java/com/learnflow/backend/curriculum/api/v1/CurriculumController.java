@@ -2,8 +2,8 @@ package com.learnflow.backend.curriculum.api.v1;
 
 import com.learnflow.backend.common.web.ApiPaths;
 import com.learnflow.backend.curriculum.CurriculumService;
-import com.learnflow.backend.curriculum.dto.CourseResponse;
-import com.learnflow.backend.curriculum.dto.SourceResponse;
+import com.learnflow.backend.curriculum.dto.response.CourseResponse;
+import com.learnflow.backend.curriculum.dto.response.SourceResponse;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

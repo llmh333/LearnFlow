@@ -16,10 +16,9 @@ spring:
 
 app:
   auth:
-    token-ttl: PT12H
+    access-token-ttl: PT15M
+    refresh-token-ttl: P30D
     registration-enabled: true
-    # D1: closed group; codes are created with SQL (README).
-    invite-required: true
   content:
     location: classpath*:content/
     include-drafts: false

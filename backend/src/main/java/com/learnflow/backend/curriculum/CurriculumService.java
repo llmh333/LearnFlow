@@ -1,7 +1,7 @@
 package com.learnflow.backend.curriculum;
 
-import com.learnflow.backend.curriculum.dto.CourseResponse;
-import com.learnflow.backend.curriculum.dto.SourceResponse;
+import com.learnflow.backend.curriculum.dto.response.CourseResponse;
+import com.learnflow.backend.curriculum.dto.response.SourceResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,8 +1,8 @@
 package com.learnflow.backend.account;
 
 import com.learnflow.backend.account.domain.UserProfile;
-import com.learnflow.backend.account.dto.ProfileResponse;
-import com.learnflow.backend.account.dto.UpdateProfileRequest;
+import com.learnflow.backend.account.dto.request.UpdateProfileRequest;
+import com.learnflow.backend.account.dto.response.ProfileResponse;
 import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.NotFoundException;
 import java.time.Clock;
@@ -53,6 +53,9 @@ public class AccountService {
         }
         if (request.goal() != null) {
             profile.setGoal(request.goal());
+            if (profile.getOnboardedAt() == null) {
+                profile.setOnboardedAt(Instant.now(clock));
+            }
         }
         if (request.dailyMinutes() != null) {
             if (!DAILY_MINUTES.contains(request.dailyMinutes())) {

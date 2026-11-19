@@ -2,10 +2,10 @@ package com.learnflow.backend.language;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
-import com.learnflow.backend.language.dto.LanguageResponse;
+import com.learnflow.backend.language.dto.response.LanguageResponse;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -34,9 +34,9 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
                 new RegisterRequest(
                         "lang-" + System.nanoTime() + "@example.com",
                         "password123",
+                        "password123",
                         "Tester",
-                        "Asia/Ho_Chi_Minh",
-                        null);
+                        "Asia/Ho_Chi_Minh");
         AuthResponse auth =
                 client.post()
                         .uri("/api/v1/auth/register")

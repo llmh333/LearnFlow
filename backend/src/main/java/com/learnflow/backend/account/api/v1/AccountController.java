@@ -1,8 +1,8 @@
 package com.learnflow.backend.account.api.v1;
 
 import com.learnflow.backend.account.AccountService;
-import com.learnflow.backend.account.dto.ProfileResponse;
-import com.learnflow.backend.account.dto.UpdateProfileRequest;
+import com.learnflow.backend.account.dto.request.UpdateProfileRequest;
+import com.learnflow.backend.account.dto.response.ProfileResponse;
 import com.learnflow.backend.common.web.ApiPaths;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

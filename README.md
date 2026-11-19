@@ -27,19 +27,6 @@ cd frontend && npm install && npm run dev
 
 Mở `http://localhost:5173` — trang sẽ hiển thị `Backend: UP` nếu mọi thứ chạy đúng.
 
-## Mã mời (đăng ký theo nhóm, D1)
-
-Khi `app.auth.invite-required=true` (mặc định; profile `local`/`test` tắt), đăng ký cần mã mời. Chưa có trang
-admin, nên tạo mã bằng SQL. Mã gồm chữ hoa, số và `-`, dài 6–32 ký tự. Người dùng nhập không phân biệt hoa thường.
-
-```bash
-docker exec -it learnflow-postgres psql -U learnflow -d learnflow -c \
-  "INSERT INTO invite_code (code, max_uses, expires_at, note, created_at)
-   VALUES ('LEARN-2026', 10, now() + interval '30 days', 'nhóm đầu tiên', now());"
-```
-
-Số lượt đã dùng là số user có `invite_code_id` trỏ tới mã đó.
-
 ## Kiểm tra trước khi mở PR
 
 ```bash

@@ -2,11 +2,11 @@ package com.learnflow.backend.curriculum;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
-import com.learnflow.backend.curriculum.dto.CourseResponse;
-import com.learnflow.backend.curriculum.dto.SourceResponse;
+import com.learnflow.backend.curriculum.dto.response.CourseResponse;
+import com.learnflow.backend.curriculum.dto.response.SourceResponse;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +54,9 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
                 new RegisterRequest(
                         "cur-" + System.nanoTime() + "@example.com",
                         "password123",
+                        "password123",
                         "Tester",
-                        "Asia/Ho_Chi_Minh",
-                        null);
+                        "Asia/Ho_Chi_Minh");
         AuthResponse auth =
                 client().post()
                         .uri("/api/v1/auth/register")

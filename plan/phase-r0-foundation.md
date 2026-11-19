@@ -7,7 +7,7 @@
 ## Quyết định nhỏ trong phase
 
 - Module mới `account`: `user_profile` + `AccountService.today(userId)` (ngày hôm nay theo timezone của user).
-- Mã mời tạo bằng SQL (hướng dẫn ở README); chưa có trang admin. `app.auth.invite-required` mặc định `true`.
+- Không có mã mời (bỏ 2026-11-19): đăng ký mở, tắt bằng `app.auth.registration-enabled`.
 - Quota AI tính trên **tổng** lượt gọi trong ngày (mặc định 50, `app.ai.daily-quota`), lưu theo từng tính năng
   để thống kê. Trừ quota trong transaction có `pg_advisory_xact_lock(user_id)`, nên gọi song song không vượt.
   Lượt AI lỗi vẫn bị tính.
@@ -24,20 +24,24 @@
 - [ ] `GET /api/v1/languages` chỉ trả ngôn ngữ `enabled`
 
 ### B. Hồ sơ người dùng
-- [ ] Migration, mỗi bảng một file: `V17` `invite_code`, `V18` `app_user.invite_code_id`, `V19` `user_profile`,
-      `V20` `ai_usage`
+- [ ] Migration, mỗi bảng một file: `V17` `user_profile`, `V18` `ai_usage`
 - [ ] Đăng ký nhận `timezone` (từ trình duyệt), tạo `user_profile`
 - [ ] `GET`/`PATCH /api/v1/account/profile` + test
 
-### C. Mã mời
-- [ ] Đăng ký kiểm mã: tồn tại, chưa hết hạn, chưa hết lượt (khoá dòng `FOR UPDATE`)
-- [ ] Test: không mã / mã sai / hết lượt / hết hạn
+### C. Auth chuẩn (D16)
+- [ ] `V19` `refresh_token`; access token 15 phút, refresh token xoay vòng trong cookie HttpOnly
+- [ ] `POST /api/v1/auth/refresh`, `/logout`, `/change-password` (đổi mật khẩu thu hồi mọi phiên)
+- [ ] Đăng ký: `confirmPassword`, mật khẩu 8 ký tự – 72 byte có chữ và số; đăng ký trùng cùng lúc → 409
+- [ ] Đăng nhập không lộ email qua thời gian phản hồi
+- [ ] Test: xoay vòng + dùng lại token cũ, logout, đổi mật khẩu, lỗi field
 
 ### D. Quota AI
 - [ ] `AiUsageService.consume(userId, feature)` đếm theo ngày địa phương, vượt quota → 429
 - [ ] Test: lượt thứ `quota + 1` trả 429; ranh giới ngày theo giờ VN (Clock cố định)
 
 ### E. Frontend
-- [ ] Form đăng ký: ô mã mời, gửi timezone
+- [ ] Form đăng ký: gửi timezone, ô xác nhận mật khẩu
+- [ ] Lưu access token trong bộ nhớ, tự gọi `/auth/refresh` khi 401 (một request refresh tại một thời điểm), nút đăng xuất gọi `/auth/logout`
+- [ ] Trang đổi mật khẩu
 - [ ] Hộp thoại sửa hồ sơ (timezone, mục tiêu, phút/ngày, số mục mới/ngày)
 - [ ] Trang AI báo rõ khi hết lượt (429)

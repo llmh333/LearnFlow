@@ -16,8 +16,8 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Stateless JWT auth per {@code plan/phases/00-overview.md} §1.2: only {@code /api/auth/**} and
- * {@code /api/health} are public, everything else requires a valid Bearer token.
+ * Stateless JWT auth: register, login, refresh, logout, health and the licence page are public;
+ * everything else requires a valid Bearer access token.
  */
 @Configuration
 public class SecurityConfig {
@@ -33,7 +33,11 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        ApiPaths.V1.Auth.BASE + "/**",
+                                        ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.REGISTER,
+                                        ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.LOGIN,
+                                        // Authenticated by the refresh cookie, not a Bearer token.
+                                        ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.REFRESH,
+                                        ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.LOGOUT,
                                         ApiPaths.V1.Health.BASE,
                                         ApiPaths.V1.Curriculum.BASE
                                                 + ApiPaths.V1.Curriculum.SOURCES)

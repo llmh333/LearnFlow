@@ -103,4 +103,25 @@ class ArchitectureTest {
                     .should()
                     .haveNameMatching(".*\\.api\\.v\\d+\\.[^.]+")
                     .because("controllers live in <module>.api.vN, matching ApiPaths.VN");
+
+    /** DTOs are split by direction: dto/request for what clients send, dto/response for replies. */
+    @ArchTest
+    static final ArchRule dtos_live_in_request_or_response_packages =
+            classes()
+                    .that()
+                    .resideInAPackage("..dto..")
+                    .should()
+                    .resideInAnyPackage("..dto.request", "..dto.response")
+                    .because("DTOs go in <module>/dto/request or <module>/dto/response");
+
+    @ArchTest
+    static final ArchRule request_dtos_are_named_request =
+            classes()
+                    .that()
+                    .resideInAPackage("..dto.request")
+                    .and()
+                    .areTopLevelClasses()
+                    .should()
+                    .haveSimpleNameEndingWith("Request")
+                    .because("dto/request holds XxxRequest records only");
 }

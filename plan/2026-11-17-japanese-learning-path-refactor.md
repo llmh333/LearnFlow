@@ -19,7 +19,7 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 
 | # | Vấn đề | Quyết định | Ghi chú |
 |---|---|---|---|
-| D1 | Đối tượng | Nhóm nhỏ (đăng ký bằng mã mời) → sau này công khai, có thanh toán để mở giới hạn AI | Bản cũ chỉ phục vụ 1 người dùng và không có gamification. Gamification chỉ ở mức nhẹ: streak, mục tiêu ngày. Không leaderboard. |
+| D1 | Đối tượng | Nhóm nhỏ → sau này công khai, có thanh toán để mở giới hạn AI | Bản cũ chỉ phục vụ 1 người dùng và không có gamification. Gamification chỉ ở mức nhẹ: streak, mục tiêu ngày. Không leaderboard. Đăng ký mở, **không dùng mã mời** (bỏ ngày 2026-11-19; tắt đăng ký bằng `app.auth.registration-enabled`). |
 | D2 | Nền tảng | Web, **mobile-first** (responsive). PWA cài được trên Android ở phase sau | Không có macOS nên không build iOS native. |
 | D3 | Ngôn ngữ ưu tiên | **Tiếng Nhật trước**, lộ trình Kana → N5 → N4 → N3 | Anh/Trung bị ẩn khỏi UI (cờ `language.enabled`) cho tới khi có nội dung, dữ liệu cũ giữ nguyên. |
 | D4 | Nguồn nội dung | Dữ liệu mở có giấy phép rõ ràng + AI sinh phần thiếu + **người duyệt** trước khi vào app | Xem §3. Nội dung là dữ liệu cố định trong DB, **không** sinh realtime lúc người dùng học. |
@@ -34,6 +34,7 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 | D13 | Bảng nội dung | Bảng riêng từng loại: `kana`, `jp_word`, `jp_kanji`, `grammar_point`, `example_sentence`, nghĩa dùng `TEXT[]`; liên kết đa hình theo kiểu exclusive arc (một cột FK cho mỗi loại + `CHECK num_nonnulls(...) = 1`) | Ràng buộc nằm ở DB. Chưa tạo `word_kanji`. |
 | D14 | SRS | Thẻ `srs_card` trỏ thẳng tới nội dung global (exclusive arc), không chép sang bảng của user; "Từ của tôi" là bảng `user_word` riêng, cũng có thẻ | Thay §5.2 cũ (`vocabulary.catalog_word_id`). Bảng học/ôn tập tạo ở migration của R2–R4. |
 | D15 | Đa ngôn ngữ | Chỉ `course` (và `ai_conversation`) có `language_id`; bảng nội dung đặt tên `jp_*` | Ngôn ngữ khác có bảng riêng khi tới lúc. |
+| D16 | Phiên đăng nhập | Access token JWT 15 phút trong body + refresh token xoay vòng 30 ngày trong cookie HttpOnly (bảng `refresh_token`, lưu SHA-256, thu hồi cả chuỗi khi token bị dùng lại); đăng ký có xác nhận mật khẩu; có đổi mật khẩu | Thay JWT 12 giờ không thu hồi được. Đổi mật khẩu đăng xuất mọi thiết bị (access token cũ còn tối đa 15 phút). |
 
 ## 3. Nguồn nội dung tiếng Nhật
 
@@ -140,7 +141,7 @@ Giữ `AIProvider` và 3 provider hiện có. AI được dùng để: giải th
 | `learning` | Tiến độ: `lesson_progress`, mở khoá bài, phiên "Hôm nay" |
 | `srs` | `srs_card`, `review_log`, thuật toán SM-2 (viết lại, D12) |
 | `practice` | Sinh và chấm bài tập 4 kỹ năng, ghi `activity_log` |
-| `account` (mở rộng `auth`) | Hồ sơ: timezone, mục tiêu, phút/ngày, mã mời, quota AI |
+| `account` (mở rộng `auth`) | Hồ sơ: timezone, mục tiêu, phút/ngày, quota AI |
 
 Đang có: `common`, `auth`, `language`, `curriculum`, `ai`, `health`. Các module cũ đã bị gỡ (D12).
 
@@ -167,7 +168,7 @@ Mỗi phase: chạy được, qua cổng kiểm tra `mvnw verify` + `lint/build/
 
 | Phase | Mục tiêu | Nội dung chính | Xong khi |
 |---|---|---|---|
-| **R0** Dọn nền | Sửa nợ kỹ thuật trước khi mở rộng | Các mục §5.4, `user_profile` + timezone, `language.enabled`, mã mời, `ai_usage` | Ranh giới ngày theo giờ VN; AI vượt quota trả 429 |
+| **R0** Dọn nền | Sửa nợ kỹ thuật trước khi mở rộng | Các mục §5.4, `user_profile` + timezone, `language.enabled`, `ai_usage` | Ranh giới ngày theo giờ VN; AI vượt quota trả 429 |
 | **R1** Pipeline nội dung | Có dữ liệu Kana + N5 đã duyệt trong DB | Schema `curriculum`, `ContentImporter`, script import JMdict/KANJIDIC2/JLPT list/Tatoeba, script AI làm giàu, trang "Nguồn & giấy phép" | Unit 1–3 N5 ở trạng thái `reviewed` và import được |
 | **R2** Kana | Người mới học xong Kana | Module Kana: bảng chữ, bài theo hàng, nhận diện, viết theo nét, SRS cho Kana | Người dùng thử đọc được toàn bộ Hiragana |
 | **R3** Lộ trình N5 | Học được bài theo lộ trình | `lesson_progress`, `LessonPlayer`, nối từ global → SRS, ôn nhiều kiểu hỏi | Học trọn Unit 1 N5 từ đầu tới cuối |
