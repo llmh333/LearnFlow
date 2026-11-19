@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Alert, Button, Card, Divider, Form, Input } from 'antd'
+import {
+  LockOutlined,
+  MailOutlined,
+  PlayCircleOutlined,
+  RocketFilled,
+  UserOutlined,
+} from '@ant-design/icons'
 import { ApiError } from '@/api/client'
 import { ChinaFlagBadge, EnglishFlagBadge, Flowy, JapanFlagBadge } from '@/assets'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
 import { MOCK_AUTH_RESPONSE, setMockMode } from '@/mock'
 import { useAuthStore } from '@/stores/authStore'
@@ -32,8 +37,7 @@ export function RegisterPage() {
     navigate('/onboarding', { replace: true })
   }
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
+  function handleSubmit() {
     if (password !== confirmPassword) {
       setPasswordMismatch(true)
       return
@@ -87,7 +91,10 @@ export function RegisterPage() {
         語
       </div>
 
-      <Card className="relative w-full max-w-md p-6 sm:p-8 rounded-3xl border-2 border-b-4 border-slate-200 dark:border-[#2B3940] bg-white dark:bg-[#1A262C] shadow-lg">
+      <Card
+        className="relative w-full max-w-md !rounded-3xl !border-2 !border-b-4 !border-slate-200 dark:!border-[#2B3940] !bg-white dark:!bg-[#1A262C] shadow-lg"
+        styles={{ body: { padding: '2rem 1.5rem' } }}
+      >
         {/* Mascot Banner */}
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="relative mb-3 flex items-center justify-center">
@@ -118,108 +125,150 @@ export function RegisterPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Your name
-            </label>
+        <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} className="space-y-1">
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Your name
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
             <Input
+              size="large"
               placeholder="e.g. Alex (亚历克斯 / アレックス)"
+              prefix={<UserOutlined className="text-slate-400 mr-1.5" />}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Email address
-            </label>
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Email address
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
             <Input
               type="email"
+              size="large"
               placeholder="you@example.com"
+              prefix={<MailOutlined className="text-slate-400 mr-1.5" />}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Password
-            </label>
-            <Input
-              type="password"
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Password
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
+            <Input.Password
+              size="large"
               placeholder="Min. 8 characters"
+              prefix={<LockOutlined className="text-slate-400 mr-1.5" />}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)
                 if (passwordMismatch) setPasswordMismatch(false)
               }}
               minLength={8}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Confirm password
-            </label>
-            <Input
-              type="password"
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Confirm password
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
+            <Input.Password
+              size="large"
               placeholder="Re-enter your password"
+              prefix={<LockOutlined className="text-slate-400 mr-1.5" />}
               value={confirmPassword}
               onChange={(e) => {
                 setConfirmPassword(e.target.value)
                 if (passwordMismatch) setPasswordMismatch(false)
               }}
               minLength={8}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
 
           {passwordMismatch && (
-            <div className="rounded-2xl border-2 border-[#FF4B4B]/30 bg-rose-50 p-3 text-xs font-bold text-[#FF4B4B] dark:bg-rose-950/40 dark:text-rose-400">
-              Passwords do not match. Please re-enter both passwords.
+            <div className="mb-3">
+              <Alert
+                type="error"
+                showIcon
+                message="Passwords do not match. Please re-enter both passwords."
+                className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50 dark:!bg-rose-950/40 text-xs font-bold"
+              />
             </div>
           )}
 
           {register.isError && (
-            <div className="rounded-2xl border-2 border-[#FF4B4B]/30 bg-rose-50 p-3 text-xs font-bold text-[#FF4B4B] dark:bg-rose-950/40 dark:text-rose-400">
-              {register.error instanceof ApiError ? register.error.message : 'Registration failed'}
+            <div className="mb-3">
+              <Alert
+                type="error"
+                showIcon
+                message={
+                  register.error instanceof ApiError
+                    ? register.error.message
+                    : 'Registration failed'
+                }
+                className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50 dark:!bg-rose-950/40 text-xs font-bold"
+              />
             </div>
           )}
 
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={register.isPending}
-            className="mt-2 w-full py-3 text-base font-extrabold uppercase tracking-wide"
-          >
-            {register.isPending ? 'Creating account…' : 'Start Learning 🎉'}
-          </Button>
+          <Form.Item className="!mb-2 !mt-4">
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={register.isPending}
+              icon={<RocketFilled />}
+              className="w-full !h-12 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-base !tracking-wide uppercase shadow-xs transition-all"
+            >
+              {register.isPending ? 'Creating account…' : 'Start Learning 🎉'}
+            </Button>
+          </Form.Item>
 
           {/* Playground Mock Option */}
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t-2 border-dashed border-slate-200 dark:border-[#2B3940]" />
-            </div>
-            <div className="relative flex justify-center text-[11px] font-bold uppercase tracking-wider">
-              <span className="bg-white px-3 text-slate-400 dark:bg-[#1A262C] dark:text-slate-500">
-                or test immediately
-              </span>
-            </div>
-          </div>
+          <Divider dashed plain className="!my-3 !text-xs !font-bold !text-slate-400">
+            or test immediately
+          </Divider>
 
           <Button
-            type="button"
-            variant="sky"
+            type="default"
+            size="large"
             onClick={handleMockLogin}
-            className="w-full py-2.5 text-xs font-extrabold uppercase tracking-wide"
+            icon={<PlayCircleOutlined />}
+            className="w-full !h-11 !rounded-2xl !bg-[#1cb0f6] hover:!bg-[#34bdff] !border-b-4 !border-[#1899d6] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-xs !tracking-wide uppercase shadow-xs transition-all"
           >
-            🎮 Explore in Mock Mode
+            Explore in Mock Mode
           </Button>
-        </form>
+        </Form>
 
         <p className="mt-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           Already have an account?{' '}

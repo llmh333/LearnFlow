@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Flowy, IconSend } from '@/assets'
+import { Button, Input } from 'antd'
+import { SendOutlined } from '@ant-design/icons'
+import { Flowy } from '@/assets'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { MessageBubble } from './MessageBubble'
 import type { ConversationMessageItem } from '@/api/ai'
 
@@ -106,14 +106,14 @@ export function ChatWindow({
             {/* Quick Prompts */}
             <div className="flex flex-wrap justify-center gap-2.5 mt-2 max-w-xl">
               {quickPrompts.map((prompt) => (
-                <button
+                <Button
                   key={prompt}
-                  type="button"
+                  type="default"
                   onClick={() => handleQuickPrompt(prompt)}
-                  className="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 hover:border-[#58CC02] hover:bg-[#D7FFB8]/40 hover:text-[#347800] active:border-b-2 active:translate-y-[2px] transition-all cursor-pointer dark:border-slate-700 dark:bg-[#131F24] dark:text-slate-300"
+                  className="!rounded-2xl !border-2 !border-b-4 !border-slate-200 !bg-slate-50 px-4 !py-2 !h-auto text-xs font-bold text-slate-700 hover:!border-[#58CC02] hover:!bg-[#D7FFB8]/40 hover:!text-[#347800] active:!border-b-2 active:!translate-y-[2px] transition-all cursor-pointer dark:!border-slate-700 dark:!bg-[#131F24] dark:!text-slate-300"
                 >
                   {prompt}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -140,32 +140,34 @@ export function ChatWindow({
         className="flex gap-2.5 pt-3 border-t-2 border-slate-100 dark:border-[#2B3940]"
       >
         <Input
+          size="large"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder={ended ? 'This session has concluded.' : langGreeting.placeholder}
           disabled={ended || isSending}
-          className="flex-1 rounded-2xl border-2 text-sm bg-slate-50 dark:bg-[#131F24]"
+          className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
         />
         <Button
-          type="submit"
-          variant="primary"
+          type="primary"
+          htmlType="submit"
+          size="large"
+          icon={<SendOutlined />}
+          loading={isSending}
           disabled={ended || isSending || !draft.trim()}
-          className="gap-2 shrink-0 px-5"
+          className="shrink-0 px-5 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black"
         >
-          <IconSend size={16} />
-          <span>{isSending ? 'Sending...' : 'Send'}</span>
+          {isSending ? 'Sending...' : 'Send'}
         </Button>
       </form>
 
       {!ended && messages.length > 0 && (
         <div className="flex justify-end pt-1">
           <Button
-            type="button"
-            variant="secondary"
-            size="sm"
+            type="default"
+            size="small"
             onClick={() => setConfirmEndOpen(true)}
             disabled={isEnding}
-            className="text-xs"
+            className="!rounded-xl !border-2 !border-slate-200 text-xs font-bold text-slate-600 dark:!border-slate-700 dark:text-slate-300"
           >
             {isEnding ? 'Analyzing session...' : '✨ End & review session'}
           </Button>

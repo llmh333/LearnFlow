@@ -1,22 +1,18 @@
 import { useState } from 'react'
 import { Navigate, NavLink, Outlet } from 'react-router-dom'
+import { Avatar, Button, Drawer, Progress, Tooltip } from 'antd'
 import {
-  IconBot,
-  IconBook,
-  IconFlame,
-  IconLogOut,
-  IconMenu,
-  IconSettings,
-  IconTrophy,
-  IconZap,
-  IconCheck,
-  IconX,
-  Flowy,
-  StreakFlameBadge,
-  QuestTargetBadge,
-} from '@/assets'
+  CheckOutlined,
+  CloseOutlined,
+  FireFilled,
+  LogoutOutlined,
+  MenuOutlined,
+  SettingOutlined,
+  ThunderboltFilled,
+  TrophyFilled,
+} from '@ant-design/icons'
+import { Flowy, IconBook, IconBot, QuestTargetBadge, StreakFlameBadge } from '@/assets'
 import { ProfileDialog } from '@/components/account/ProfileDialog'
-import { Button } from '@/components/ui/Button'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
 import { CourseSwitcher } from '@/components/common/CourseSwitcher'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
@@ -121,14 +117,16 @@ export function AppLayout() {
 
         {/* Center: Language & Stats HUD */}
         <div className="hidden sm:flex items-center gap-2.5">
-          {/* Target Language & Level Switcher (Gamified popover replacing crude OS select) */}
+          {/* Target Language & Level Switcher */}
           <CourseSwitcher />
 
-          {/* Streak Flame Pill */}
-          <div className="flex items-center gap-1.5 rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] px-3 py-1.5 text-xs font-black text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
-            <IconFlame size={16} className="text-[#FF9600] animate-bounce-playful" />
-            <span>7 Days</span>
-          </div>
+          {/* Streak Flame Pill with Ant Design Tooltip */}
+          <Tooltip title="Daily study streak!">
+            <div className="flex items-center gap-1.5 rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] px-3 py-1.5 text-xs font-black text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
+              <FireFilled className="text-amber-500 text-sm" />
+              <span>7 Days</span>
+            </div>
+          </Tooltip>
 
           {/* Mock / Live Backend Status Pill */}
           {mockActive ? (
@@ -161,32 +159,31 @@ export function AppLayout() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
 
-          {/* Profile Trigger Button */}
+          {/* Profile Trigger Button with Ant Design Avatar */}
           <button
             type="button"
             onClick={() => setProfileOpen(true)}
             className="flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all dark:border-[#2B3940] dark:bg-[#1B272C] dark:text-slate-200 cursor-pointer select-none"
             title="Learning profile settings"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#1CB0F6] text-xs font-black text-white">
+            <Avatar size={26} style={{ backgroundColor: '#1CB0F6', fontWeight: 800, fontSize: 12 }}>
               {userInitial}
-            </div>
+            </Avatar>
             <span className="hidden md:inline font-bold max-w-[110px] truncate">
               {user?.displayName || 'Learner'}
             </span>
-            <IconSettings size={15} className="text-slate-400" />
+            <SettingOutlined className="text-slate-400" />
           </button>
 
           {/* Logout Button */}
           <Button
-            variant="secondary"
-            size="sm"
+            type="text"
+            danger
             onClick={() => setLogoutConfirmOpen(true)}
-            className="hidden sm:inline-flex text-rose-600 hover:text-rose-700"
+            icon={<LogoutOutlined />}
+            className="hidden sm:inline-flex !rounded-xl !border-2 !border-slate-200 !h-9 text-xs font-bold dark:!border-[#2B3940]"
             title="Log out"
-          >
-            <IconLogOut size={16} />
-          </Button>
+          />
 
           {/* Mobile Menu Hamburger */}
           <button
@@ -195,7 +192,7 @@ export function AppLayout() {
             aria-label="Toggle navigation menu"
             className="rounded-2xl border-2 border-slate-200 p-2 text-slate-600 hover:bg-slate-100 sm:hidden dark:border-[#2B3940] dark:text-slate-300 dark:hover:bg-[#1B272C]"
           >
-            {mobileMenuOpen ? <IconX size={20} /> : <IconMenu size={20} />}
+            {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
           </button>
         </div>
       </header>
@@ -246,21 +243,10 @@ export function AppLayout() {
               toàn cầu.&quot;
             </p>
           </div>
-
-          {/* Quick Mock Mode Switcher if in live mode */}
-          {!mockActive && (
-            <button
-              type="button"
-              onClick={toggleMockMode}
-              className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 p-3 text-xs font-bold text-slate-500 hover:border-[#1CB0F6] hover:text-[#1CB0F6] transition-colors dark:border-slate-700 dark:text-slate-400"
-            >
-              <span>⚡ Switch to Mock Mode</span>
-            </button>
-          )}
         </aside>
 
-        {/* Column 2: Center Learning Stage */}
-        <main className="flex-1 min-w-0">
+        {/* Column 2: Center Main Workspace Outlet */}
+        <main className="min-w-0 flex-1">
           <Outlet />
         </main>
 
@@ -268,7 +254,7 @@ export function AppLayout() {
         <aside className="hidden xl:flex w-72 shrink-0 flex-col gap-5">
           {/* Daily Quests Board */}
           <div className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <QuestTargetBadge size={22} />
                 <h3 className="font-black text-slate-800 dark:text-white text-sm">Daily Quests</h3>
@@ -276,10 +262,12 @@ export function AppLayout() {
               <span className="text-xs font-bold text-[#58CC02]">2 / 3 Done</span>
             </div>
 
+            <Progress percent={66} strokeColor="#58CC02" showInfo={false} className="!mb-3" />
+
             <div className="space-y-3">
               <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#58CC02] text-white">
-                  <IconCheck size={16} />
+                  <CheckOutlined />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -291,7 +279,7 @@ export function AppLayout() {
 
               <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#58CC02] text-white">
-                  <IconCheck size={16} />
+                  <CheckOutlined />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -303,7 +291,7 @@ export function AppLayout() {
 
               <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#1CB0F6] text-white">
-                  <IconZap size={16} />
+                  <ThunderboltFilled />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -346,7 +334,7 @@ export function AppLayout() {
           <div className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <IconTrophy size={18} className="text-[#FFC800]" />
+                <TrophyFilled className="text-amber-500 text-base" />
                 <h3 className="font-black text-slate-800 dark:text-white text-sm">
                   Target: {currentLevel}
                 </h3>
@@ -359,9 +347,12 @@ export function AppLayout() {
               </NavLink>
             </div>
             <p className="text-xs text-slate-500 mb-3">{langMeta.desc}</p>
-            <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
-              <div className="h-full bg-gradient-to-r from-[#58CC02] to-[#1CB0F6] rounded-full w-[45%]" />
-            </div>
+            <Progress
+              percent={45}
+              strokeColor={{ '0%': '#58CC02', '100%': '#1CB0F6' }}
+              showInfo={false}
+              className="!mb-1"
+            />
             <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-1.5">
               <span>Foundation</span>
               <span className="text-[#58CC02]">{langMeta.progress}</span>
@@ -370,72 +361,60 @@ export function AppLayout() {
         </aside>
       </div>
 
-      {/* Mobile Drawer Navigation */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 sm:hidden">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs animate-fade-in"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white p-5 shadow-2xl dark:bg-[#1B272C] animate-scale-in overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2 font-black text-lg">
-                <Flowy size={28} />
-                <span>LearnFlow</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <IconX size={20} />
-              </button>
-            </div>
-
-            {/* Mobile Course Switcher */}
-            <div className="mb-4">
-              <CourseSwitcher className="w-full" />
-            </div>
-
-            <nav className="flex flex-col gap-2 mb-6">
-              {NAV_ITEMS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-extrabold border-2 border-b-4',
-                      isActive
-                        ? 'border-[#46A302] bg-[#58CC02] text-white'
-                        : 'border-slate-200 bg-white text-slate-700 dark:border-[#2B3940] dark:bg-[#131F24] dark:text-slate-200',
-                    )
-                  }
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span>{item.emoji}</span>
-                    <span>{item.label}</span>
-                  </div>
-                </NavLink>
-              ))}
-            </nav>
-
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-              <Button
-                variant="danger"
-                size="md"
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  setLogoutConfirmOpen(true)
-                }}
-                className="w-full"
-              >
-                Log out
-              </Button>
-            </div>
+      {/* Mobile Ant Design Drawer Navigation */}
+      <Drawer
+        placement="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        title={
+          <div className="flex items-center gap-2 font-black text-lg">
+            <Flowy size={28} />
+            <span>LearnFlow</span>
           </div>
+        }
+        className="dark:!bg-[#1B272C]"
+      >
+        <div className="flex flex-col gap-4">
+          <CourseSwitcher className="w-full" />
+
+          <nav className="flex flex-col gap-2 my-2">
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-extrabold border-2 border-b-4',
+                    isActive
+                      ? 'border-[#46A302] bg-[#58CC02] text-white'
+                      : 'border-slate-200 bg-white text-slate-700 dark:border-[#2B3940] dark:bg-[#131F24] dark:text-slate-200',
+                  )
+                }
+              >
+                <div className="flex items-center gap-2.5">
+                  <span>{item.emoji}</span>
+                  <span>{item.label}</span>
+                </div>
+              </NavLink>
+            ))}
+          </nav>
+
+          <Button
+            type="primary"
+            danger
+            size="large"
+            icon={<LogoutOutlined />}
+            onClick={() => {
+              setMobileMenuOpen(false)
+              setLogoutConfirmOpen(true)
+            }}
+            className="w-full !rounded-2xl font-bold"
+          >
+            Log out
+          </Button>
         </div>
-      )}
+      </Drawer>
 
       {/* Logout Confirmation Dialog */}
       <ConfirmModal
