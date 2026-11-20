@@ -1,9 +1,9 @@
 // Run: node --test scripts/content/scripts.test.ts  (pure functions only; no source files needed)
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { kunyomi, select } from './import-kanjidic.ts'
-import { lookup, parseWords, pos, toCandidate } from './import-jmdict.ts'
-import { needle, pick } from './import-tatoeba.ts'
+import { kunyomi, select } from './ja/import-kanjidic.ts'
+import { lookup, parseWords, pos, toCandidate } from './ja/import-jmdict.ts'
+import { needle, pick } from './ja/import-tatoeba.ts'
 import { toYamlItem } from './enrich-ai.ts'
 import { section } from './lib/yaml.ts'
 
@@ -44,14 +44,21 @@ test('tatoeba picks translated, then shorter sentences', () => {
   const s = (id: string, text: string) => ({ id, text, author: 'a' })
   const picked = pick([s('1', '長い文です。'), s('2', '短い。'), s('3', 'もっと長い文。')], new Map([['3', 'x']]), 2)
   assert.deepEqual(picked.map((p) => p.id), ['3', '2'])
-  assert.equal(needle({ key: 'k', written: '～円', reading: 'えん', jlptLevel: null }), '円')
+  assert.equal(needle({ key: 'k', written: '～円', reading: 'えん', level: null }), '円')
+})
+
+test('yaml writes reading maps inline and skips empty kinds', () => {
+  assert.equal(
+    section('characters', [{ key: 'k', readings: { on: ['ガク'], kun: [] } }]),
+    'characters:\n  - key: "k"\n    readings: {on: ["ガク"]}\n',
+  )
 })
 
 test('yaml output quotes strings and skips empty fields', () => {
-  const item = toYamlItem('word', 'jmdict', { key: 'ja.word.no', written: null, reading: 'no', meaningsEn: [], partOfSpeech: [], jlptLevel: 'N5', sourceRef: '1' }, ['không'])
+  const item = toYamlItem('word', 'jmdict', { key: 'ja.word.no', written: null, reading: 'no', meaningsEn: [], partOfSpeech: [], level: 'N5', sourceRef: '1' }, ['không'])
   assert.equal(
     section('words', [item]),
     'words:\n  - key: "ja.word.no"\n    status: "draft"\n    source: "jmdict"\n    sourceRef: "1"\n' +
-      '    reading: "no"\n    meaningsVi: ["không"]\n    jlptLevel: "n5"\n',
+      '    reading: "no"\n    meaningsVi: ["không"]\n    level: "n5"\n',
   )
 })

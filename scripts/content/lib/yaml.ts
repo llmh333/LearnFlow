@@ -1,12 +1,16 @@
 // Writes content YAML in the shape documented in .claude/rules/content.md. Strings are emitted as
 // JSON-style double-quoted scalars, which YAML reads verbatim (no boolean/number surprises).
 
-type Value = string | number | string[] | undefined | null
+type Value = string | number | string[] | Record<string, string[]> | undefined | null
 
 const q = (s: string) => JSON.stringify(s)
 
 function scalar(value: Exclude<Value, undefined | null>): string {
   if (Array.isArray(value)) return '[' + value.map(q).join(', ') + ']'
+  if (typeof value === 'object') {
+    const entries = Object.entries(value).filter(([, v]) => v.length)
+    return '{' + entries.map(([k, v]) => `${k}: ${scalar(v)}`).join(', ') + '}'
+  }
   return typeof value === 'number' ? String(value) : q(value)
 }
 
@@ -18,6 +22,7 @@ export function section(name: string, items: Record<string, Value>[]): string {
     for (const [field, value] of Object.entries(item)) {
       if (value === undefined || value === null) continue
       if (Array.isArray(value) && value.length === 0) continue
+      if (typeof value === 'object' && !Array.isArray(value) && !Object.values(value).some((v) => v.length)) continue
       lines.push(`${first ? '  - ' : '    '}${field}: ${scalar(value)}`)
       first = false
     }

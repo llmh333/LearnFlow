@@ -2,7 +2,8 @@
 
 Chạy tay, không chạy trong app. Node 22 chạy thẳng file `.ts` (không cần build). Kết quả là YAML ở
 `backend/src/main/resources/content/` với `status: draft`; người duyệt mới chuyển sang `reviewed`.
-Quy ước nội dung và giấy phép: `.claude/rules/content.md`.
+Quy ước nội dung và giấy phép: `.claude/rules/content.md`. Phần dùng chung: `lib/`, `enrich-ai.ts`;
+nguồn riêng từng ngôn ngữ: `<lang>/` (hiện có `ja/`).
 
 ## Luồng
 
@@ -12,7 +13,7 @@ nguồn (tải về, không commit)  →  import-*.ts  →  candidates.json  →
 
 | Script | Đầu vào | Ra |
 |---|---|---|
-| `import-kanjidic.ts --input kanjidic2-en.json --level N5 --out kanji.json` | KANJIDIC2 JSON (jmdict-simplified) | kanji theo cấp, kèm âm Hán Việt, on/kun, số nét |
+| `import-kanjidic.ts --input kanjidic2-en.json --level N5 --out kanji.json` | KANJIDIC2 JSON (jmdict-simplified) | chữ Hán theo cấp, kèm âm Hán Việt, `readings` on/kun, số nét |
 | `import-jmdict.ts --input jmdict-eng.json --words words.tsv --out words.json` | JMdict JSON + danh sách từ | id JMdict, từ loại, nghĩa tiếng Anh (nghĩa đầu tiên) |
 | `import-tatoeba.ts --sentences … --vie-links … --vie … --eng-links … --eng … --words words.tsv --out s.json` | file per-language của Tatoeba | câu ngắn chứa từ, kèm id + tác giả (CC BY) |
 | `enrich-ai.ts --in x.json --out file.yaml [--vi file.tsv] [--model …]` | candidates | YAML; tiếng Việt lấy từ `--vi` hoặc Claude API |
@@ -38,7 +39,7 @@ Mặc định model `claude-opus-5-5`. Header của YAML ghi model và prompt đ
 
 ## Đã chạy (2026-11-20)
 
-- `ja/kanji/n5.yaml`: 103 kanji N5 (KANJIDIC2 3.6.2+20261116), nghĩa Việt `data/kanji-n5.vi.tsv`.
+- `ja/kanji/n5.yaml`: 103 kanji N5 (section `characters`) (KANJIDIC2 3.6.2+20261116), nghĩa Việt `data/kanji-n5.vi.tsv`.
 - `ja/n5/unit-02-03.words.yaml`: 38 từ (JMdict), nghĩa Việt giống migration V22.
 - `ja/n5/unit-02-03.sentences.yaml`: 9 câu Tatoeba chọn tay (đúng cấp N5, qua content-reviewer) từ 151 ứng viên;
   id các câu giữ lại nằm trong `data/n5-units-02-03.sentences.vi.tsv`.

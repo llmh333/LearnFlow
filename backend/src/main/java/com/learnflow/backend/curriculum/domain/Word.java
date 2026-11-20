@@ -1,5 +1,6 @@
 package com.learnflow.backend.curriculum.domain;
 
+import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,11 +25,11 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "jp_word")
+@Table(name = "word")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class JpWord {
+public class Word {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,9 +55,13 @@ public class JpWord {
     @Column(name = "part_of_speech", nullable = false, columnDefinition = "text[]")
     private List<String> partOfSpeech = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "jlpt_level")
-    private JlptLevel jlptLevel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "language_id")
+    private Language language;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "level_id")
+    private ProficiencyLevel level;
 
     private String note;
 
@@ -79,7 +84,7 @@ public class JpWord {
     @OrderColumn(name = "position")
     private List<ExampleSentence> examples = new ArrayList<>();
 
-    public JpWord(String contentKey) {
+    public Word(String contentKey) {
         this.contentKey = contentKey;
     }
 }

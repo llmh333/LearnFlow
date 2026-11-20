@@ -4,11 +4,11 @@
 // jpn/jpn-vie_links.tsv, vie/vie_sentences.tsv, jpn/jpn-eng_links.tsv, eng/eng_sentences.tsv.
 // Do not use Tatoeba audio (separate licences).
 //
-//   node scripts/content/import-tatoeba.ts --sentences jpn_sentences_detailed.tsv \
+//   node scripts/content/ja/import-tatoeba.ts --sentences jpn_sentences_detailed.tsv \
 //     --vie-links jpn-vie_links.tsv --vie vie_sentences.tsv --eng-links jpn-eng_links.tsv \
 //     --eng eng_sentences.tsv --words words.tsv --out sentences.json [--per-word 2] [--max-length 20]
 import { readFileSync } from 'node:fs'
-import { args, tsvRows, writeJson } from './lib/io.ts'
+import { args, tsvRows, writeJson } from '../lib/io.ts'
 import { parseWords, type WordRequest } from './import-jmdict.ts'
 
 export interface Sentence {

@@ -1,5 +1,6 @@
 package com.learnflow.backend.curriculum.domain;
 
+import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -54,6 +55,10 @@ public class ExampleSentence {
 
     @Column(name = "source_author")
     private String sourceAuthor;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "language_id")
+    private Language language;
 
     public ExampleSentence(String contentKey) {
         this.contentKey = contentKey;

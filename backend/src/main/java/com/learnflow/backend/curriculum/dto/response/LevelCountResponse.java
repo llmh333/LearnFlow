@@ -1,6 +1,7 @@
 package com.learnflow.backend.curriculum.dto.response;
 
-import com.learnflow.backend.curriculum.domain.JlptLevel;
-
-/** How many dictionary words a level has; {@code level} null = words without a JLPT level. */
-public record LevelCountResponse(JlptLevel level, long wordCount) {}
+/**
+ * How many dictionary words a level has. {@code level} is the code (N5, HSK1...) and {@code name}
+ * its display name; both null for words without a level.
+ */
+public record LevelCountResponse(String level, String name, long wordCount) {}

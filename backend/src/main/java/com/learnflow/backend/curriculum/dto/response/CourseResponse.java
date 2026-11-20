@@ -2,7 +2,6 @@ package com.learnflow.backend.curriculum.dto.response;
 
 import com.learnflow.backend.curriculum.domain.ContentStatus;
 import com.learnflow.backend.curriculum.domain.Course;
-import com.learnflow.backend.curriculum.domain.CourseLevel;
 import com.learnflow.backend.curriculum.domain.Lesson;
 import com.learnflow.backend.curriculum.domain.Unit;
 import java.util.List;
@@ -12,7 +11,8 @@ public record CourseResponse(
         Long id,
         String key,
         String language,
-        CourseLevel level,
+        /** Level code, e.g. N5; null for courses outside a framework (Kana). */
+        String level,
         String title,
         String description,
         ContentStatus status,
@@ -58,7 +58,7 @@ public record CourseResponse(
                 c.getId(),
                 c.getContentKey(),
                 c.getLanguage().getCode(),
-                c.getLevel(),
+                c.getLevel() == null ? null : c.getLevel().getCode(),
                 c.getTitle(),
                 c.getDescription(),
                 c.getStatus(),

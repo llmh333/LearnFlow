@@ -4,10 +4,12 @@ import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.common.web.PageResponse;
 import com.learnflow.backend.curriculum.domain.ContentStatus;
-import com.learnflow.backend.curriculum.domain.JlptLevel;
+import com.learnflow.backend.curriculum.domain.ProficiencyLevel;
 import com.learnflow.backend.curriculum.dto.response.LevelCountResponse;
 import com.learnflow.backend.curriculum.dto.response.WordDetailResponse;
 import com.learnflow.backend.curriculum.dto.response.WordSummaryResponse;
+import com.learnflow.backend.curriculum.engine.ContentBundle;
+import com.learnflow.backend.curriculum.engine.LanguageRules;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Japanese dictionary over the global {@code jp_word} table: search, browse by JLPT level, and word
- * detail. Draft words (e.g. the AI-translated JLPT lists of V22/V23) are hidden unless {@code
- * app.content.include-drafts}, which is off in prod.
+ * Dictionary over the global {@code word} table, one target language at a time (D18): search,
+ * browse by proficiency level, and word detail. Draft words (e.g. the AI-translated JLPT lists of
+ * V22/V23) are hidden unless {@code app.content.include-drafts}, which is off in prod.
  */
 @Service
 @Transactional(readOnly = true)
@@ -28,52 +30,68 @@ public class DictionaryService {
     static final int MAX_PAGE_SIZE = 50;
     static final int MAX_QUERY_LENGTH = 100;
 
-    private final JpWordRepository wordRepository;
+    private final WordRepository wordRepository;
+    private final ProficiencyLevelRepository levelRepository;
     private final boolean includeDrafts;
 
-    public DictionaryService(JpWordRepository wordRepository, ContentProperties contentProperties) {
+    public DictionaryService(
+            WordRepository wordRepository,
+            ProficiencyLevelRepository levelRepository,
+            ContentProperties contentProperties) {
         this.wordRepository = wordRepository;
+        this.levelRepository = levelRepository;
         this.includeDrafts = contentProperties.includeDrafts();
     }
 
     /**
+     * @param language content language code, e.g. ja
      * @param query optional text; blank = browse
-     * @param level optional {@code N5}…{@code N1}, case-insensitive
+     * @param level optional level code of that language (e.g. N5), case-insensitive
      */
     public PageResponse<WordSummaryResponse> search(
-            String query, String level, int page, int size) {
+            String language, String query, String level, int page, int size) {
+        LanguageRules rules = rules(language);
         String text = query == null || query.isBlank() ? null : query.strip();
         if (text != null && text.length() > MAX_QUERY_LENGTH) {
             throw new BadRequestException(
                     "q", "Search text must be at most " + MAX_QUERY_LENGTH + " characters");
         }
-        JlptLevel jlpt = parseLevel(level);
+        String levelCode = ContentBundle.levelCode(level);
+        if (levelCode != null && !rules.levels().contains(levelCode)) {
+            throw new BadRequestException("level", "Level must be one of " + rules.levels());
+        }
         PageRequest pageable =
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, MAX_PAGE_SIZE));
         return PageResponse.from(
                 wordRepository
                         .search(
+                                rules.code(),
                                 includeDrafts,
-                                jlpt == null ? null : jlpt.name(),
+                                levelCode,
                                 text == null ? null : escapeLike(text),
                                 text,
                                 pageable)
                         .map(WordSummaryResponse::from));
     }
 
-    /** Word counts for N5 → N1, every level listed even when empty, then unleveled words if any. */
-    public List<LevelCountResponse> countByLevel() {
-        Map<JlptLevel, Long> counts = new HashMap<>();
-        for (Object[] row : wordRepository.countByLevel(includeDrafts)) {
-            counts.put((JlptLevel) row[0], (Long) row[1]);
+    /** Word counts for every level of the language, easiest first, then unleveled words if any. */
+    public List<LevelCountResponse> countByLevel(String language) {
+        LanguageRules rules = rules(language);
+        Map<String, Long> counts = new HashMap<>();
+        for (Object[] row : wordRepository.countByLevel(rules.code(), includeDrafts)) {
+            counts.put((String) row[0], (Long) row[1]);
         }
         List<LevelCountResponse> result = new ArrayList<>();
-        for (JlptLevel level :
-                List.of(JlptLevel.N5, JlptLevel.N4, JlptLevel.N3, JlptLevel.N2, JlptLevel.N1)) {
-            result.add(new LevelCountResponse(level, counts.getOrDefault(level, 0L)));
+        for (ProficiencyLevel level :
+                levelRepository.findByLanguage_CodeOrderByRankAsc(rules.code())) {
+            result.add(
+                    new LevelCountResponse(
+                            level.getCode(),
+                            level.getName(),
+                            counts.getOrDefault(level.getCode(), 0L)));
         }
         if (counts.containsKey(null)) {
-            result.add(new LevelCountResponse(null, counts.get(null)));
+            result.add(new LevelCountResponse(null, null, counts.get(null)));
         }
         return result;
     }
@@ -86,15 +104,13 @@ public class DictionaryService {
                 .orElseThrow(() -> new NotFoundException("Word not found: " + id));
     }
 
-    private static JlptLevel parseLevel(String level) {
-        if (level == null || level.isBlank()) {
-            return null;
-        }
-        try {
-            return JlptLevel.fromYaml(level.strip());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("level", "Level must be one of N5, N4, N3, N2, N1");
-        }
+    private static LanguageRules rules(String language) {
+        return LanguageRules.forCode(language == null ? null : language.strip())
+                .orElseThrow(() ->
+                        new BadRequestException(
+                                "lang",
+                                "Language must be one of "
+                                        + LanguageRules.ALL.keySet().stream().sorted().toList()));
     }
 
     /** Makes %, _ and \ in user input match literally under {@code LIKE ... ESCAPE '\'}. */

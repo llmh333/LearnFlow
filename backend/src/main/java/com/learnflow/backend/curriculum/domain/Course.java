@@ -37,9 +37,10 @@ public class Course {
     @JoinColumn(name = "language_id")
     private Language language;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CourseLevel level;
+    /** NULL for courses outside a level framework, e.g. Kana. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "level_id")
+    private ProficiencyLevel level;
 
     @Column(nullable = false)
     private String title;
@@ -63,7 +64,7 @@ public class Course {
 
     public void update(
             Language language,
-            CourseLevel level,
+            ProficiencyLevel level,
             String title,
             String description,
             int position,

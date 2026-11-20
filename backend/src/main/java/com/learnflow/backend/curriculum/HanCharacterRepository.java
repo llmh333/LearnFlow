@@ -1,6 +1,6 @@
 package com.learnflow.backend.curriculum;
 
-import com.learnflow.backend.curriculum.domain.JpKanji;
+import com.learnflow.backend.curriculum.domain.HanCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface JpKanjiRepository extends JpaRepository<JpKanji, Long> {}
+public interface HanCharacterRepository extends JpaRepository<HanCharacter, Long> {}

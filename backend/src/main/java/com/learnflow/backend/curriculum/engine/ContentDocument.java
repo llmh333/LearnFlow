@@ -1,11 +1,11 @@
 package com.learnflow.backend.curriculum.engine;
 
 import com.learnflow.backend.curriculum.domain.ContentStatus;
-import com.learnflow.backend.curriculum.domain.CourseLevel;
-import com.learnflow.backend.curriculum.domain.JlptLevel;
 import com.learnflow.backend.curriculum.domain.KanaGroup;
 import com.learnflow.backend.curriculum.domain.KanaScript;
+import com.learnflow.backend.curriculum.domain.ReadingKind;
 import java.util.List;
+import java.util.Map;
 
 /** Shape of one content YAML file. Every section is optional; format: .claude/rules/content.md. */
 public record ContentDocument(
@@ -14,12 +14,16 @@ public record ContentDocument(
         List<UnitDef> units,
         List<KanaDef> kana,
         List<WordDef> words,
-        List<KanjiDef> kanji,
+        List<CharacterDef> characters,
         List<GrammarDef> grammar,
         List<SentenceDef> sentences) {
 
-    /** Fields every learnable item (kana, word, kanji, grammar, sentence) has. */
-    public sealed interface ItemDef permits KanaDef, WordDef, KanjiDef, GrammarDef, SentenceDef {
+    /**
+     * Fields every learnable item (kana, word, character, grammar, sentence) has. Its language is
+     * the key's first segment ({@code ja.word.taberu} → {@code ja}).
+     */
+    public sealed interface ItemDef
+            permits KanaDef, WordDef, CharacterDef, GrammarDef, SentenceDef {
         String key();
 
         ContentStatus status();
@@ -38,7 +42,8 @@ public record ContentDocument(
     public record CourseDef(
             String key,
             String language,
-            CourseLevel level,
+            /** Level code, e.g. n5; empty for courses outside a framework (Kana). */
+            String level,
             String title,
             String description,
             Integer position,
@@ -75,7 +80,7 @@ public record ContentDocument(
             List<String> meaningsVi,
             List<String> meaningsEn,
             List<String> partOfSpeech,
-            JlptLevel jlptLevel,
+            String level,
             String note,
             List<String> examples,
             ContentStatus status,
@@ -83,16 +88,17 @@ public record ContentDocument(
             String sourceRef)
             implements ItemDef {}
 
-    public record KanjiDef(
+    /** A han character: kanji (ja), hanzi (zh). */
+    public record CharacterDef(
             String key,
             String character,
             List<String> hanViet,
             List<String> meaningsVi,
             List<String> meaningsEn,
-            List<String> onyomi,
-            List<String> kunyomi,
+            /** e.g. {on: [ガク], kun: [まな(ぶ)]}; allowed kinds depend on the language. */
+            Map<ReadingKind, List<String>> readings,
             Integer strokeCount,
-            JlptLevel jlptLevel,
+            String level,
             ContentStatus status,
             String source,
             String sourceRef)
@@ -103,7 +109,7 @@ public record ContentDocument(
             String pattern,
             String meaningVi,
             String explanationVi,
-            JlptLevel jlptLevel,
+            String level,
             List<String> examples,
             ContentStatus status,
             String source)

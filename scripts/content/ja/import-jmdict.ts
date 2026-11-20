@@ -2,10 +2,10 @@
 // JMdict id, part of speech and English glosses. Source: https://github.com/scriptin/jmdict-simplified
 // (jmdict-eng-*.json), CC BY-SA 4.0, © EDRDG.
 //
-//   node scripts/content/import-jmdict.ts --input jmdict-eng.json --words words.tsv --out words.json
+//   node scripts/content/ja/import-jmdict.ts --input jmdict-eng.json --words words.tsv --out words.json
 // words.tsv: one word per line, `key<TAB>written<TAB>reading<TAB>level` (written may be empty).
 import { readFileSync } from 'node:fs'
-import { args, readJson, writeJson } from './lib/io.ts'
+import { args, readJson, writeJson } from '../lib/io.ts'
 
 interface Sense {
   partOfSpeech: string[]
@@ -22,7 +22,7 @@ export interface WordRequest {
   key: string
   written: string | null
   reading: string
-  jlptLevel: string | null
+  level: string | null
 }
 
 export interface WordCandidate extends WordRequest {
@@ -37,7 +37,7 @@ export function parseWords(tsv: string): WordRequest[] {
     .filter((line) => line.trim() && !line.startsWith('#'))
     .map((line) => {
       const [key, written, reading, level] = line.split('\t').map((s) => s?.trim() ?? '')
-      return { key, written: written || null, reading, jlptLevel: level || null }
+      return { key, written: written || null, reading, level: level || null }
     })
 }
 

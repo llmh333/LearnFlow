@@ -2,11 +2,11 @@ package com.learnflow.backend.curriculum.engine;
 
 import com.learnflow.backend.curriculum.domain.ContentStatus;
 import com.learnflow.backend.curriculum.domain.KanaScript;
+import com.learnflow.backend.curriculum.engine.ContentDocument.CharacterDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.CourseDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.GrammarDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.ItemDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.KanaDef;
-import com.learnflow.backend.curriculum.engine.ContentDocument.KanjiDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.LessonDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.SentenceDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.SourceDef;
@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -52,7 +54,7 @@ public final class ContentBundle {
     private final List<UnitDef> units;
     private final List<KanaDef> kana;
     private final List<WordDef> words;
-    private final List<KanjiDef> kanji;
+    private final List<CharacterDef> characters;
     private final List<GrammarDef> grammar;
     private final List<SentenceDef> sentences;
 
@@ -62,7 +64,7 @@ public final class ContentBundle {
         this.units = List.copyOf(p.units);
         this.kana = List.copyOf(p.kana);
         this.words = List.copyOf(p.words);
-        this.kanji = List.copyOf(p.kanji);
+        this.characters = List.copyOf(p.characters);
         this.grammar = List.copyOf(p.grammar);
         this.sentences = List.copyOf(p.sentences);
     }
@@ -88,8 +90,8 @@ public final class ContentBundle {
         return words;
     }
 
-    public List<KanjiDef> kanji() {
-        return kanji;
+    public List<CharacterDef> characters() {
+        return characters;
     }
 
     public List<GrammarDef> grammar() {
@@ -108,6 +110,17 @@ public final class ContentBundle {
         return list == null ? List.of() : list;
     }
 
+    /** An item's language is its key's first segment: {@code ja.word.taberu} → {@code ja}. */
+    public static String languageOf(String key) {
+        int dot = key == null ? -1 : key.indexOf('.');
+        return dot < 0 ? null : key.substring(0, dot);
+    }
+
+    /** YAML level codes are written in lower case (n5); the DB stores them upper case (N5). */
+    public static String levelCode(String level) {
+        return level == null || level.isBlank() ? null : level.strip().toUpperCase(Locale.ROOT);
+    }
+
     /** Mutable accumulator while loading. */
     private static final class Parts {
         List<SourceDef> sources = new ArrayList<>();
@@ -115,12 +128,12 @@ public final class ContentBundle {
         List<UnitDef> units = new ArrayList<>();
         List<KanaDef> kana = new ArrayList<>();
         List<WordDef> words = new ArrayList<>();
-        List<KanjiDef> kanji = new ArrayList<>();
+        List<CharacterDef> characters = new ArrayList<>();
         List<GrammarDef> grammar = new ArrayList<>();
         List<SentenceDef> sentences = new ArrayList<>();
 
         Stream<ItemDef> items() {
-            return Stream.of(kana, words, kanji, grammar, sentences).flatMap(List::stream);
+            return Stream.of(kana, words, characters, grammar, sentences).flatMap(List::stream);
         }
     }
 
@@ -145,7 +158,7 @@ public final class ContentBundle {
                 p.units.addAll(orEmpty(doc.units()));
                 p.kana.addAll(orEmpty(doc.kana()));
                 p.words.addAll(orEmpty(doc.words()));
-                p.kanji.addAll(orEmpty(doc.kanji()));
+                p.characters.addAll(orEmpty(doc.characters()));
                 p.grammar.addAll(orEmpty(doc.grammar()));
                 p.sentences.addAll(orEmpty(doc.sentences()));
             } catch (RuntimeException e) {
@@ -170,7 +183,7 @@ public final class ContentBundle {
         p.items().forEach(i -> checkItem(errors, i));
         p.kana.forEach(k -> checkKana(errors, k));
         p.words.forEach(w -> checkWord(errors, w));
-        p.kanji.forEach(k -> checkKanji(errors, k));
+        p.characters.forEach(c -> checkCharacter(errors, c));
         p.grammar.forEach(g -> checkGrammar(errors, g));
         p.sentences.forEach(s -> checkSentence(errors, s));
         if (!errors.isEmpty()) {
@@ -193,7 +206,7 @@ public final class ContentBundle {
         p.courses = p.courses.stream().filter(c -> reviewed.test(c.status())).toList();
         p.kana = p.kana.stream().filter(i -> reviewed.test(i.status())).toList();
         p.words = p.words.stream().filter(i -> reviewed.test(i.status())).toList();
-        p.kanji = p.kanji.stream().filter(i -> reviewed.test(i.status())).toList();
+        p.characters = p.characters.stream().filter(i -> reviewed.test(i.status())).toList();
         p.grammar = p.grammar.stream().filter(i -> reviewed.test(i.status())).toList();
         p.sentences = p.sentences.stream().filter(i -> reviewed.test(i.status())).toList();
         p.units =
@@ -261,7 +274,10 @@ public final class ContentBundle {
     private static void checkCourse(List<String> errors, CourseDef c) {
         String where = "course " + c.key();
         require(errors, where, "language", c.language());
-        require(errors, where, "level", c.level());
+        LanguageRules.forCode(c.language())
+                .ifPresentOrElse(
+                        rules -> checkLevel(errors, where, rules, c.level()),
+                        () -> errors.add(where + ": unknown language " + c.language()));
         require(errors, where, "title", c.title());
         requirePositive(errors, where, "position", c.position());
         require(errors, where, "status", c.status());
@@ -288,6 +304,22 @@ public final class ContentBundle {
     private static void checkItem(List<String> errors, ItemDef i) {
         require(errors, "item " + i.key(), "status", i.status());
         require(errors, "item " + i.key(), "source", i.source());
+        if (i.key() != null && LanguageRules.forCode(languageOf(i.key())).isEmpty()) {
+            errors.add("item " + i.key() + ": key must start with a known language code (ja.…)");
+        }
+    }
+
+    /** Rules of an item's language; empty when its key has none (checkItem reports that). */
+    private static Optional<LanguageRules> rulesOf(ItemDef i) {
+        return LanguageRules.forCode(languageOf(i.key()));
+    }
+
+    private static void checkLevel(
+            List<String> errors, String where, LanguageRules rules, String level) {
+        String code = levelCode(level);
+        if (code != null && !rules.levels().contains(code)) {
+            errors.add(where + ": level must be one of " + rules.levels() + " for " + rules.code());
+        }
     }
 
     private static void checkKana(List<String> errors, KanaDef k) {
@@ -311,39 +343,56 @@ public final class ContentBundle {
 
     private static void checkWord(List<String> errors, WordDef w) {
         String where = "item " + w.key();
-        if (w.reading() == null
-                || w.reading().isBlank()
-                || !w.reading().codePoints().allMatch(ContentBundle::isKana)) {
-            errors.add(where + ": reading must be kana only");
-        }
+        rulesOf(w)
+                .ifPresent(rules -> {
+                    if (!rules.isValidReading(w.reading())) {
+                        errors.add(where + ": reading must be " + rules.readingRule());
+                    }
+                    checkLevel(errors, where, rules, w.level());
+                });
         requireMeanings(errors, where, "meaningsVi", w.meaningsVi());
         checkOptionalStrings(errors, where, "meaningsEn", w.meaningsEn());
         checkOptionalStrings(errors, where, "partOfSpeech", w.partOfSpeech());
         checkOptionalStrings(errors, where, "examples", w.examples());
     }
 
-    private static void checkKanji(List<String> errors, KanjiDef k) {
+    private static void checkCharacter(List<String> errors, CharacterDef k) {
         String where = "item " + k.key();
         String c = k.character();
         if (c == null
                 || c.codePointCount(0, c.length()) != 1
                 || Character.UnicodeScript.of(c.codePointAt(0)) != Character.UnicodeScript.HAN) {
-            errors.add(where + ": character must be a single kanji");
+            errors.add(where + ": character must be a single han character");
         }
+        rulesOf(k).ifPresent(rules -> checkCharacterRules(errors, where, rules, k));
         requireMeanings(errors, where, "meaningsVi", k.meaningsVi());
         checkOptionalStrings(errors, where, "meaningsEn", k.meaningsEn());
         checkOptionalStrings(errors, where, "hanViet", k.hanViet());
-        checkOptionalStrings(errors, where, "onyomi", k.onyomi());
-        checkOptionalStrings(errors, where, "kunyomi", k.kunyomi());
         if (k.strokeCount() != null && k.strokeCount() <= 0) {
             errors.add(where + ": strokeCount must be positive");
         }
+    }
+
+    private static void checkCharacterRules(
+            List<String> errors, String where, LanguageRules rules, CharacterDef k) {
+        checkLevel(errors, where, rules, k.level());
+        if (k.readings() == null) {
+            return;
+        }
+        k.readings()
+                .forEach((kind, values) -> {
+                    if (!rules.characterReadingKinds().contains(kind)) {
+                        errors.add(where + ": " + rules.code() + " has no " + kind + " readings");
+                    }
+                    checkOptionalStrings(errors, where, "readings." + kind, values);
+                });
     }
 
     private static void checkGrammar(List<String> errors, GrammarDef g) {
         String where = "item " + g.key();
         require(errors, where, "pattern", g.pattern());
         require(errors, where, "explanationVi", g.explanationVi());
+        rulesOf(g).ifPresent(rules -> checkLevel(errors, where, rules, g.level()));
         checkOptionalStrings(errors, where, "examples", g.examples());
     }
 
@@ -355,12 +404,8 @@ public final class ContentBundle {
 
     private static boolean inScript(int cp, KanaScript script) {
         return script == KanaScript.HIRAGANA
-                ? cp >= 0x3041 && cp <= 0x309F
-                : cp >= 0x30A0 && cp <= 0x30FF;
-    }
-
-    private static boolean isKana(int cp) {
-        return inScript(cp, KanaScript.HIRAGANA) || inScript(cp, KanaScript.KATAKANA);
+                ? JapaneseRules.isHiragana(cp)
+                : JapaneseRules.isKatakana(cp);
     }
 
     private static void require(List<String> errors, String where, String field, Object value) {

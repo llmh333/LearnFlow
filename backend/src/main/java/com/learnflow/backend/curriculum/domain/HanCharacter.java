@@ -1,6 +1,9 @@
 package com.learnflow.backend.curriculum.domain;
 
+import com.learnflow.backend.language.domain.Language;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +25,11 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "jp_kanji")
+@Table(name = "han_character")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class JpKanji {
+public class HanCharacter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,20 +54,23 @@ public class JpKanji {
     @Column(name = "meanings_en", nullable = false, columnDefinition = "text[]")
     private List<String> meaningsEn = new ArrayList<>();
 
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "onyomi", nullable = false, columnDefinition = "text[]")
-    private List<String> onyomi = new ArrayList<>();
-
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "kunyomi", nullable = false, columnDefinition = "text[]")
-    private List<String> kunyomi = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(
+            name = "han_character_reading",
+            joinColumns = @JoinColumn(name = "han_character_id"))
+    @OrderColumn(name = "position")
+    private List<HanCharacterReading> readings = new ArrayList<>();
 
     @Column(name = "stroke_count")
     private Short strokeCount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "jlpt_level")
-    private JlptLevel jlptLevel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "language_id")
+    private Language language;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "level_id")
+    private ProficiencyLevel level;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -76,7 +83,7 @@ public class JpKanji {
     @Column(name = "source_ref")
     private String sourceRef;
 
-    public JpKanji(String contentKey) {
+    public HanCharacter(String contentKey) {
         this.contentKey = contentKey;
     }
 }

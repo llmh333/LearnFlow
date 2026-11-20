@@ -4,24 +4,28 @@ import com.learnflow.backend.curriculum.domain.ContentSource;
 import com.learnflow.backend.curriculum.domain.Course;
 import com.learnflow.backend.curriculum.domain.ExampleSentence;
 import com.learnflow.backend.curriculum.domain.GrammarPoint;
-import com.learnflow.backend.curriculum.domain.JpKanji;
-import com.learnflow.backend.curriculum.domain.JpWord;
+import com.learnflow.backend.curriculum.domain.HanCharacter;
+import com.learnflow.backend.curriculum.domain.HanCharacterReading;
 import com.learnflow.backend.curriculum.domain.Kana;
 import com.learnflow.backend.curriculum.domain.Lesson;
 import com.learnflow.backend.curriculum.domain.LessonItem;
+import com.learnflow.backend.curriculum.domain.ProficiencyLevel;
+import com.learnflow.backend.curriculum.domain.ReadingKind;
 import com.learnflow.backend.curriculum.domain.Unit;
+import com.learnflow.backend.curriculum.domain.Word;
 import com.learnflow.backend.curriculum.engine.ContentBundle;
 import com.learnflow.backend.curriculum.engine.ContentBundle.ContentFile;
+import com.learnflow.backend.curriculum.engine.ContentDocument.CharacterDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.CourseDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.GrammarDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.KanaDef;
-import com.learnflow.backend.curriculum.engine.ContentDocument.KanjiDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.LessonDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.SentenceDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.SourceDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.UnitDef;
 import com.learnflow.backend.curriculum.engine.ContentDocument.WordDef;
 import com.learnflow.backend.language.LanguageService;
+import com.learnflow.backend.language.domain.Language;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +66,11 @@ public class ContentImporter implements ApplicationRunner {
     private final UnitRepository unitRepository;
     private final LessonRepository lessonRepository;
     private final KanaRepository kanaRepository;
-    private final JpWordRepository wordRepository;
-    private final JpKanjiRepository kanjiRepository;
+    private final WordRepository wordRepository;
+    private final HanCharacterRepository characterRepository;
     private final GrammarPointRepository grammarRepository;
     private final ExampleSentenceRepository sentenceRepository;
+    private final ProficiencyLevelRepository levelRepository;
 
     public ContentImporter(
             ContentProperties properties,
@@ -75,10 +81,11 @@ public class ContentImporter implements ApplicationRunner {
             UnitRepository unitRepository,
             LessonRepository lessonRepository,
             KanaRepository kanaRepository,
-            JpWordRepository wordRepository,
-            JpKanjiRepository kanjiRepository,
+            WordRepository wordRepository,
+            HanCharacterRepository characterRepository,
             GrammarPointRepository grammarRepository,
-            ExampleSentenceRepository sentenceRepository) {
+            ExampleSentenceRepository sentenceRepository,
+            ProficiencyLevelRepository levelRepository) {
         this.properties = properties;
         this.resourceResolver = resourceResolver;
         this.languageService = languageService;
@@ -88,9 +95,10 @@ public class ContentImporter implements ApplicationRunner {
         this.lessonRepository = lessonRepository;
         this.kanaRepository = kanaRepository;
         this.wordRepository = wordRepository;
-        this.kanjiRepository = kanjiRepository;
+        this.characterRepository = characterRepository;
         this.grammarRepository = grammarRepository;
         this.sentenceRepository = sentenceRepository;
+        this.levelRepository = levelRepository;
     }
 
     @Override
@@ -107,6 +115,30 @@ public class ContentImporter implements ApplicationRunner {
     public void importAll() {
         List<ContentFile> files = loadFiles();
         ContentBundle bundle = ContentBundle.load(files, properties.includeDrafts());
+        Map<String, Language> languages = new HashMap<>();
+        Function<String, Language> language =
+                code -> languages.computeIfAbsent(code, languageService::getByCode);
+        Function<String, Language> languageOfKey =
+                key -> language.apply(ContentBundle.languageOf(key));
+        Map<String, ProficiencyLevel> levels = new HashMap<>();
+        levelRepository
+                .findAll()
+                .forEach(l -> levels.put(l.getLanguage().getCode() + ":" + l.getCode(), l));
+        BiFunction<String, String, ProficiencyLevel> level =
+                (languageCode, code) -> {
+                    String c = ContentBundle.levelCode(code);
+                    if (c == null) {
+                        return null;
+                    }
+                    ProficiencyLevel found = levels.get(languageCode + ":" + c);
+                    if (found == null) {
+                        // LanguageRules lists a level the proficiency_level seed lacks.
+                        throw new IllegalStateException(
+                                "No proficiency_level " + c + " for language " + languageCode);
+                    }
+                    return found;
+                };
+        Function<String, String> lang = ContentBundle::languageOf;
 
         Map<String, ContentSource> sources =
                 upsert(
@@ -131,6 +163,7 @@ public class ContentImporter implements ApplicationRunner {
                         ExampleSentence::getContentKey,
                         ExampleSentence::new,
                         (e, d) -> {
+                            e.setLanguage(languageOfKey.apply(d.key()));
                             e.setText(d.text());
                             e.setReading(d.reading());
                             e.setTranslationVi(d.translationVi());
@@ -159,20 +192,21 @@ public class ContentImporter implements ApplicationRunner {
                             e.setSource(sources.get(d.source()));
                         });
 
-        Map<String, JpWord> words =
+        Map<String, Word> words =
                 upsert(
                         bundle.words(),
                         WordDef::key,
                         wordRepository,
-                        JpWord::getContentKey,
-                        JpWord::new,
+                        Word::getContentKey,
+                        Word::new,
                         (e, d) -> {
                             e.setWritten(d.written());
                             e.setReading(d.reading());
                             replace(e.getMeaningsVi(), d.meaningsVi());
                             replace(e.getMeaningsEn(), ContentBundle.orEmpty(d.meaningsEn()));
                             replace(e.getPartOfSpeech(), ContentBundle.orEmpty(d.partOfSpeech()));
-                            e.setJlptLevel(d.jlptLevel());
+                            e.setLanguage(languageOfKey.apply(d.key()));
+                            e.setLevel(level.apply(lang.apply(d.key()), d.level()));
                             e.setNote(d.note());
                             e.setStatus(d.status());
                             e.setSource(sources.get(d.source()));
@@ -180,23 +214,23 @@ public class ContentImporter implements ApplicationRunner {
                             replace(e.getExamples(), resolve(d.examples(), sentences));
                         });
 
-        Map<String, JpKanji> kanji =
+        Map<String, HanCharacter> characters =
                 upsert(
-                        bundle.kanji(),
-                        KanjiDef::key,
-                        kanjiRepository,
-                        JpKanji::getContentKey,
-                        JpKanji::new,
+                        bundle.characters(),
+                        CharacterDef::key,
+                        characterRepository,
+                        HanCharacter::getContentKey,
+                        HanCharacter::new,
                         (e, d) -> {
                             e.setCharacter(d.character());
                             replace(e.getHanViet(), ContentBundle.orEmpty(d.hanViet()));
                             replace(e.getMeaningsVi(), d.meaningsVi());
                             replace(e.getMeaningsEn(), ContentBundle.orEmpty(d.meaningsEn()));
-                            replace(e.getOnyomi(), ContentBundle.orEmpty(d.onyomi()));
-                            replace(e.getKunyomi(), ContentBundle.orEmpty(d.kunyomi()));
+                            replace(e.getReadings(), readings(d.readings()));
                             e.setStrokeCount(
                                     d.strokeCount() == null ? null : d.strokeCount().shortValue());
-                            e.setJlptLevel(d.jlptLevel());
+                            e.setLanguage(languageOfKey.apply(d.key()));
+                            e.setLevel(level.apply(lang.apply(d.key()), d.level()));
                             e.setStatus(d.status());
                             e.setSource(sources.get(d.source()));
                             e.setSourceRef(d.sourceRef());
@@ -213,7 +247,8 @@ public class ContentImporter implements ApplicationRunner {
                             e.setPattern(d.pattern());
                             e.setMeaningVi(d.meaningVi());
                             e.setExplanationVi(d.explanationVi());
-                            e.setJlptLevel(d.jlptLevel());
+                            e.setLanguage(languageOfKey.apply(d.key()));
+                            e.setLevel(level.apply(lang.apply(d.key()), d.level()));
                             e.setStatus(d.status());
                             e.setSource(sources.get(d.source()));
                             replace(e.getExamples(), resolve(d.examples(), sentences));
@@ -222,7 +257,7 @@ public class ContentImporter implements ApplicationRunner {
         Map<String, Object> items = new HashMap<>();
         items.putAll(kana);
         items.putAll(words);
-        items.putAll(kanji);
+        items.putAll(characters);
         items.putAll(grammar);
         items.putAll(sentences);
 
@@ -235,8 +270,8 @@ public class ContentImporter implements ApplicationRunner {
                         Course::new,
                         (e, d) ->
                                 e.update(
-                                        languageService.getByCode(d.language()),
-                                        d.level(),
+                                        language.apply(d.language()),
+                                        level.apply(d.language(), d.level()),
                                         d.title(),
                                         d.description(),
                                         d.position(),
@@ -285,6 +320,17 @@ public class ContentImporter implements ApplicationRunner {
                 lessonCount,
                 items.size(),
                 properties.includeDrafts() ? "included" : "skipped");
+    }
+
+    /** YAML {on: [..], kun: [..]} → ordered readings, kinds in the order the YAML lists them. */
+    private static List<HanCharacterReading> readings(Map<ReadingKind, List<String>> byKind) {
+        List<HanCharacterReading> out = new ArrayList<>();
+        if (byKind != null) {
+            byKind.forEach((kind, values) ->
+                    ContentBundle.orEmpty(values)
+                            .forEach(v -> out.add(new HanCharacterReading(kind, v))));
+        }
+        return out;
     }
 
     /** Applies each definition to the existing entity with its key (or a new one) and saves it. */

@@ -110,7 +110,7 @@ grammar:
       これ chỉ vật ở gần người nói, それ chỉ vật ở gần người nghe, あれ chỉ vật ở xa cả hai người.
       Ba từ này đứng một mình, thay cho danh từ: これは本です。(Cái này là sách.) Phủ định:
       それは辞書じゃありません。(Đó không phải là từ điển.)
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.sore-wa-jisho-desu
       - ja.sentence.tatoeba-356396
@@ -123,7 +123,7 @@ grammar:
       Thêm か vào cuối câu để thành câu hỏi, giọng lên ở cuối; không đổi trật tự từ. Câu hỏi có từ để
       hỏi (何, 誰) đặt từ đó vào chỗ cần hỏi: これは何ですか。(Cái này là cái gì?) Trả lời câu hỏi
       có/không bằng はい、そうです hoặc いいえ、ちがいます.
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.kore-wa-nan-desu-ka
   - key: ja.grammar.kono-n
@@ -134,7 +134,7 @@ grammar:
     explanationVi: >-
       この・その・あの luôn đứng ngay trước danh từ, không đứng một mình: この傘 (cái ô này). Khoảng
       cách giống これ・それ・あれ. Muốn nói "cái này" mà không có danh từ thì dùng これ.
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.sono-tokei-wa-dare-no-desu-ka
   - key: ja.grammar.n-no-n
@@ -145,7 +145,7 @@ grammar:
     explanationVi: >-
       の nối hai danh từ; N1 bổ nghĩa cho N2, ngược trật tự với tiếng Việt: 私の傘 (ô của tôi),
       英語の本 (sách tiếng Anh). Khi đã rõ N2 là gì có thể bỏ N2: これは私のです。(Cái này là của tôi.)
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.kore-wa-watashi-no-kasa-desu
       - ja.sentence.kore-wa-eigo-no-hon-desu
@@ -157,7 +157,7 @@ grammar:
     explanationVi: >-
       ここ・そこ・あそこ chỉ nơi chốn, chia gần xa giống これ・それ・あれ. ここは教室です。(Đây là
       lớp học.) Đảo lại để nói vật ở đâu: トイレはあそこです。(Nhà vệ sinh ở đằng kia.)
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.koko-wa-kyoushitsu-desu
       - ja.sentence.toire-wa-asoko-desu
@@ -169,7 +169,7 @@ grammar:
     explanationVi: >-
       どこ là từ hỏi nơi chốn. Trả lời bằng ここ・そこ・あそこ hoặc tên nơi chốn: 駅はどこですか。—
       あそこです。Hỏi lịch sự hơn (ở cửa hàng, khách sạn) dùng どちら.
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.erebeetaa-wa-doko-desu-ka
       - ja.sentence.tatoeba-143866
@@ -181,7 +181,7 @@ grammar:
     explanationVi: >-
       も thay cho は khi nói điều giống với điều vừa nói: ここは病院です。そこも病院です。(Đây là bệnh
       viện. Đó cũng là bệnh viện.) Không viết は và も cùng lúc.
-    jlptLevel: n5
+    level: n5
     examples:
       - ja.sentence.soko-mo-byouin-desu
       - ja.sentence.koko-mo-byouin-desu-ka

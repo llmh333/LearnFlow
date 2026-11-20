@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.learnflow.backend.auth.dto.request.RegisterRequest;
 import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
-import com.learnflow.backend.curriculum.domain.JlptLevel;
 import com.learnflow.backend.curriculum.dto.response.LevelCountResponse;
 import com.learnflow.backend.curriculum.dto.response.WordDetailResponse;
 import com.learnflow.backend.curriculum.dto.response.WordSummaryResponse;
@@ -79,14 +78,14 @@ class DictionaryIntegrationTest extends AbstractIntegrationTest {
     @Test
     void levelFilter_matchesTheLevelCounts() {
         List<LevelCountResponse> levels =
-                get("/api/v1/dictionary/levels")
+                get("/api/v1/dictionary/levels?lang=ja")
                         .expectBody(new ParameterizedTypeReference<List<LevelCountResponse>>() {})
                         .returnResult()
                         .getResponseBody();
 
         assertThat(levels)
                 .extracting(LevelCountResponse::level)
-                .startsWith(JlptLevel.N5, JlptLevel.N4, JlptLevel.N3, JlptLevel.N2, JlptLevel.N1);
+                .startsWith("N5", "N4", "N3", "N2", "N1");
         long n5 = levels.getFirst().wordCount();
         // The JLPT lists of V22/V23 (drafts, visible under the test profile).
         assertThat(n5).isGreaterThan(700);
@@ -95,18 +94,29 @@ class DictionaryIntegrationTest extends AbstractIntegrationTest {
         WordPage page = search("level=n5&size=50");
         assertThat(page.content()).hasSize(50);
         assertThat(page.totalElements()).isEqualTo(n5);
-        assertThat(page.content()).allMatch(w -> w.jlptLevel() == JlptLevel.N5);
+        assertThat(page.content()).allMatch(w -> "N5".equals(w.level()));
         assertThat(search("level=N1").totalElements()).isEqualTo(levels.get(4).wordCount());
     }
 
     @Test
     void unknownLevel_isAFieldError() {
-        get("/api/v1/dictionary/words?level=N6")
+        get("/api/v1/dictionary/words?lang=ja&level=N6")
                 .expectStatus()
                 .isBadRequest()
                 .expectBody()
                 .jsonPath("$.errors.level")
                 .exists();
+    }
+
+    @Test
+    void missingOrUnknownLanguage_isAFieldError() {
+        for (String uri :
+                List.of(
+                        "/api/v1/dictionary/words",
+                        "/api/v1/dictionary/words?lang=xx",
+                        "/api/v1/dictionary/levels")) {
+            get(uri).expectStatus().isBadRequest().expectBody().jsonPath("$.errors.lang").exists();
+        }
     }
 
     @Test
@@ -128,7 +138,7 @@ class DictionaryIntegrationTest extends AbstractIntegrationTest {
     }
 
     private WordPage search(String query) {
-        return get("/api/v1/dictionary/words?" + query)
+        return get("/api/v1/dictionary/words?lang=ja&" + query)
                 .expectStatus()
                 .isOk()
                 .expectBody(WordPage.class)

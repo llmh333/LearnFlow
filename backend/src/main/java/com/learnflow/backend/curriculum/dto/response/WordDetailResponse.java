@@ -1,8 +1,7 @@
 package com.learnflow.backend.curriculum.dto.response;
 
 import com.learnflow.backend.curriculum.domain.ExampleSentence;
-import com.learnflow.backend.curriculum.domain.JlptLevel;
-import com.learnflow.backend.curriculum.domain.JpWord;
+import com.learnflow.backend.curriculum.domain.Word;
 import java.util.List;
 
 /** A dictionary entry with its examples; {@code source} is shown for licence attribution. */
@@ -13,7 +12,7 @@ public record WordDetailResponse(
         List<String> meaningsVi,
         List<String> meaningsEn,
         List<String> partOfSpeech,
-        JlptLevel jlptLevel,
+        String level,
         String note,
         List<Example> examples,
         SourceResponse source) {
@@ -26,7 +25,7 @@ public record WordDetailResponse(
         }
     }
 
-    public static WordDetailResponse from(JpWord w) {
+    public static WordDetailResponse from(Word w) {
         return new WordDetailResponse(
                 w.getId(),
                 w.getWritten(),
@@ -34,7 +33,7 @@ public record WordDetailResponse(
                 List.copyOf(w.getMeaningsVi()),
                 List.copyOf(w.getMeaningsEn()),
                 List.copyOf(w.getPartOfSpeech()),
-                w.getJlptLevel(),
+                w.getLevel() == null ? null : w.getLevel().getCode(),
                 w.getNote(),
                 w.getExamples().stream().map(Example::from).toList(),
                 SourceResponse.from(w.getSource()));

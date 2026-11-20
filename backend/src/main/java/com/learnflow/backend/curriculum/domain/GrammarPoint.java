@@ -1,5 +1,6 @@
 package com.learnflow.backend.curriculum.domain;
 
+import com.learnflow.backend.language.domain.Language;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,9 +45,13 @@ public class GrammarPoint {
     @Column(name = "explanation_vi", nullable = false)
     private String explanationVi;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "jlpt_level")
-    private JlptLevel jlptLevel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "language_id")
+    private Language language;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "level_id")
+    private ProficiencyLevel level;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

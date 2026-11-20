@@ -28,7 +28,8 @@ Chi tiết cho AGENTS.md §1.3.
 
 - `spring.jpa.hibernate.ddl-auto=validate` **luôn luôn**. Schema chỉ do Flyway tạo.
 - `spring.jpa.open-in-view=false`.
-- Tên bảng/cột `snake_case`, số ít: `jp_word`, `review_log`, `app_user`.
+- Tên bảng/cột `snake_case`, số ít: `word`, `review_log`, `app_user`. Bảng nội dung dùng chung mọi ngôn ngữ, có
+  `language_id` (D18); chỉ thứ riêng một ngôn ngữ mới mang tên riêng (`kana`). Cấp độ trỏ `proficiency_level`.
 - Mọi cột thời gian `TIMESTAMPTZ NOT NULL`, map sang `Instant`, **không** `DEFAULT now()`: app ghi qua `Clock`.
   Ngày theo giờ địa phương của user (D7) lưu ở cột `DATE` riêng (`local_date`).
 - Enum lưu dạng chuỗi chữ hoa và luôn có `CHECK (... IN (...))`. Cột bắt buộc luôn `NOT NULL`.

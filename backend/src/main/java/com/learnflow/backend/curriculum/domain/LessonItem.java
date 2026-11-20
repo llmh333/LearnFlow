@@ -22,11 +22,11 @@ public class LessonItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "word_id")
-    private JpWord word;
+    private Word word;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kanji_id")
-    private JpKanji kanji;
+    @JoinColumn(name = "han_character_id")
+    private HanCharacter hanCharacter;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grammar_point_id")
@@ -37,15 +37,15 @@ public class LessonItem {
     private ExampleSentence sentence;
 
     /**
-     * @param target a {@link Kana}, {@link JpWord}, {@link JpKanji}, {@link GrammarPoint} or {@link
-     *     ExampleSentence}
+     * @param target a {@link Kana}, {@link Word}, {@link HanCharacter}, {@link GrammarPoint} or
+     *     {@link ExampleSentence}
      */
     public static LessonItem of(Object target) {
         LessonItem item = new LessonItem();
         switch (target) {
             case Kana k -> item.kana = k;
-            case JpWord w -> item.word = w;
-            case JpKanji k -> item.kanji = k;
+            case Word w -> item.word = w;
+            case HanCharacter h -> item.hanCharacter = h;
             case GrammarPoint g -> item.grammarPoint = g;
             case ExampleSentence s -> item.sentence = s;
             default -> throw new IllegalArgumentException("Not a lesson item: " + target);

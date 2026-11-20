@@ -10,7 +10,7 @@
 | Database: migration, schema, entity | `.claude/rules/database.md` | `db/**`, `domain/**`, `*Repository.java` |
 | Frontend | `.claude/rules/frontend.md` | `frontend/**` |
 | Test | `.claude/rules/testing.md` | `backend/src/test/**`, `*.test.tsx` |
-| Nội dung tiếng Nhật | `.claude/rules/content.md` | `backend/src/main/resources/content/**`, `scripts/content/**` |
+| Nội dung học (đa ngôn ngữ) | `.claude/rules/content.md` | `backend/src/main/resources/content/**`, `scripts/content/**` |
 
 ## 1. Bản giao kèo quy ước (Conventions Contract)
 

@@ -23,14 +23,15 @@ public class DictionaryController {
         this.dictionaryService = dictionaryService;
     }
 
-    /** {@code ?q=&level=N5&page=0&size=20}; every parameter is optional. */
+    /** {@code ?lang=ja&q=&level=N5&page=0&size=20}; {@code lang} is required (400 errors.lang). */
     @GetMapping(ApiPaths.V1.Dictionary.WORDS)
     public PageResponse<WordSummaryResponse> searchWords(
+            @RequestParam(required = false) String lang,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String level,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return dictionaryService.search(q, level, page, size);
+        return dictionaryService.search(lang, q, level, page, size);
     }
 
     @GetMapping(ApiPaths.V1.Dictionary.WORD)
@@ -39,7 +40,7 @@ public class DictionaryController {
     }
 
     @GetMapping(ApiPaths.V1.Dictionary.LEVELS)
-    public List<LevelCountResponse> countByLevel() {
-        return dictionaryService.countByLevel();
+    public List<LevelCountResponse> countByLevel(@RequestParam(required = false) String lang) {
+        return dictionaryService.countByLevel(lang);
     }
 }

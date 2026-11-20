@@ -72,14 +72,14 @@ class ContentBundleTest {
                         List.of(
                                 file(SOURCES),
                                 file(COURSE),
-                                file(unit("reviewed", "reviewed", "w")),
-                                file("words:\n" + word("w", "reviewed"))),
+                                file(unit("reviewed", "reviewed", "ja.w")),
+                                file("words:\n" + word("ja.w", "reviewed"))),
                         false);
 
         assertThat(bundle.words()).hasSize(1);
         assertThat(ContentBundle.lessonsOf(bundle.units().getFirst()))
                 .singleElement()
-                .satisfies(l -> assertThat(l.items()).containsExactly("w"));
+                .satisfies(l -> assertThat(l.items()).containsExactly("ja.w"));
     }
 
     @Test
@@ -89,11 +89,14 @@ class ContentBundleTest {
                         List.of(
                                 file(SOURCES),
                                 file(COURSE),
-                                file(unit("reviewed", "draft", "d")),
-                                file("words:\n" + word("w", "reviewed") + word("d", "draft"))),
+                                file(unit("reviewed", "draft", "ja.d")),
+                                file(
+                                        "words:\n"
+                                                + word("ja.w", "reviewed")
+                                                + word("ja.d", "draft"))),
                         false);
 
-        assertThat(bundle.words()).extracting(ContentDocument.WordDef::key).containsExactly("w");
+        assertThat(bundle.words()).extracting(ContentDocument.WordDef::key).containsExactly("ja.w");
         assertThat(ContentBundle.lessonsOf(bundle.units().getFirst())).isEmpty();
     }
 
@@ -104,8 +107,8 @@ class ContentBundleTest {
                         List.of(
                                 file(SOURCES),
                                 file(COURSE),
-                                file(unit("draft", "draft", "d")),
-                                file("words:\n" + word("d", "draft"))),
+                                file(unit("draft", "draft", "ja.d")),
+                                file("words:\n" + word("ja.d", "draft"))),
                         true);
 
         assertThat(bundle.words()).hasSize(1);
@@ -118,12 +121,12 @@ class ContentBundleTest {
                 List.of(
                         file(SOURCES),
                         file(COURSE),
-                        file(unit("reviewed", "reviewed", "d")),
-                        file("words:\n" + word("d", "draft")));
+                        file(unit("reviewed", "reviewed", "ja.d")),
+                        file("words:\n" + word("ja.d", "draft")));
 
         assertThatThrownBy(() -> ContentBundle.load(files, false))
                 .isInstanceOf(ContentValidationException.class)
-                .hasMessageContaining("lesson l: unknown or draft item d");
+                .hasMessageContaining("lesson l: unknown or draft item ja.d");
     }
 
     @Test
@@ -131,7 +134,7 @@ class ContentBundleTest {
         String kana =
                 """
                 kana:
-                  - key: k
+                  - key: ja.k
                     character: の
                     script: hiragana
                     romaji: no
@@ -152,7 +155,7 @@ class ContentBundleTest {
         String bad =
                 """
                 kana:
-                  - key: k
+                  - key: ja.k
                     character: ア
                     script: hiragana
                     romaji: A
@@ -162,14 +165,14 @@ class ContentBundleTest {
                     status: draft
                     source: nowhere
                 words:
-                  - key: k
+                  - key: ja.k
                     status: draft
                     source: ai
                     reading: 食べる
                     meaningsVi: []
                     examples: [missing]
-                kanji:
-                  - key: kj
+                characters:
+                  - key: ja.kj
                     character: あ
                     meaningsVi: [x]
                     status: draft
@@ -182,12 +185,16 @@ class ContentBundleTest {
                         e ->
                                 assertThat(e.getErrors())
                                         .contains(
-                                                "duplicate item key k",
-                                                "item k: romaji must be lower-case latin letters",
-                                                "item k: character must be 1–2 HIRAGANA characters",
-                                                "item k: reading must be kana only",
-                                                "item k: meaningsVi must have at least one entry",
-                                                "item kj: character must be a single kanji"));
+                                                "duplicate item key ja.k",
+                                                "item ja.k: romaji must be lower-case latin"
+                                                        + " letters",
+                                                "item ja.k: character must be 1–2 HIRAGANA"
+                                                        + " characters",
+                                                "item ja.k: reading must be kana only",
+                                                "item ja.k: meaningsVi must have at least one"
+                                                        + " entry",
+                                                "item ja.kj: character must be a single han"
+                                                        + " character"));
     }
 
     @Test
@@ -195,7 +202,7 @@ class ContentBundleTest {
         String words =
                 """
                 words:
-                  - key: w
+                  - key: ja.w
                     status: draft
                     source: nowhere
                     reading: たべる
@@ -209,8 +216,83 @@ class ContentBundleTest {
                         e ->
                                 assertThat(e.getErrors())
                                         .contains(
-                                                "item w: unknown source nowhere",
-                                                "item w: unknown example sentence missing"));
+                                                "item ja.w: unknown source nowhere",
+                                                "item ja.w: unknown example sentence missing"));
+    }
+
+    @Test
+    void languageRules_checkKeyPrefixLevelAndReadingKinds() {
+        String bad =
+                """
+                words:
+                  - key: xx.word.a
+                    status: draft
+                    source: ai
+                    reading: a
+                    meaningsVi: [a]
+                  - key: ja.word.b
+                    status: draft
+                    source: ai
+                    reading: たべる
+                    meaningsVi: [ăn]
+                    level: hsk1
+                characters:
+                  - key: ja.kanji.c
+                    character: 学
+                    meaningsVi: [học]
+                    readings: {on: [ガク], pinyin: [xué]}
+                    status: draft
+                    source: ai
+                courses:
+                  - key: c
+                    language: xx
+                    title: X
+                    position: 1
+                    status: draft
+                """;
+
+        assertThatThrownBy(() -> ContentBundle.load(List.of(file(SOURCES), file(bad)), true))
+                .isInstanceOfSatisfying(
+                        ContentValidationException.class,
+                        e ->
+                                assertThat(e.getErrors())
+                                        .contains(
+                                                "item xx.word.a: key must start with a known"
+                                                        + " language code (ja.…)",
+                                                "item ja.word.b: level must be one of [N5, N4, N3,"
+                                                        + " N2, N1] for ja",
+                                                "item ja.kanji.c: ja has no PINYIN readings",
+                                                "course c: unknown language xx"));
+    }
+
+    @Test
+    void characterReadings_keepTheirKindAndOrder() {
+        String yaml =
+                """
+                characters:
+                  - key: ja.kanji.gaku
+                    character: 学
+                    meaningsVi: [học]
+                    readings: {on: [ガク], kun: ["まな(ぶ)"]}
+                    level: n5
+                    status: draft
+                    source: ai
+                """;
+
+        ContentDocument.CharacterDef c =
+                ContentBundle.load(List.of(file(SOURCES), file(yaml)), true)
+                        .characters()
+                        .getFirst();
+
+        assertThat(c.readings())
+                .containsExactly(
+                        java.util.Map.entry(
+                                com.learnflow.backend.curriculum.domain.ReadingKind.ON,
+                                List.of("ガク")),
+                        java.util.Map.entry(
+                                com.learnflow.backend.curriculum.domain.ReadingKind.KUN,
+                                List.of("まな(ぶ)")));
+        assertThat(ContentBundle.levelCode(c.level())).isEqualTo("N5");
     }
 
     @Test
@@ -238,7 +320,7 @@ class ContentBundleTest {
 
         ContentBundle bundle = ContentBundle.load(files, true);
         assertThat(bundle.kana()).hasSize(208);
-        assertThat(bundle.kanji()).hasSize(103);
+        assertThat(bundle.characters()).hasSize(103);
         ContentBundle.load(files, false);
     }
 }

@@ -20,12 +20,25 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
     @LocalServerPort private int port;
 
     @Autowired private ContentImporter importer;
-    @Autowired private JpWordRepository wordRepository;
+    @Autowired private WordRepository wordRepository;
     @Autowired private KanaRepository kanaRepository;
     @Autowired private LessonRepository lessonRepository;
+    @Autowired private ProficiencyLevelRepository levelRepository;
 
     private RestTestClient client() {
         return RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    }
+
+    /**
+     * LanguageRules (validation) and the proficiency_level seed (V25) must list the same levels.
+     */
+    @Test
+    void languageRuleLevels_matchTheSeededLevels() {
+        for (var rules : com.learnflow.backend.curriculum.engine.LanguageRules.ALL.values()) {
+            assertThat(levelRepository.findByLanguage_CodeOrderByRankAsc(rules.code()))
+                    .extracting(com.learnflow.backend.curriculum.domain.ProficiencyLevel::getCode)
+                    .containsExactlyElementsOf(rules.levels());
+        }
     }
 
     @Test

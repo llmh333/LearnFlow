@@ -4,7 +4,7 @@ paths:
   - "scripts/content/**"
 ---
 
-# Content rules (nội dung học tiếng Nhật)
+# Content rules (nội dung học, đa ngôn ngữ — D18)
 
 Nguồn yêu cầu: `plan/2026-11-17-japanese-learning-path-refactor.md` §3. File này là mô tả duy nhất
 của định dạng nội dung; đổi định dạng thì sửa ở đây cùng PR với `ContentBundle`.
@@ -20,7 +20,7 @@ của định dạng nội dung; đổi định dạng thì sửa ở đây cùn
 
 ## Định dạng
 
-Mỗi file có thể chứa bất kỳ phần nào: `sources`, `courses`, `units`, `kana`, `words`, `kanji`, `grammar`,
+Mỗi file có thể chứa bất kỳ phần nào: `sources`, `courses`, `units`, `kana`, `words`, `characters`, `grammar`,
 `sentences`. Tham chiếu được trỏ sang file khác. Enum viết chữ thường (`draft`, `hiragana`, `n5`).
 Mỗi phần map sang một bảng riêng (D13); DB có CHECK, nên `ContentBundle` báo lỗi trước để dễ đọc.
 
@@ -39,7 +39,7 @@ units:
       - key: ja.n5.u01.l01
         title: Lời chào hằng ngày
         status: draft
-        items: [ja.word.konnichiha, …]   # key của kana/word/kanji/grammar/sentence, không lặp
+        items: [ja.word.konnichiha, …]   # key của kana/word/character/grammar/sentence, không lặp
 words:
   - key: ja.word.taberu
     status: draft                 # draft | reviewed
@@ -54,16 +54,30 @@ words:
 | Phần | Bắt buộc | Tuỳ chọn |
 |---|---|---|
 | `kana` | `character` (1–2 chữ đúng bảng), `script` (`hiragana`/`katakana`), `romaji` (a–z), `group` (`basic`/`dakuten`/`handakuten`/`yoon`), `row`, `position` | |
-| `words` | `reading` (chỉ kana), `meaningsVi` (≥ 1) | `written`, `meaningsEn`, `partOfSpeech`, `jlptLevel` (`n5`…`n1`), `note`, `examples`, `sourceRef` |
-| `kanji` | `character` (đúng 1 kanji), `meaningsVi` (≥ 1) | `hanViet` (âm Hán Việt, viết hoa), `meaningsEn`, `onyomi`, `kunyomi` (okurigana trong ngoặc: `まな(ぶ)`), `strokeCount`, `jlptLevel`, `sourceRef` |
-| `grammar` | `pattern`, `explanationVi` | `meaningVi`, `jlptLevel`, `examples` |
+| `words` | `reading` (đúng luật ngôn ngữ: `ja` chỉ kana), `meaningsVi` (≥ 1) | `written`, `meaningsEn`, `partOfSpeech`, `level` (cấp của ngôn ngữ, viết thường: `n5`), `note`, `examples`, `sourceRef` |
+| `characters` | `character` (đúng 1 chữ Hán: kanji/hán tự), `meaningsVi` (≥ 1) | `hanViet` (âm Hán Việt, viết hoa), `meaningsEn`, `readings` (`{on: [...], kun: [...]}` với `ja`; `pinyin` với `zh`; okurigana trong ngoặc: `まな(ぶ)`), `strokeCount`, `level`, `sourceRef` |
+| `grammar` | `pattern`, `explanationVi` | `meaningVi`, `level`, `examples` |
 | `sentences` | `text`, `translationVi` | `reading`, `translationEn`, `sourceRef`, `sourceAuthor` (bắt buộc với Tatoeba) |
 
-Mọi mục đều cần `key`, `status`, `source`.
+Mọi mục đều cần `key`, `status`, `source`. Course cần `language`; `level` để trống với khoá ngoài khung cấp
+(Kana).
+
+## Đa ngôn ngữ (D18)
+
+- **Ngôn ngữ của một mục là đoạn đầu của key**: `ja.word.taberu` → `ja`. Key không bắt đầu bằng mã ngôn ngữ
+  đã có luật là lỗi import. Thư mục nội dung theo ngôn ngữ: `content/<lang>/`.
+- Bảng dùng chung mọi ngôn ngữ: `word`, `han_character` (+ `han_character_reading`), `grammar_point`,
+  `example_sentence`, `course`. Chỉ thứ thật sự riêng một ngôn ngữ mới có bảng riêng (`kana`).
+- **Cấp độ là dữ liệu**, không phải enum: bảng `proficiency_level` (JLPT, HSK, CEFR). YAML ghi mã cấp viết
+  thường (`n5`, `hsk1`, `a1`).
+- Luật riêng từng ngôn ngữ nằm trong `curriculum/engine/LanguageRules` (cách đọc hợp lệ, loại cách đọc của chữ
+  Hán, danh sách cấp). Thêm ngôn ngữ = một `LanguageRules` + dòng `language` + seed `proficiency_level`
+  (test `languageRuleLevels_matchTheSeededLevels` kiểm hai bên khớp). Không thêm bảng, enum hay API.
 
 - Quy ước key: `ja.<loại>.<slug>`, kana `ja.kana.hira.<romaji>` / `ja.kana.kata.<romaji>` (ぢ/づ dùng `di`/`du`),
   từ `ja.word.<romaji cách đọc>` (đồng âm thêm `-2`, `-3`, trùng key với migration V22/V23 để YAML ghi đè),
-  kanji `ja.kanji.<chữ>`, câu Tatoeba `ja.sentence.tatoeba-<id>`. Key là duy nhất trên mọi loại mục.
+  chữ Hán `<lang>.kanji.<chữ>` (`zh` dùng `zh.hanzi.<chữ>`), câu Tatoeba `<lang>.sentence.tatoeba-<id>`.
+  Key là duy nhất trên mọi loại mục.
 - YAML ở đây không có boolean: `no`, `on`, `off` được đọc là chuỗi, không cần bọc nháy.
 - Mục `reviewed` chỉ được trỏ tới mục `reviewed` (course của unit, item của lesson, câu ví dụ); vi phạm là
   lỗi import.
@@ -78,7 +92,7 @@ Mọi mục đều cần `key`, `status`, `source`.
 - Nghĩa (`meaning`) luôn là **tiếng Việt**, tự nhiên, nghĩa thông dụng nhất đặt trước. Giữ nghĩa tiếng
   Anh gốc ở trường riêng để đối chiếu.
 - Câu ví dụ chỉ dùng từ vựng và ngữ pháp **không vượt cấp** của mục đó.
-- Furigana/cách đọc khớp ngữ cảnh và khớp chữ kanji tương ứng.
+- Cách đọc (furigana, pinyin…) khớp ngữ cảnh và khớp chữ Hán tương ứng.
 - Không chép nội dung từ giáo trình hoặc trang web thương mại không có giấy phép tương thích.
 
 ## Giấy phép
@@ -92,6 +106,7 @@ Mọi mục đều cần `key`, `status`, `source`.
 
 ## Quy trình
 
-- Script nhập/làm giàu nằm ở `scripts/content/` (TypeScript), chạy tay, không chạy trong app.
+- Script nhập/làm giàu nằm ở `scripts/content/` (TypeScript), chạy tay, không chạy trong app. Phần dùng chung
+  ở `lib/` và `enrich-ai.ts`; nguồn riêng từng ngôn ngữ ở `scripts/content/<lang>/`.
 - Script làm giàu bằng AI ghi lại model và prompt đã dùng để làm lại được.
 - Mọi thay đổi nội dung đi qua subagent `content-reviewer` trước khi mở PR.
