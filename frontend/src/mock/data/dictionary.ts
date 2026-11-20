@@ -17,7 +17,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['học sinh', 'sinh viên'],
     meaningsEn: ['student'],
     partOfSpeech: ['n'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Thường dùng cho học sinh cấp 3 và sinh viên đại học.',
     examples: [
       {
@@ -42,7 +42,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['thầy giáo', 'cô giáo', 'bác sĩ'],
     meaningsEn: ['teacher', 'doctor', 'master'],
     partOfSpeech: ['n'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Hậu tố tôn xưng khi xưng hô với thầy cô giáo, bác sĩ, luật sư.',
     examples: [
       {
@@ -61,7 +61,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['ăn'],
     meaningsEn: ['to eat'],
     partOfSpeech: ['v1'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Động từ nhóm 2 (Ichidan verb). Dạng lịch sự: 食べます.',
     examples: [
       {
@@ -86,7 +86,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['uống'],
     meaningsEn: ['to drink'],
     partOfSpeech: ['v5m'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Động từ nhóm 1 (Godan verb). Dạng lịch sự: 飲みます.',
     examples: [
       {
@@ -105,7 +105,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['con mèo'],
     meaningsEn: ['cat'],
     partOfSpeech: ['n'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Thú cưng phổ biến ở Nhật Bản.',
     examples: [
       {
@@ -124,7 +124,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['con chó'],
     meaningsEn: ['dog'],
     partOfSpeech: ['n'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Động từ đi kèm: 散歩する (dắt chó đi dạo).',
     examples: [
       {
@@ -143,7 +143,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['bạn bè', 'người bạn'],
     meaningsEn: ['friend', 'companion'],
     partOfSpeech: ['n'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Cách nói thân mật: 友 (とも) hoặc 友人 (ゆうじん - trang trọng).',
     examples: [
       {
@@ -162,7 +162,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['học tập', 'nghiên cứu'],
     meaningsEn: ['to study'],
     partOfSpeech: ['vs'],
-    jlptLevel: 'N5',
+    level: 'N5',
     note: 'Động từ nhóm 3 (Suru verb).',
     examples: [
       {
@@ -181,7 +181,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['hướng dẫn', 'dẫn đường'],
     meaningsEn: ['to guide', 'to show around'],
     partOfSpeech: ['vs'],
-    jlptLevel: 'N4',
+    level: 'N4',
     note: 'Động từ nhóm 3 (Suru verb).',
     examples: [
       {
@@ -200,7 +200,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['phức tạp', 'rắc rối'],
     meaningsEn: ['complex', 'complicated'],
     partOfSpeech: ['adj-na'],
-    jlptLevel: 'N4',
+    level: 'N4',
     note: 'Tính từ đuôi な. Trái nghĩa: 単純 (たんじゅん - đơn giản).',
     examples: [
       {
@@ -219,7 +219,7 @@ export const MOCK_WORDS: WordDetail[] = [
     meaningsVi: ['ngại ngần', 'khách khí', 'kiềm chế'],
     meaningsEn: ['to hesitate', 'to hold back', 'to refrain'],
     partOfSpeech: ['vs'],
-    jlptLevel: 'N3',
+    level: 'N3',
     note: 'Thường dùng trong câu: 遠慮しないでください (Đừng ngại nhé).',
     examples: [
       {
@@ -234,11 +234,11 @@ export const MOCK_WORDS: WordDetail[] = [
 ]
 
 export const MOCK_LEVEL_COUNTS: LevelCount[] = [
-  { level: 'N5', wordCount: 718 },
-  { level: 'N4', wordCount: 630 },
-  { level: 'N3', wordCount: 450 },
-  { level: 'N2', wordCount: 0 },
-  { level: 'N1', wordCount: 0 },
+  { level: 'N5', name: 'JLPT N5', wordCount: 718 },
+  { level: 'N4', name: 'JLPT N4', wordCount: 667 },
+  { level: 'N3', name: 'JLPT N3', wordCount: 0 },
+  { level: 'N2', name: 'JLPT N2', wordCount: 0 },
+  { level: 'N1', name: 'JLPT N1', wordCount: 0 },
 ]
 
 export function toWordSummary(detail: WordDetail): WordSummary {
@@ -248,6 +248,6 @@ export function toWordSummary(detail: WordDetail): WordSummary {
     reading: detail.reading,
     meaningsVi: detail.meaningsVi,
     partOfSpeech: detail.partOfSpeech,
-    jlptLevel: detail.jlptLevel,
+    level: detail.level,
   }
 }

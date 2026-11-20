@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Alert,
@@ -25,18 +25,23 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import { Flowy } from '@/assets'
+import { ApiError } from '@/api/client'
 import { PronounceButton } from '@/components/ui/PronounceButton'
 import { WordStrokeOrder } from '@/components/review/WordStrokeOrder'
 import { useLevelCounts, useWordDetail, useWords } from '@/hooks/useDictionary'
-import type { JlptLevel, WordSummary } from '@/types/domain'
+import { useLanguages } from '@/hooks/useLanguages'
+import { useUiStore } from '@/stores/uiStore'
+import type { LevelCount, WordSummary } from '@/types/domain'
 import { cn } from '@/lib/cn'
 
-const LEVEL_COLORS: Record<string, string> = {
-  N5: 'green',
-  N4: 'cyan',
-  N3: 'gold',
-  N2: 'orange',
-  N1: 'red',
+const LEVEL_PALETTE = ['green', 'cyan', 'gold', 'orange', 'red', 'purple', 'magenta']
+
+function getLevelColor(level: string | null, levels?: LevelCount[]): string {
+  if (!level || !levels) return 'default'
+  const validLevels = levels.filter((l) => Boolean(l.level))
+  const index = validLevels.findIndex((l) => l.level === level)
+  if (index === -1) return 'default'
+  return LEVEL_PALETTE[index % LEVEL_PALETTE.length]
 }
 
 const PART_OF_SPEECH_LABELS: Record<string, string> = {
@@ -66,6 +71,12 @@ function getPosLabel(pos: string): string {
 
 export function VocabularyPage() {
   const navigate = useNavigate()
+  const selectedLanguageCode = useUiStore((s) => s.selectedLanguageCode)
+  const setSelectedLanguageCode = useUiStore((s) => s.setSelectedLanguageCode)
+
+  const { data: languages, isLoading: isLanguagesLoading } = useLanguages()
+  const currentLanguage = (languages ?? []).find((l) => l.code === selectedLanguageCode)
+  const isSupported = Boolean(currentLanguage)
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -75,16 +86,31 @@ export function VocabularyPage() {
   const [pageSize, setPageSize] = useState(20)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
 
+  // Reset filters when language changes
+  const prevLangRef = useRef(selectedLanguageCode)
+  useEffect(() => {
+    if (prevLangRef.current !== selectedLanguageCode) {
+      prevLangRef.current = selectedLanguageCode
+      setSelectedLevel('ALL')
+      setPage(0)
+      setSearchQuery('')
+      setSearchInputDraft('')
+    }
+  }, [selectedLanguageCode])
+
   // Selected word detail modal state
   const [selectedWordId, setSelectedWordId] = useState<number | null>(null)
 
-  // API queries
-  const { data: levelCounts } = useLevelCounts()
+  // API queries - only fetch if language is supported by backend
+  const effectiveLang = isSupported ? selectedLanguageCode : ''
+  const { data: levelCounts } = useLevelCounts(effectiveLang)
   const {
     data: wordsData,
     isLoading: isWordsLoading,
     isError: isWordsError,
+    error: wordsError,
   } = useWords({
+    lang: effectiveLang,
     q: searchQuery,
     level: selectedLevel === 'ALL' ? undefined : selectedLevel,
     page,
@@ -92,12 +118,6 @@ export function VocabularyPage() {
   })
 
   const { data: wordDetail, isLoading: isDetailLoading } = useWordDetail(selectedWordId)
-
-  // Level counts map for quick lookup
-  const levelCountsMap = (levelCounts ?? []).reduce<Record<string, number>>((acc, item) => {
-    if (item.level) acc[item.level] = item.wordCount
-    return acc
-  }, {})
 
   const totalWordsCount = (levelCounts ?? []).reduce((sum, item) => sum + item.wordCount, 0)
 
@@ -127,7 +147,7 @@ export function VocabularyPage() {
       key: 'written_reading',
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <PronounceButton word={record.reading} languageCode="ja" size={16} />
+          <PronounceButton word={record.reading} languageCode={selectedLanguageCode} size={16} />
           <div>
             <div className="flex items-baseline gap-2">
               <span className="text-base font-black text-slate-900 dark:text-white">
@@ -167,12 +187,15 @@ export function VocabularyPage() {
     },
     {
       title: 'Cấp độ',
-      dataIndex: 'jlptLevel',
-      key: 'jlptLevel',
-      width: 100,
-      render: (level: JlptLevel | null) =>
+      dataIndex: 'level',
+      key: 'level',
+      width: 110,
+      render: (level: string | null) =>
         level ? (
-          <Tag color={LEVEL_COLORS[level] || 'default'} className="!rounded-md !font-black !px-2.5">
+          <Tag
+            color={getLevelColor(level, levelCounts)}
+            className="!rounded-md !font-black !px-2.5"
+          >
             {level}
           </Tag>
         ) : (
@@ -211,7 +234,9 @@ export function VocabularyPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-3 py-0.5 mb-1.5">
                 <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
-                  🇯🇵 Từ vựng &amp; Từ điển Tiếng Nhật
+                  {currentLanguage
+                    ? `Từ vựng & Từ điển ${currentLanguage.name}`
+                    : 'Từ vựng & Từ điển'}
                 </span>
                 {totalWordsCount > 0 && (
                   <Tag
@@ -223,345 +248,406 @@ export function VocabularyPage() {
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                Thư viện Từ vựng JLPT
+                Thư viện Từ vựng {currentLanguage ? currentLanguage.name : ''}
               </h1>
               <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-                Tra cứu từ vựng chuẩn JLPT N5 đến N1 kèm cách đọc, phát âm giọng chuẩn, nét viết chữ
-                Hán và câu ví dụ thực tế.
+                Tra cứu từ vựng kèm cách đọc, phát âm giọng chuẩn, nét viết chữ Hán và câu ví dụ
+                thực tế.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Segmented
-              shape="round"
-              size="middle"
-              value={viewMode}
-              onChange={(val) => setViewMode(val as 'grid' | 'table')}
-              options={[
-                {
-                  value: 'grid',
-                  icon: <AppstoreOutlined />,
-                  label: 'Dạng thẻ',
-                },
-                {
-                  value: 'table',
-                  icon: <UnorderedListOutlined />,
-                  label: 'Bảng tra',
-                },
-              ]}
-              className="!rounded-full p-1 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-200/80 dark:border-slate-700/80 [&_.ant-segmented-group]:!rounded-full [&_.ant-segmented-item]:!rounded-full [&_.ant-segmented-thumb]:!rounded-full [&_.ant-segmented-item-selected]:!rounded-full [&_.ant-segmented-thumb]:!shadow-xs shadow-2xs select-none"
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Search and Filters Toolbar */}
-      <Card
-        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-sm"
-        styles={{ body: { padding: '1.25rem 1.5rem' } }}
-      >
-        <div className="flex flex-col gap-4">
-          {/* Tier 1: Search Bar (Full-width, spacious, beautiful 3D button) */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative flex-1">
-              <Input
-                size="large"
-                placeholder="Nhập chữ Hán, Hiragana, Katakana, tiếng Việt hoặc tiếng Anh (ví dụ: 学生, gakusei, học sinh)..."
-                allowClear
-                prefix={<SearchOutlined className="text-slate-400 text-lg mr-2" />}
-                value={searchInputDraft}
-                onChange={(e) => {
-                  setSearchInputDraft(e.target.value)
-                  if (!e.target.value) {
-                    setSearchQuery('')
-                    setPage(0)
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch(searchInputDraft)
-                  }
-                }}
-                className="w-full !h-12 !rounded-2xl !border-2 !border-slate-200 hover:!border-[#58CC02] focus:!border-[#58CC02] dark:!border-[#2B3940] dark:!bg-[#131F24] font-medium text-sm !px-4 shadow-2xs transition-all"
+          {isSupported && (
+            <div className="flex items-center gap-2">
+              <Segmented
+                shape="round"
+                size="middle"
+                value={viewMode}
+                onChange={(val) => setViewMode(val as 'grid' | 'table')}
+                options={[
+                  {
+                    value: 'grid',
+                    icon: <AppstoreOutlined />,
+                    label: 'Dạng thẻ',
+                  },
+                  {
+                    value: 'table',
+                    icon: <UnorderedListOutlined />,
+                    label: 'Bảng tra',
+                  },
+                ]}
+                className="!rounded-full p-1 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-200/80 dark:border-slate-700/80 [&_.ant-segmented-group]:!rounded-full [&_.ant-segmented-item]:!rounded-full [&_.ant-segmented-thumb]:!rounded-full [&_.ant-segmented-item-selected]:!rounded-full [&_.ant-segmented-thumb]:!shadow-xs shadow-2xs select-none"
               />
             </div>
-            <Button
-              type="primary"
-              size="large"
-              icon={<SearchOutlined />}
-              onClick={() => handleSearch(searchInputDraft)}
-              className="!h-12 !px-7 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-sm uppercase tracking-wider shadow-xs shrink-0 cursor-pointer transition-all"
-            >
-              Tìm kiếm
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800/80" />
-
-          {/* Tier 2: JLPT Level Filters & Status Badges */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-1">
-                <FilterOutlined className="text-amber-500 text-sm" />
-                <span>Cấp độ JLPT:</span>
-              </span>
-
-              <Radio.Group
-                value={selectedLevel}
-                onChange={(e) => handleLevelChange(e.target.value)}
-                buttonStyle="solid"
-                className="flex flex-wrap gap-2 items-center"
-              >
-                {/* Tất cả */}
-                <Radio.Button
-                  value="ALL"
-                  className={cn(
-                    '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
-                    selectedLevel === 'ALL'
-                      ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
-                      : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
-                  )}
-                >
-                  <span>Tất cả</span>
-                  <span
-                    className={cn(
-                      'text-[10px] px-2 py-0.5 rounded-full font-black tracking-wide',
-                      selectedLevel === 'ALL'
-                        ? 'bg-white/25 text-white'
-                        : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
-                    )}
-                  >
-                    {totalWordsCount > 0 ? totalWordsCount.toLocaleString() : '1,348+'}
-                  </span>
-                </Radio.Button>
-
-                {/* N5 to N1 */}
-                {(['N5', 'N4', 'N3', 'N2', 'N1'] as const).map((lvl) => {
-                  const count = levelCountsMap[lvl]
-                  const isSelected = selectedLevel === lvl
-                  return (
-                    <Radio.Button
-                      key={lvl}
-                      value={lvl}
-                      className={cn(
-                        '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
-                        isSelected
-                          ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
-                          : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
-                      )}
-                    >
-                      <span className="tracking-wide">{lvl}</span>
-                      <span
-                        className={cn(
-                          'text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-black',
-                          isSelected
-                            ? 'bg-white/25 text-white'
-                            : count !== undefined && count > 0
-                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
-                              : 'bg-slate-200/60 dark:bg-slate-800 text-slate-400 dark:text-slate-500',
-                        )}
-                      >
-                        {count !== undefined && count > 0 ? count.toLocaleString() : '0'}
-                      </span>
-                    </Radio.Button>
-                  )
-                })}
-              </Radio.Group>
-            </div>
-
-            {/* Quick Filter Reset */}
-            {(searchQuery || selectedLevel !== 'ALL') && (
-              <Button
-                type="text"
-                size="small"
-                onClick={handleResetFilters}
-                className="text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 !rounded-xl !h-8 px-2.5 transition-colors cursor-pointer"
-              >
-                ✕ Xóa bộ lọc
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </Card>
 
-      {/* Main Words Content Section */}
-      {isWordsLoading && (
+      {/* Loading state for languages */}
+      {isLanguagesLoading && (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <Spin size="large" />
-          <p className="text-xs font-bold text-slate-400">Đang tải danh sách từ vựng...</p>
+          <p className="text-xs font-bold text-slate-400">Đang tải thông tin ngôn ngữ...</p>
         </div>
       )}
 
-      {isWordsError && (
-        <Alert
-          type="error"
-          showIcon
-          message="Không thể tải danh sách từ vựng. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau."
-          className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50"
-        />
-      )}
-
-      {!isWordsLoading && !isWordsError && wordsData?.content.length === 0 && (
+      {/* Unsupported Language Empty State - Do not call dictionary API */}
+      {!isLanguagesLoading && !isSupported && (
         <Card
-          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] py-12 text-center"
-          styles={{ body: { padding: '2rem' } }}
+          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] py-14 text-center shadow-sm"
+          styles={{ body: { padding: '2.5rem' } }}
         >
           <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
-              <div className="space-y-1">
-                <p className="text-base font-black text-slate-800 dark:text-white">
-                  Không tìm thấy từ vựng phù hợp
-                </p>
-                <p className="text-xs text-slate-400">
-                  Thử tìm kiếm với từ khóa khác hoặc chuyển sang cấp độ JLPT khác.
+              <div className="space-y-2 max-w-md mx-auto py-2">
+                <h3 className="text-lg font-black text-slate-800 dark:text-white">
+                  Từ điển cho ngôn ngữ này sắp có
+                </h3>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Hiện tại hệ thống đang hỗ trợ từ điển cho Tiếng Nhật. Bạn có thể chuyển sang Tiếng
+                  Nhật để tra cứu hơn 1,300+ từ vựng chuẩn JLPT.
                 </p>
               </div>
             }
           >
-            <Button
-              type="primary"
-              onClick={() => {
-                setSearchQuery('')
-                setSelectedLevel('ALL')
-              }}
-              className="!rounded-2xl !bg-[#58cc02] font-black"
-            >
-              Xem tất cả từ vựng
-            </Button>
+            {languages?.some((l) => l.code === 'ja') && (
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => setSelectedLanguageCode('ja')}
+                className="!rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] !text-white font-black cursor-pointer transition-all mt-2"
+              >
+                Chuyển sang Tiếng Nhật 🇯🇵
+              </Button>
+            )}
           </Empty>
         </Card>
       )}
 
-      {!isWordsLoading && !isWordsError && wordsData && wordsData.content.length > 0 && (
+      {/* Main Content when language is supported */}
+      {!isLanguagesLoading && isSupported && (
         <>
-          {/* Card Grid View */}
-          {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {wordsData.content.map((word) => (
-                <Card
-                  key={word.id}
-                  hoverable
-                  onClick={() => setSelectedWordId(word.id)}
-                  className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 hover:!border-[#58CC02] !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] dark:hover:!border-[#58CC02] transition-all cursor-pointer group shadow-xs flex flex-col justify-between"
-                  styles={{ body: { padding: '1.25rem' } }}
+          {/* Search and Filters Toolbar */}
+          <Card
+            className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-sm"
+            styles={{ body: { padding: '1.25rem 1.5rem' } }}
+          >
+            <div className="flex flex-col gap-4">
+              {/* Tier 1: Search Bar (Full-width, spacious, beautiful 3D button) */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Input
+                    size="large"
+                    placeholder="Nhập chữ Hán, Hiragana, Katakana, tiếng Việt hoặc tiếng Anh (ví dụ: 学生, gakusei, học sinh)..."
+                    allowClear
+                    prefix={<SearchOutlined className="text-slate-400 text-lg mr-2" />}
+                    value={searchInputDraft}
+                    onChange={(e) => {
+                      setSearchInputDraft(e.target.value)
+                      if (!e.target.value) {
+                        setSearchQuery('')
+                        setPage(0)
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch(searchInputDraft)
+                      }
+                    }}
+                    className="w-full !h-12 !rounded-2xl !border-2 !border-slate-200 hover:!border-[#58CC02] focus:!border-[#58CC02] dark:!border-[#2B3940] dark:!bg-[#131F24] font-medium text-sm !px-4 shadow-2xs transition-all"
+                  />
+                </div>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<SearchOutlined />}
+                  onClick={() => handleSearch(searchInputDraft)}
+                  className="!h-12 !px-7 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-sm uppercase tracking-wider shadow-xs shrink-0 cursor-pointer transition-all"
                 >
-                  <div>
-                    {/* Top row: JLPT Level tag & audio button */}
-                    <div className="flex items-center justify-between mb-2">
-                      {word.jlptLevel ? (
-                        <Tag
-                          color={LEVEL_COLORS[word.jlptLevel] || 'default'}
-                          className="!rounded-md !font-black !px-2.5 !m-0 !text-xs"
-                        >
-                          {word.jlptLevel}
-                        </Tag>
-                      ) : (
-                        <Tag className="!rounded-md !m-0 !text-xs">Chưa phân cấp</Tag>
+                  Tìm kiếm
+                </Button>
+              </div>
+
+              {/* Divider */}
+              <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800/80" />
+
+              {/* Tier 2: Level Filters & Status Badges */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-1">
+                    <FilterOutlined className="text-amber-500 text-sm" />
+                    <span>Cấp độ:</span>
+                  </span>
+
+                  <Radio.Group
+                    value={selectedLevel}
+                    onChange={(e) => handleLevelChange(e.target.value)}
+                    buttonStyle="solid"
+                    className="flex flex-wrap gap-2 items-center"
+                  >
+                    {/* Tất cả */}
+                    <Radio.Button
+                      value="ALL"
+                      className={cn(
+                        '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
+                        selectedLevel === 'ALL'
+                          ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
+                          : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
                       )}
+                    >
+                      <span>Tất cả</span>
+                      <span
+                        className={cn(
+                          'text-[10px] px-2 py-0.5 rounded-full font-black tracking-wide',
+                          selectedLevel === 'ALL'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
+                        )}
+                      >
+                        {totalWordsCount > 0 ? totalWordsCount.toLocaleString() : '0'}
+                      </span>
+                    </Radio.Button>
 
-                      <PronounceButton word={word.reading} languageCode="ja" size={15} />
-                    </div>
+                    {/* Levels from API in order (excluding null) */}
+                    {(levelCounts ?? [])
+                      .filter((l): l is LevelCount & { level: string } => Boolean(l.level))
+                      .map((item) => {
+                        const isSelected = selectedLevel === item.level
+                        return (
+                          <Radio.Button
+                            key={item.level}
+                            value={item.level}
+                            className={cn(
+                              '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
+                              isSelected
+                                ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
+                                : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                            )}
+                          >
+                            <span className="tracking-wide">{item.name || item.level}</span>
+                            <span
+                              className={cn(
+                                'text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-black',
+                                isSelected
+                                  ? 'bg-white/25 text-white'
+                                  : item.wordCount > 0
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                                    : 'bg-slate-200/60 dark:bg-slate-800 text-slate-400 dark:text-slate-500',
+                              )}
+                            >
+                              {item.wordCount.toLocaleString()}
+                            </span>
+                          </Radio.Button>
+                        )
+                      })}
+                  </Radio.Group>
+                </div>
 
-                    {/* Word display */}
-                    <div className="my-2">
-                      {word.written ? (
-                        <div>
-                          <p className="text-xs font-bold text-[#58CC02] dark:text-[#79e32a] tracking-wide">
-                            {word.reading}
-                          </p>
-                          <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5 group-hover:text-[#58CC02] transition-colors">
-                            {word.written}
-                          </h3>
-                        </div>
-                      ) : (
-                        <div>
-                          <h3 className="text-2xl font-black text-slate-900 dark:text-white group-hover:text-[#58CC02] transition-colors">
-                            {word.reading}
-                          </h3>
-                        </div>
-                      )}
-                    </div>
+                {/* Quick Filter Reset */}
+                {(searchQuery || selectedLevel !== 'ALL') && (
+                  <Button
+                    type="text"
+                    size="small"
+                    onClick={handleResetFilters}
+                    className="text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 !rounded-xl !h-8 px-2.5 transition-colors cursor-pointer"
+                  >
+                    ✕ Xóa bộ lọc
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Card>
 
-                    {/* Meanings */}
-                    <div className="mt-2 text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                      {word.meaningsVi.join(', ')}
-                    </div>
-                  </div>
-
-                  {/* Bottom Footer: Part of speech */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {word.partOfSpeech.slice(0, 2).map((pos) => (
-                        <span
-                          key={pos}
-                          className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded"
-                        >
-                          {getPosLabel(pos)}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-xs font-bold text-[#1CB0F6] group-hover:translate-x-1 transition-transform">
-                      Xem chi tiết →
-                    </span>
-                  </div>
-                </Card>
-              ))}
+          {/* Main Words Content Section */}
+          {isWordsLoading && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Spin size="large" />
+              <p className="text-xs font-bold text-slate-400">Đang tải danh sách từ vựng...</p>
             </div>
           )}
 
-          {/* Table View */}
-          {viewMode === 'table' && (
+          {isWordsError && (
+            <Alert
+              type="error"
+              showIcon
+              message={
+                wordsError instanceof ApiError && wordsError.errors
+                  ? wordsError.errors.lang ||
+                    wordsError.errors.level ||
+                    wordsError.errors.q ||
+                    wordsError.message
+                  : 'Không thể tải danh sách từ vựng. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.'
+              }
+              className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50"
+            />
+          )}
+
+          {!isWordsLoading && !isWordsError && wordsData?.content.length === 0 && (
             <Card
-              className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] overflow-hidden shadow-xs"
-              styles={{ body: { padding: 0 } }}
+              className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] py-12 text-center"
+              styles={{ body: { padding: '2rem' } }}
             >
-              <Table
-                dataSource={wordsData.content}
-                columns={tableColumns}
-                rowKey="id"
-                pagination={false}
-                onRow={(record) => ({
-                  onClick: () => setSelectedWordId(record.id),
-                  className: 'cursor-pointer hover:bg-slate-50 dark:hover:bg-[#131F24]',
-                })}
-                className="[&_.ant-table]:!bg-transparent [&_.ant-table-thead_th]:!bg-slate-50 dark:[&_.ant-table-thead_th]:!bg-[#131F24] [&_.ant-table-thead_th]:!font-black [&_.ant-table-thead_th]:!text-xs [&_.ant-table-thead_th]:!uppercase"
-              />
+              <Empty
+                description={
+                  <div className="space-y-1">
+                    <p className="text-base font-black text-slate-800 dark:text-white">
+                      Không tìm thấy từ vựng phù hợp
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Thử tìm kiếm với từ khóa khác hoặc chuyển sang cấp độ khác.
+                    </p>
+                  </div>
+                }
+              >
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSelectedLevel('ALL')
+                  }}
+                  className="!rounded-2xl !bg-[#58cc02] font-black"
+                >
+                  Xem tất cả từ vựng
+                </Button>
+              </Empty>
             </Card>
           )}
 
-          {/* Pagination Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-2">
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Hiển thị từ{' '}
-              <span className="text-slate-800 dark:text-white font-black">
-                {wordsData.page * wordsData.size + 1}
-              </span>{' '}
-              đến{' '}
-              <span className="text-slate-800 dark:text-white font-black">
-                {Math.min((wordsData.page + 1) * wordsData.size, wordsData.totalElements)}
-              </span>{' '}
-              trong tổng số{' '}
-              <span className="text-[#58CC02] font-black">
-                {wordsData.totalElements.toLocaleString()}
-              </span>{' '}
-              từ
-            </span>
+          {!isWordsLoading && !isWordsError && wordsData && wordsData.content.length > 0 && (
+            <>
+              {/* Card Grid View */}
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {wordsData.content.map((word) => (
+                    <Card
+                      key={word.id}
+                      hoverable
+                      onClick={() => setSelectedWordId(word.id)}
+                      className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 hover:!border-[#58CC02] !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] dark:hover:!border-[#58CC02] transition-all cursor-pointer group shadow-xs flex flex-col justify-between"
+                      styles={{ body: { padding: '1.25rem' } }}
+                    >
+                      <div>
+                        {/* Top row: Level tag & audio button */}
+                        <div className="flex items-center justify-between mb-2">
+                          {word.level ? (
+                            <Tag
+                              color={getLevelColor(word.level, levelCounts)}
+                              className="!rounded-md !font-black !px-2.5 !m-0 !text-xs"
+                            >
+                              {word.level}
+                            </Tag>
+                          ) : (
+                            <Tag className="!rounded-md !m-0 !text-xs">Chưa phân cấp</Tag>
+                          )}
 
-            <Pagination
-              current={page + 1}
-              pageSize={pageSize}
-              total={wordsData.totalElements}
-              onChange={(newPage, newPageSize) => {
-                setPage(newPage - 1)
-                setPageSize(newPageSize)
-              }}
-              showSizeChanger
-              pageSizeOptions={['12', '20', '32', '48']}
-              className="font-bold"
-            />
-          </div>
+                          <PronounceButton
+                            word={word.reading}
+                            languageCode={selectedLanguageCode}
+                            size={15}
+                          />
+                        </div>
+
+                        {/* Word display */}
+                        <div className="my-2">
+                          {word.written ? (
+                            <div>
+                              <p className="text-xs font-bold text-[#58CC02] dark:text-[#79e32a] tracking-wide">
+                                {word.reading}
+                              </p>
+                              <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5 group-hover:text-[#58CC02] transition-colors">
+                                {word.written}
+                              </h3>
+                            </div>
+                          ) : (
+                            <div>
+                              <h3 className="text-2xl font-black text-slate-900 dark:text-white group-hover:text-[#58CC02] transition-colors">
+                                {word.reading}
+                              </h3>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Meanings */}
+                        <div className="mt-2 text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                          {word.meaningsVi.join(', ')}
+                        </div>
+                      </div>
+
+                      {/* Bottom Footer: Part of speech */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div className="flex flex-wrap gap-1">
+                          {word.partOfSpeech.slice(0, 2).map((pos) => (
+                            <span
+                              key={pos}
+                              className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded"
+                            >
+                              {getPosLabel(pos)}
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-xs font-bold text-[#1CB0F6] group-hover:translate-x-1 transition-transform">
+                          Xem chi tiết →
+                        </span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Table View */}
+              {viewMode === 'table' && (
+                <Card
+                  className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] overflow-hidden shadow-xs"
+                  styles={{ body: { padding: 0 } }}
+                >
+                  <Table
+                    dataSource={wordsData.content}
+                    columns={tableColumns}
+                    rowKey="id"
+                    pagination={false}
+                    onRow={(record) => ({
+                      onClick: () => setSelectedWordId(record.id),
+                      className: 'cursor-pointer hover:bg-slate-50 dark:hover:bg-[#131F24]',
+                    })}
+                    className="[&_.ant-table]:!bg-transparent [&_.ant-table-thead_th]:!bg-slate-50 dark:[&_.ant-table-thead_th]:!bg-[#131F24] [&_.ant-table-thead_th]:!font-black [&_.ant-table-thead_th]:!text-xs [&_.ant-table-thead_th]:!uppercase"
+                  />
+                </Card>
+              )}
+
+              {/* Pagination Toolbar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-2">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Hiển thị từ{' '}
+                  <span className="text-slate-800 dark:text-white font-black">
+                    {wordsData.page * wordsData.size + 1}
+                  </span>{' '}
+                  đến{' '}
+                  <span className="text-slate-800 dark:text-white font-black">
+                    {Math.min((wordsData.page + 1) * wordsData.size, wordsData.totalElements)}
+                  </span>{' '}
+                  trong tổng số{' '}
+                  <span className="text-[#58CC02] font-black">
+                    {wordsData.totalElements.toLocaleString()}
+                  </span>{' '}
+                  từ
+                </span>
+
+                <Pagination
+                  current={page + 1}
+                  pageSize={pageSize}
+                  total={wordsData.totalElements}
+                  onChange={(newPage, newPageSize) => {
+                    setPage(newPage - 1)
+                    setPageSize(newPageSize)
+                  }}
+                  showSizeChanger
+                  pageSizeOptions={['12', '20', '32', '48']}
+                  className="font-bold"
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -587,12 +673,12 @@ export function VocabularyPage() {
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  {wordDetail.jlptLevel && (
+                  {wordDetail.level && (
                     <Tag
-                      color={LEVEL_COLORS[wordDetail.jlptLevel] || 'default'}
+                      color={getLevelColor(wordDetail.level, levelCounts)}
                       className="!rounded-md !font-black !px-2.5 !m-0"
                     >
-                      {wordDetail.jlptLevel}
+                      {wordDetail.level}
                     </Tag>
                   )}
                   {wordDetail.partOfSpeech.map((pos) => (
@@ -609,12 +695,16 @@ export function VocabularyPage() {
                   <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
                     {wordDetail.written || wordDetail.reading}
                   </h2>
-                  <PronounceButton word={wordDetail.reading} languageCode="ja" size={20} />
+                  <PronounceButton
+                    word={wordDetail.reading}
+                    languageCode={selectedLanguageCode}
+                    size={20}
+                  />
                 </div>
 
                 {wordDetail.written && (
                   <p className="text-sm font-bold text-[#58CC02] dark:text-[#79e32a]">
-                    Phiên âm Kana: {wordDetail.reading}
+                    Phiên âm: {wordDetail.reading}
                   </p>
                 )}
               </div>
@@ -668,7 +758,7 @@ export function VocabularyPage() {
             )}
 
             {/* Stroke order diagram if word has Kanji */}
-            {wordDetail.written && (
+            {wordDetail.written && selectedLanguageCode === 'ja' && (
               <div className="space-y-2 pt-2">
                 <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
                   Thứ tự nét viết chữ Hán (Stroke Order)
@@ -710,7 +800,11 @@ export function VocabularyPage() {
                             </p>
                           )}
                         </div>
-                        <PronounceButton word={ex.text} languageCode="ja" size={14} />
+                        <PronounceButton
+                          word={ex.text}
+                          languageCode={selectedLanguageCode}
+                          size={14}
+                        />
                       </div>
                       <p className="text-xs font-bold text-[#58CC02] dark:text-[#79e32a] pt-1">
                         <span className="mr-1">👉</span>

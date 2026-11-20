@@ -55,8 +55,7 @@ export interface HealthResponse {
 }
 
 /** Curriculum models matching backend CourseResponse. */
-export type CourseLevel =
-  'KANA' | 'N5' | 'N4' | 'N3' | 'A1' | 'A2' | 'B1' | 'B2' | 'HSK1' | 'HSK2' | 'HSK3' | string
+export type CourseLevel = string | null
 export type ContentStatus = 'DRAFT' | 'REVIEWED'
 
 export interface LessonSummary {
@@ -82,7 +81,7 @@ export interface Course {
   id: number
   key: string
   language: string
-  level: CourseLevel
+  level: string | null
   title: string
   description: string
   status: ContentStatus
@@ -102,17 +101,14 @@ export interface PageResponse<T> {
   totalPages: number
 }
 
-/** JLPT Levels supported by Japanese dictionary. */
-export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
-
-/** Word summary item from GET /api/v1/dictionary/words. */
+/** Word summary item from GET /api/v1/dictionary/words?lang=... */
 export interface WordSummary {
   id: number
   written: string | null
   reading: string
   meaningsVi: string[]
   partOfSpeech: string[]
-  jlptLevel: JlptLevel | null
+  level: string | null
 }
 
 /** Example sentence attached to a dictionary word. */
@@ -131,14 +127,15 @@ export interface WordDetail {
   meaningsVi: string[]
   meaningsEn: string[]
   partOfSpeech: string[]
-  jlptLevel: JlptLevel | null
+  level: string | null
   note: string | null
   examples: WordExample[]
   source: ContentSource
 }
 
-/** Level count from GET /api/v1/dictionary/levels. */
+/** Level count from GET /api/v1/dictionary/levels?lang=... */
 export interface LevelCount {
-  level: JlptLevel | null
+  level: string | null
+  name: string | null
   wordCount: number
 }

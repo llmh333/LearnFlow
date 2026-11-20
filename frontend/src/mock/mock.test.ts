@@ -135,24 +135,51 @@ describe('Mock System', () => {
   })
 
   it('handles dictionary levels, search and word details', async () => {
-    const levels =
-      await handleMockRequest<Array<{ level: string; wordCount: number }>>('/dictionary/levels')
+    const levels = await handleMockRequest<
+      Array<{ level: string; name: string; wordCount: number }>
+    >('/dictionary/levels?lang=ja')
     expect(levels.length).toBeGreaterThan(0)
-    expect(levels.some((l) => l.level === 'N5')).toBe(true)
+    expect(levels.some((l) => l.level === 'N5' && l.name === 'JLPT N5')).toBe(true)
 
     const searchResult = await handleMockRequest<{
-      content: Array<{ id: number; written: string; reading: string }>
+      content: Array<{ id: number; written: string; reading: string; level: string | null }>
       totalElements: number
-    }>('/dictionary/words?level=N5&q=学生')
+    }>('/dictionary/words?lang=ja&level=N5&q=学生')
     expect(searchResult.content.length).toBeGreaterThan(0)
     expect(searchResult.content[0].reading).toBe('がくせい')
+    expect(searchResult.content[0].level).toBe('N5')
 
     const detail = await handleMockRequest<{
       id: number
       written: string
+      level: string | null
       examples: Array<{ text: string }>
     }>('/dictionary/words/1')
     expect(detail.id).toBe(1)
+    expect(detail.level).toBe('N5')
     expect(detail.examples.length).toBeGreaterThan(0)
+
+    // Missing lang should throw 400
+    await expect(handleMockRequest('/dictionary/levels')).rejects.toMatchObject({
+      status: 400,
+      errors: { lang: expect.any(String) },
+    })
+
+    await expect(handleMockRequest('/dictionary/words')).rejects.toMatchObject({
+      status: 400,
+      errors: { lang: expect.any(String) },
+    })
+
+    // Unsupported lang should throw 400
+    await expect(handleMockRequest('/dictionary/words?lang=en')).rejects.toMatchObject({
+      status: 400,
+      errors: { lang: expect.any(String) },
+    })
+
+    // Invalid level should throw 400
+    await expect(handleMockRequest('/dictionary/words?lang=ja&level=N6')).rejects.toMatchObject({
+      status: 400,
+      errors: { level: expect.any(String) },
+    })
   })
 })

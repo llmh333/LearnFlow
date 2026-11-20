@@ -44,6 +44,16 @@ export const MOCK_CONTENT_SOURCES: ContentSource[] = [
 
 export const MOCK_COURSES: Course[] = [
   {
+    id: 0,
+    key: 'ja-kana',
+    language: 'ja',
+    level: null,
+    title: 'Japanese Kana (Bảng chữ cái)',
+    description: 'Làm quen bảng chữ cái Hiragana và Katakana cơ bản.',
+    status: 'REVIEWED',
+    units: [],
+  },
+  {
     id: 1,
     key: 'ja-n5',
     language: 'ja',

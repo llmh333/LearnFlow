@@ -287,7 +287,14 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
   }
 
   // 6. Dictionary endpoints
-  if (path === '/dictionary/levels' && method === 'GET') {
+  if (path.startsWith('/dictionary/levels') && method === 'GET') {
+    const url = new URL(path, 'http://localhost')
+    const lang = url.searchParams.get('lang')
+    if (!lang || lang !== 'ja') {
+      throw new ApiError(400, 'Language parameter is required and must be supported', {
+        lang: 'Language parameter is required and must be supported',
+      })
+    }
     return MOCK_LEVEL_COUNTS as T
   }
 
@@ -296,13 +303,19 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
     const id = parseInt(wordDetailMatch[1], 10)
     const word = MOCK_WORDS.find((w) => w.id === id)
     if (!word) {
-      throw new Error(`Word with id ${id} not found`)
+      throw new ApiError(404, `Word with id ${id} not found`)
     }
     return word as T
   }
 
   if (path.startsWith('/dictionary/words') && method === 'GET') {
     const url = new URL(path, 'http://localhost')
+    const lang = url.searchParams.get('lang')
+    if (!lang || lang !== 'ja') {
+      throw new ApiError(400, 'Language parameter is required and must be supported', {
+        lang: 'Language parameter is required and must be supported',
+      })
+    }
     const q = url.searchParams.get('q')?.toLowerCase() || ''
     const level = url.searchParams.get('level')?.toUpperCase() || ''
     const page = parseInt(url.searchParams.get('page') || '0', 10)
@@ -310,7 +323,13 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
 
     let filtered = MOCK_WORDS
     if (level) {
-      filtered = filtered.filter((w) => w.jlptLevel === level)
+      const validLevels = ['N5', 'N4', 'N3', 'N2', 'N1']
+      if (!validLevels.includes(level)) {
+        throw new ApiError(400, `Invalid level for language ${lang}: ${level}`, {
+          level: `Invalid level for language ${lang}: ${level}`,
+        })
+      }
+      filtered = filtered.filter((w) => w.level === level)
     }
     if (q) {
       filtered = filtered.filter(

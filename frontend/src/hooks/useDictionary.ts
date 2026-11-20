@@ -10,13 +10,14 @@ export const dictionaryKeys = {
   all: ['dictionary'] as const,
   words: (params: SearchWordsParams) => [...dictionaryKeys.all, 'words', params] as const,
   word: (id: number) => [...dictionaryKeys.all, 'word', id] as const,
-  levels: () => [...dictionaryKeys.all, 'levels'] as const,
+  levels: (lang: string) => [...dictionaryKeys.all, 'levels', lang] as const,
 }
 
-export function useWords(params: SearchWordsParams = {}) {
+export function useWords(params: SearchWordsParams) {
   return useQuery({
     queryKey: dictionaryKeys.words(params),
     queryFn: () => fetchWords(params),
+    enabled: Boolean(params.lang),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -30,10 +31,11 @@ export function useWordDetail(id: number | null | undefined) {
   })
 }
 
-export function useLevelCounts() {
+export function useLevelCounts(lang: string) {
   return useQuery({
-    queryKey: dictionaryKeys.levels(),
-    queryFn: fetchLevelCounts,
+    queryKey: dictionaryKeys.levels(lang),
+    queryFn: () => fetchLevelCounts(lang),
+    enabled: Boolean(lang),
     staleTime: 15 * 60 * 1000,
   })
 }

@@ -2,6 +2,7 @@ import { apiFetch } from './client'
 import type { LevelCount, PageResponse, WordDetail, WordSummary } from '@/types/domain'
 
 export interface SearchWordsParams {
+  lang: string
   q?: string
   level?: string
   page?: number
@@ -9,11 +10,12 @@ export interface SearchWordsParams {
 }
 
 /**
- * Search Japanese dictionary words with optional text, JLPT level filter and pagination.
- * Path: GET /api/v1/dictionary/words
+ * Search dictionary words with language code, optional text, level filter and pagination.
+ * Path: GET /api/v1/dictionary/words?lang=...
  */
-export function fetchWords(params: SearchWordsParams = {}): Promise<PageResponse<WordSummary>> {
+export function fetchWords(params: SearchWordsParams): Promise<PageResponse<WordSummary>> {
   const query = new URLSearchParams()
+  if (params.lang) query.set('lang', params.lang)
   if (params.q?.trim()) query.set('q', params.q.trim())
   if (params.level?.trim()) query.set('level', params.level.trim())
   if (params.page !== undefined && params.page >= 0) query.set('page', String(params.page))
@@ -34,9 +36,12 @@ export function fetchWordDetail(id: number): Promise<WordDetail> {
 }
 
 /**
- * Fetch total word counts grouped by JLPT level (N5 -> N1).
- * Path: GET /api/v1/dictionary/levels
+ * Fetch total word counts grouped by level for a language.
+ * Path: GET /api/v1/dictionary/levels?lang=...
  */
-export function fetchLevelCounts(): Promise<LevelCount[]> {
-  return apiFetch<LevelCount[]>('/dictionary/levels')
+export function fetchLevelCounts(lang: string): Promise<LevelCount[]> {
+  const query = new URLSearchParams()
+  if (lang) query.set('lang', lang)
+  const queryString = query.toString()
+  return apiFetch<LevelCount[]>(`/dictionary/levels${queryString ? `?${queryString}` : ''}`)
 }
