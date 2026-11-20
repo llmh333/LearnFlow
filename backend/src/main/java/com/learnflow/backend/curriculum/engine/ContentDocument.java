@@ -86,6 +86,7 @@ public record ContentDocument(
     public record KanjiDef(
             String key,
             String character,
+            List<String> hanViet,
             List<String> meaningsVi,
             List<String> meaningsEn,
             List<String> onyomi,

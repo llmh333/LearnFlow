@@ -41,6 +41,11 @@ public class JpKanji {
     @Column(name = "meanings_vi", nullable = false, columnDefinition = "text[]")
     private List<String> meaningsVi = new ArrayList<>();
 
+    /** Sino-Vietnamese readings in upper case, e.g. HỌC for 学. */
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "han_viet", nullable = false, columnDefinition = "text[]")
+    private List<String> hanViet = new ArrayList<>();
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "meanings_en", nullable = false, columnDefinition = "text[]")
     private List<String> meaningsEn = new ArrayList<>();

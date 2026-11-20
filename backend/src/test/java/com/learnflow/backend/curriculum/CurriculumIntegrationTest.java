@@ -34,7 +34,7 @@ class CurriculumIntegrationTest extends AbstractIntegrationTest {
         long kana = kanaRepository.count();
         long lessons = lessonRepository.count();
         assertThat(words).isPositive();
-        assertThat(kana).isEqualTo(92);
+        assertThat(kana).isEqualTo(208);
 
         importer.importAll();
 

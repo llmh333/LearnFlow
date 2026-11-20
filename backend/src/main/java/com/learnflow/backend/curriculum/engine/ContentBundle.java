@@ -332,6 +332,7 @@ public final class ContentBundle {
         }
         requireMeanings(errors, where, "meaningsVi", k.meaningsVi());
         checkOptionalStrings(errors, where, "meaningsEn", k.meaningsEn());
+        checkOptionalStrings(errors, where, "hanViet", k.hanViet());
         checkOptionalStrings(errors, where, "onyomi", k.onyomi());
         checkOptionalStrings(errors, where, "kunyomi", k.kunyomi());
         if (k.strokeCount() != null && k.strokeCount() <= 0) {

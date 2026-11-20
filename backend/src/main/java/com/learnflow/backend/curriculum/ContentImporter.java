@@ -189,6 +189,7 @@ public class ContentImporter implements ApplicationRunner {
                         JpKanji::new,
                         (e, d) -> {
                             e.setCharacter(d.character());
+                            replace(e.getHanViet(), ContentBundle.orEmpty(d.hanViet()));
                             replace(e.getMeaningsVi(), d.meaningsVi());
                             replace(e.getMeaningsEn(), ContentBundle.orEmpty(d.meaningsEn()));
                             replace(e.getOnyomi(), ContentBundle.orEmpty(d.onyomi()));

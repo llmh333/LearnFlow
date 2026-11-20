@@ -55,14 +55,15 @@ words:
 |---|---|---|
 | `kana` | `character` (1–2 chữ đúng bảng), `script` (`hiragana`/`katakana`), `romaji` (a–z), `group` (`basic`/`dakuten`/`handakuten`/`yoon`), `row`, `position` | |
 | `words` | `reading` (chỉ kana), `meaningsVi` (≥ 1) | `written`, `meaningsEn`, `partOfSpeech`, `jlptLevel` (`n5`…`n1`), `note`, `examples`, `sourceRef` |
-| `kanji` | `character` (đúng 1 kanji), `meaningsVi` (≥ 1) | `meaningsEn`, `onyomi`, `kunyomi`, `strokeCount`, `jlptLevel`, `sourceRef` |
+| `kanji` | `character` (đúng 1 kanji), `meaningsVi` (≥ 1) | `hanViet` (âm Hán Việt, viết hoa), `meaningsEn`, `onyomi`, `kunyomi` (okurigana trong ngoặc: `まな(ぶ)`), `strokeCount`, `jlptLevel`, `sourceRef` |
 | `grammar` | `pattern`, `explanationVi` | `meaningVi`, `jlptLevel`, `examples` |
 | `sentences` | `text`, `translationVi` | `reading`, `translationEn`, `sourceRef`, `sourceAuthor` (bắt buộc với Tatoeba) |
 
 Mọi mục đều cần `key`, `status`, `source`.
 
-- Quy ước key: `ja.<loại>.<slug>`, kana `ja.kana.hira.<romaji>` / `ja.kana.kata.<romaji>`. Key là duy nhất trên
-  mọi loại mục.
+- Quy ước key: `ja.<loại>.<slug>`, kana `ja.kana.hira.<romaji>` / `ja.kana.kata.<romaji>` (ぢ/づ dùng `di`/`du`),
+  từ `ja.word.<romaji cách đọc>` (đồng âm thêm `-2`, `-3`, trùng key với migration V22/V23 để YAML ghi đè),
+  kanji `ja.kanji.<chữ>`, câu Tatoeba `ja.sentence.tatoeba-<id>`. Key là duy nhất trên mọi loại mục.
 - YAML ở đây không có boolean: `no`, `on`, `off` được đọc là chuỗi, không cần bọc nháy.
 - Mục `reviewed` chỉ được trỏ tới mục `reviewed` (course của unit, item của lesson, câu ví dụ); vi phạm là
   lỗi import.

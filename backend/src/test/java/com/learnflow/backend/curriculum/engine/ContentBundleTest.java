@@ -236,7 +236,9 @@ class ContentBundleTest {
         }
         assertThat(files).isNotEmpty();
 
-        assertThat(ContentBundle.load(files, true).kana()).hasSize(92);
+        ContentBundle bundle = ContentBundle.load(files, true);
+        assertThat(bundle.kana()).hasSize(208);
+        assertThat(bundle.kanji()).hasSize(103);
         ContentBundle.load(files, false);
     }
 }

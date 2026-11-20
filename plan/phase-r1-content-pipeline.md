@@ -26,6 +26,15 @@ Vì vậy chia thành hai branch:
   là `backend/`, để ở đây thì nội dung tự vào jar.
 - `passage` (bài đọc) chưa tạo bảng: thuộc R5.
 
+## Tiến độ (2026-11-20, chưa merge nên chưa tick)
+
+- A–D: xong (commit `0bb66ae`).
+- E: xong + thêm kana biến âm/âm ghép (208 chữ), N5 Unit 2–3, 103 kanji N5 (kèm âm Hán Việt, migration V24).
+- F: `scripts/content/` có `import-kanjidic.ts`, `import-jmdict.ts`, `import-tatoeba.ts`, `enrich-ai.ts` + test.
+  Danh sách JLPT N5/N4 (Waller) đã nạp bằng migration V21–V23; **giấy phép Waller chưa xác minh được**
+  (tanos.co.uk không truy cập được, chỉ có xác nhận CC BY từ các repo phân phối lại).
+- G: còn lại là việc của người — duyệt Unit 1–3, Kana, kanji và chuyển `reviewed`; xác minh giấy phép Waller.
+
 ## Checklist
 
 ### A. Schema (`curriculum`)

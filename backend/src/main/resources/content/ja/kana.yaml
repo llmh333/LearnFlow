@@ -1,4 +1,5 @@
-# Basic gojūon (46 + 46). Dakuten, handakuten and yōon come later (R2).
+# Basic gojūon (46 + 46), then dakuten/handakuten (25 + 25) and yōon (33 + 33).
+# ぢ/づ read ji/zu like じ/ず; their keys use di/du to stay unique.
 kana:
   - key: ja.kana.hira.a
     character: あ
@@ -826,5 +827,1049 @@ kana:
     group: basic
     row: n
     position: 46
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ga
+    character: が
+    script: hiragana
+    romaji: ga
+    group: dakuten
+    row: ga
+    position: 47
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.gi
+    character: ぎ
+    script: hiragana
+    romaji: gi
+    group: dakuten
+    row: ga
+    position: 48
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.gu
+    character: ぐ
+    script: hiragana
+    romaji: gu
+    group: dakuten
+    row: ga
+    position: 49
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ge
+    character: げ
+    script: hiragana
+    romaji: ge
+    group: dakuten
+    row: ga
+    position: 50
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.go
+    character: ご
+    script: hiragana
+    romaji: go
+    group: dakuten
+    row: ga
+    position: 51
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.za
+    character: ざ
+    script: hiragana
+    romaji: za
+    group: dakuten
+    row: za
+    position: 52
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ji
+    character: じ
+    script: hiragana
+    romaji: ji
+    group: dakuten
+    row: za
+    position: 53
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.zu
+    character: ず
+    script: hiragana
+    romaji: zu
+    group: dakuten
+    row: za
+    position: 54
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ze
+    character: ぜ
+    script: hiragana
+    romaji: ze
+    group: dakuten
+    row: za
+    position: 55
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.zo
+    character: ぞ
+    script: hiragana
+    romaji: zo
+    group: dakuten
+    row: za
+    position: 56
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.da
+    character: だ
+    script: hiragana
+    romaji: da
+    group: dakuten
+    row: da
+    position: 57
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.di
+    character: ぢ
+    script: hiragana
+    romaji: ji
+    group: dakuten
+    row: da
+    position: 58
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.du
+    character: づ
+    script: hiragana
+    romaji: zu
+    group: dakuten
+    row: da
+    position: 59
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.de
+    character: で
+    script: hiragana
+    romaji: de
+    group: dakuten
+    row: da
+    position: 60
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.do
+    character: ど
+    script: hiragana
+    romaji: do
+    group: dakuten
+    row: da
+    position: 61
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ba
+    character: ば
+    script: hiragana
+    romaji: ba
+    group: dakuten
+    row: ba
+    position: 62
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.bi
+    character: び
+    script: hiragana
+    romaji: bi
+    group: dakuten
+    row: ba
+    position: 63
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.bu
+    character: ぶ
+    script: hiragana
+    romaji: bu
+    group: dakuten
+    row: ba
+    position: 64
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.be
+    character: べ
+    script: hiragana
+    romaji: be
+    group: dakuten
+    row: ba
+    position: 65
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.bo
+    character: ぼ
+    script: hiragana
+    romaji: bo
+    group: dakuten
+    row: ba
+    position: 66
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pa
+    character: ぱ
+    script: hiragana
+    romaji: pa
+    group: handakuten
+    row: pa
+    position: 67
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pi
+    character: ぴ
+    script: hiragana
+    romaji: pi
+    group: handakuten
+    row: pa
+    position: 68
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pu
+    character: ぷ
+    script: hiragana
+    romaji: pu
+    group: handakuten
+    row: pa
+    position: 69
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pe
+    character: ぺ
+    script: hiragana
+    romaji: pe
+    group: handakuten
+    row: pa
+    position: 70
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.po
+    character: ぽ
+    script: hiragana
+    romaji: po
+    group: handakuten
+    row: pa
+    position: 71
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.kya
+    character: きゃ
+    script: hiragana
+    romaji: kya
+    group: yoon
+    row: kya
+    position: 72
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.kyu
+    character: きゅ
+    script: hiragana
+    romaji: kyu
+    group: yoon
+    row: kya
+    position: 73
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.kyo
+    character: きょ
+    script: hiragana
+    romaji: kyo
+    group: yoon
+    row: kya
+    position: 74
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.sha
+    character: しゃ
+    script: hiragana
+    romaji: sha
+    group: yoon
+    row: sha
+    position: 75
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.shu
+    character: しゅ
+    script: hiragana
+    romaji: shu
+    group: yoon
+    row: sha
+    position: 76
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.sho
+    character: しょ
+    script: hiragana
+    romaji: sho
+    group: yoon
+    row: sha
+    position: 77
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.cha
+    character: ちゃ
+    script: hiragana
+    romaji: cha
+    group: yoon
+    row: cha
+    position: 78
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.chu
+    character: ちゅ
+    script: hiragana
+    romaji: chu
+    group: yoon
+    row: cha
+    position: 79
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.cho
+    character: ちょ
+    script: hiragana
+    romaji: cho
+    group: yoon
+    row: cha
+    position: 80
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.nya
+    character: にゃ
+    script: hiragana
+    romaji: nya
+    group: yoon
+    row: nya
+    position: 81
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.nyu
+    character: にゅ
+    script: hiragana
+    romaji: nyu
+    group: yoon
+    row: nya
+    position: 82
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.nyo
+    character: にょ
+    script: hiragana
+    romaji: nyo
+    group: yoon
+    row: nya
+    position: 83
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.hya
+    character: ひゃ
+    script: hiragana
+    romaji: hya
+    group: yoon
+    row: hya
+    position: 84
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.hyu
+    character: ひゅ
+    script: hiragana
+    romaji: hyu
+    group: yoon
+    row: hya
+    position: 85
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.hyo
+    character: ひょ
+    script: hiragana
+    romaji: hyo
+    group: yoon
+    row: hya
+    position: 86
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.mya
+    character: みゃ
+    script: hiragana
+    romaji: mya
+    group: yoon
+    row: mya
+    position: 87
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.myu
+    character: みゅ
+    script: hiragana
+    romaji: myu
+    group: yoon
+    row: mya
+    position: 88
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.myo
+    character: みょ
+    script: hiragana
+    romaji: myo
+    group: yoon
+    row: mya
+    position: 89
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.rya
+    character: りゃ
+    script: hiragana
+    romaji: rya
+    group: yoon
+    row: rya
+    position: 90
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ryu
+    character: りゅ
+    script: hiragana
+    romaji: ryu
+    group: yoon
+    row: rya
+    position: 91
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ryo
+    character: りょ
+    script: hiragana
+    romaji: ryo
+    group: yoon
+    row: rya
+    position: 92
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.gya
+    character: ぎゃ
+    script: hiragana
+    romaji: gya
+    group: yoon
+    row: gya
+    position: 93
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.gyu
+    character: ぎゅ
+    script: hiragana
+    romaji: gyu
+    group: yoon
+    row: gya
+    position: 94
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.gyo
+    character: ぎょ
+    script: hiragana
+    romaji: gyo
+    group: yoon
+    row: gya
+    position: 95
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ja
+    character: じゃ
+    script: hiragana
+    romaji: ja
+    group: yoon
+    row: ja
+    position: 96
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.ju
+    character: じゅ
+    script: hiragana
+    romaji: ju
+    group: yoon
+    row: ja
+    position: 97
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.jo
+    character: じょ
+    script: hiragana
+    romaji: jo
+    group: yoon
+    row: ja
+    position: 98
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.bya
+    character: びゃ
+    script: hiragana
+    romaji: bya
+    group: yoon
+    row: bya
+    position: 99
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.byu
+    character: びゅ
+    script: hiragana
+    romaji: byu
+    group: yoon
+    row: bya
+    position: 100
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.byo
+    character: びょ
+    script: hiragana
+    romaji: byo
+    group: yoon
+    row: bya
+    position: 101
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pya
+    character: ぴゃ
+    script: hiragana
+    romaji: pya
+    group: yoon
+    row: pya
+    position: 102
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pyu
+    character: ぴゅ
+    script: hiragana
+    romaji: pyu
+    group: yoon
+    row: pya
+    position: 103
+    status: draft
+    source: learnflow
+  - key: ja.kana.hira.pyo
+    character: ぴょ
+    script: hiragana
+    romaji: pyo
+    group: yoon
+    row: pya
+    position: 104
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ga
+    character: ガ
+    script: katakana
+    romaji: ga
+    group: dakuten
+    row: ga
+    position: 47
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.gi
+    character: ギ
+    script: katakana
+    romaji: gi
+    group: dakuten
+    row: ga
+    position: 48
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.gu
+    character: グ
+    script: katakana
+    romaji: gu
+    group: dakuten
+    row: ga
+    position: 49
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ge
+    character: ゲ
+    script: katakana
+    romaji: ge
+    group: dakuten
+    row: ga
+    position: 50
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.go
+    character: ゴ
+    script: katakana
+    romaji: go
+    group: dakuten
+    row: ga
+    position: 51
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.za
+    character: ザ
+    script: katakana
+    romaji: za
+    group: dakuten
+    row: za
+    position: 52
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ji
+    character: ジ
+    script: katakana
+    romaji: ji
+    group: dakuten
+    row: za
+    position: 53
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.zu
+    character: ズ
+    script: katakana
+    romaji: zu
+    group: dakuten
+    row: za
+    position: 54
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ze
+    character: ゼ
+    script: katakana
+    romaji: ze
+    group: dakuten
+    row: za
+    position: 55
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.zo
+    character: ゾ
+    script: katakana
+    romaji: zo
+    group: dakuten
+    row: za
+    position: 56
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.da
+    character: ダ
+    script: katakana
+    romaji: da
+    group: dakuten
+    row: da
+    position: 57
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.di
+    character: ヂ
+    script: katakana
+    romaji: ji
+    group: dakuten
+    row: da
+    position: 58
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.du
+    character: ヅ
+    script: katakana
+    romaji: zu
+    group: dakuten
+    row: da
+    position: 59
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.de
+    character: デ
+    script: katakana
+    romaji: de
+    group: dakuten
+    row: da
+    position: 60
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.do
+    character: ド
+    script: katakana
+    romaji: do
+    group: dakuten
+    row: da
+    position: 61
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ba
+    character: バ
+    script: katakana
+    romaji: ba
+    group: dakuten
+    row: ba
+    position: 62
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.bi
+    character: ビ
+    script: katakana
+    romaji: bi
+    group: dakuten
+    row: ba
+    position: 63
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.bu
+    character: ブ
+    script: katakana
+    romaji: bu
+    group: dakuten
+    row: ba
+    position: 64
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.be
+    character: ベ
+    script: katakana
+    romaji: be
+    group: dakuten
+    row: ba
+    position: 65
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.bo
+    character: ボ
+    script: katakana
+    romaji: bo
+    group: dakuten
+    row: ba
+    position: 66
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pa
+    character: パ
+    script: katakana
+    romaji: pa
+    group: handakuten
+    row: pa
+    position: 67
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pi
+    character: ピ
+    script: katakana
+    romaji: pi
+    group: handakuten
+    row: pa
+    position: 68
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pu
+    character: プ
+    script: katakana
+    romaji: pu
+    group: handakuten
+    row: pa
+    position: 69
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pe
+    character: ペ
+    script: katakana
+    romaji: pe
+    group: handakuten
+    row: pa
+    position: 70
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.po
+    character: ポ
+    script: katakana
+    romaji: po
+    group: handakuten
+    row: pa
+    position: 71
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.kya
+    character: キャ
+    script: katakana
+    romaji: kya
+    group: yoon
+    row: kya
+    position: 72
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.kyu
+    character: キュ
+    script: katakana
+    romaji: kyu
+    group: yoon
+    row: kya
+    position: 73
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.kyo
+    character: キョ
+    script: katakana
+    romaji: kyo
+    group: yoon
+    row: kya
+    position: 74
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.sha
+    character: シャ
+    script: katakana
+    romaji: sha
+    group: yoon
+    row: sha
+    position: 75
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.shu
+    character: シュ
+    script: katakana
+    romaji: shu
+    group: yoon
+    row: sha
+    position: 76
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.sho
+    character: ショ
+    script: katakana
+    romaji: sho
+    group: yoon
+    row: sha
+    position: 77
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.cha
+    character: チャ
+    script: katakana
+    romaji: cha
+    group: yoon
+    row: cha
+    position: 78
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.chu
+    character: チュ
+    script: katakana
+    romaji: chu
+    group: yoon
+    row: cha
+    position: 79
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.cho
+    character: チョ
+    script: katakana
+    romaji: cho
+    group: yoon
+    row: cha
+    position: 80
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.nya
+    character: ニャ
+    script: katakana
+    romaji: nya
+    group: yoon
+    row: nya
+    position: 81
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.nyu
+    character: ニュ
+    script: katakana
+    romaji: nyu
+    group: yoon
+    row: nya
+    position: 82
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.nyo
+    character: ニョ
+    script: katakana
+    romaji: nyo
+    group: yoon
+    row: nya
+    position: 83
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.hya
+    character: ヒャ
+    script: katakana
+    romaji: hya
+    group: yoon
+    row: hya
+    position: 84
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.hyu
+    character: ヒュ
+    script: katakana
+    romaji: hyu
+    group: yoon
+    row: hya
+    position: 85
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.hyo
+    character: ヒョ
+    script: katakana
+    romaji: hyo
+    group: yoon
+    row: hya
+    position: 86
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.mya
+    character: ミャ
+    script: katakana
+    romaji: mya
+    group: yoon
+    row: mya
+    position: 87
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.myu
+    character: ミュ
+    script: katakana
+    romaji: myu
+    group: yoon
+    row: mya
+    position: 88
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.myo
+    character: ミョ
+    script: katakana
+    romaji: myo
+    group: yoon
+    row: mya
+    position: 89
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.rya
+    character: リャ
+    script: katakana
+    romaji: rya
+    group: yoon
+    row: rya
+    position: 90
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ryu
+    character: リュ
+    script: katakana
+    romaji: ryu
+    group: yoon
+    row: rya
+    position: 91
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ryo
+    character: リョ
+    script: katakana
+    romaji: ryo
+    group: yoon
+    row: rya
+    position: 92
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.gya
+    character: ギャ
+    script: katakana
+    romaji: gya
+    group: yoon
+    row: gya
+    position: 93
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.gyu
+    character: ギュ
+    script: katakana
+    romaji: gyu
+    group: yoon
+    row: gya
+    position: 94
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.gyo
+    character: ギョ
+    script: katakana
+    romaji: gyo
+    group: yoon
+    row: gya
+    position: 95
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ja
+    character: ジャ
+    script: katakana
+    romaji: ja
+    group: yoon
+    row: ja
+    position: 96
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.ju
+    character: ジュ
+    script: katakana
+    romaji: ju
+    group: yoon
+    row: ja
+    position: 97
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.jo
+    character: ジョ
+    script: katakana
+    romaji: jo
+    group: yoon
+    row: ja
+    position: 98
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.bya
+    character: ビャ
+    script: katakana
+    romaji: bya
+    group: yoon
+    row: bya
+    position: 99
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.byu
+    character: ビュ
+    script: katakana
+    romaji: byu
+    group: yoon
+    row: bya
+    position: 100
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.byo
+    character: ビョ
+    script: katakana
+    romaji: byo
+    group: yoon
+    row: bya
+    position: 101
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pya
+    character: ピャ
+    script: katakana
+    romaji: pya
+    group: yoon
+    row: pya
+    position: 102
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pyu
+    character: ピュ
+    script: katakana
+    romaji: pyu
+    group: yoon
+    row: pya
+    position: 103
+    status: draft
+    source: learnflow
+  - key: ja.kana.kata.pyo
+    character: ピョ
+    script: katakana
+    romaji: pyo
+    group: yoon
+    row: pya
+    position: 104
     status: draft
     source: learnflow
