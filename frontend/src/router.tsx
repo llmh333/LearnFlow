@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/common/AppLayout'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AiTutorPage } from '@/pages/AiTutorPage'
+import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/ai-tutor" replace /> },
       { path: 'ai-tutor', element: <AiTutorPage /> },
       { path: 'vocabulary', element: <VocabularyPage /> },
+      { path: 'change-password', element: <ChangePasswordPage /> },
     ],
   },
 ])

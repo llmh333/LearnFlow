@@ -43,6 +43,16 @@ describe('Mock System', () => {
     })
     expect(regRes.token).toBeDefined()
     expect(regRes.user.email).toBe('new@example.com')
+
+    const changePwRes = await handleMockRequest<AuthResponse>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentPassword: 'password123',
+        newPassword: 'newPassword123',
+        confirmNewPassword: 'newPassword123',
+      }),
+    })
+    expect(changePwRes.token).toBe('mock-jwt-token-after-password-change')
   })
 
   it('handles profile get and update', async () => {

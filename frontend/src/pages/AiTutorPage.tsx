@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Card, Drawer, Flex, Form, Input, Tag } from 'antd'
+import { Button, Card, Drawer, Flex, Form, Input, Tag } from 'antd'
 import {
   BookOutlined,
   BulbOutlined,
@@ -28,30 +28,19 @@ import {
   useScenarios,
   useSendConversationMessage,
 } from '@/hooks/useAiTutor'
+import { useProfile } from '@/hooks/useAccount'
 import { useUiStore } from '@/stores/uiStore'
 import { ApiError } from '@/api/client'
 import { streamConversationMessage } from '@/api/ai'
 import type { ConversationMessageItem, ConversationSummaryResult } from '@/api/ai'
+import { AiQuotaNotice } from '@/components/ai-tutor/AiQuotaNotice'
 import { cn } from '@/lib/cn'
-
-function ErrorNotice({ error }: { error: unknown }) {
-  if (!error) return null
-  const message =
-    error instanceof ApiError ? error.message : 'Something went wrong. Please try again.'
-  return (
-    <Alert
-      type="error"
-      showIcon
-      title={message}
-      className="!rounded-2xl !border-2 !border-rose-200 !bg-rose-50 text-xs font-bold"
-    />
-  )
-}
 
 function AskTab({ languageCode }: { languageCode: string }) {
   const [form] = Form.useForm<{ question: string }>()
   const question: string = Form.useWatch('question', form) ?? ''
   const explainGrammar = useExplainGrammar()
+  const { data: profile } = useProfile()
 
   function handleFinish(values: { question: string }) {
     explainGrammar.mutate({ languageCode, question: values.question.trim() })
@@ -111,7 +100,7 @@ function AskTab({ languageCode }: { languageCode: string }) {
         </Form>
       </Card>
 
-      <ErrorNotice error={explainGrammar.error} />
+      <AiQuotaNotice error={explainGrammar.error} userTimezone={profile?.timezone} />
 
       {explainGrammar.data && (
         <Card
@@ -137,6 +126,7 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
   const [form] = Form.useForm<{ word: string }>()
   const word: string = Form.useWatch('word', form) ?? ''
   const generateExamples = useGenerateExamples()
+  const { data: profile } = useProfile()
 
   function handleFinish(values: { word: string }) {
     generateExamples.mutate({ languageCode, word: values.word.trim() })
@@ -196,7 +186,7 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
         </Form>
       </Card>
 
-      <ErrorNotice error={generateExamples.error} />
+      <AiQuotaNotice error={generateExamples.error} userTimezone={profile?.timezone} />
 
       {generateExamples.data && (
         <Card
@@ -229,6 +219,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
   const [form] = Form.useForm<{ text: string }>()
   const text: string = Form.useWatch('text', form) ?? ''
   const correctSentence = useCorrectSentence()
+  const { data: profile } = useProfile()
 
   function handleFinish(values: { text: string }) {
     correctSentence.mutate({ languageCode, text: values.text.trim() })
@@ -287,7 +278,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
         </Form>
       </Card>
 
-      <ErrorNotice error={correctSentence.error} />
+      <AiQuotaNotice error={correctSentence.error} userTimezone={profile?.timezone} />
 
       {correctSentence.data && (
         <Card
@@ -354,6 +345,7 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   const [summary, setSummary] = useState<ConversationSummaryResult | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
 
+  const { data: profile } = useProfile()
   const { data: scenarios } = useScenarios(languageCode)
   const conversationList = useConversationList()
   const conversationDetail = useConversation(activeConversationId ?? undefined)
@@ -395,6 +387,10 @@ function ChatTab({ languageCode }: { languageCode: string }) {
               { role: 'ASSISTANT', content: result.reply, createdAt: new Date().toISOString() },
             ])
           },
+          onError: () => {
+            // Roll back the optimistic user turn if rejected (e.g. 429 quota reached)
+            setMessages((prev) => prev.slice(0, -1))
+          },
         },
       )
       return
@@ -413,6 +409,10 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           ])
           return ''
         })
+      })
+      .catch(() => {
+        // Roll back the optimistic user turn on streaming failure
+        setMessages((prev) => prev.slice(0, -1))
       })
       .finally(() => setIsStreaming(false))
   }
@@ -540,7 +540,7 @@ function ChatTab({ languageCode }: { languageCode: string }) {
 
       {/* Main Full-Width Chat Canvas */}
       <Flex vertical gap={16} className="min-w-0 w-full">
-        <ErrorNotice error={sendMessage.error} />
+        <AiQuotaNotice error={sendMessage.error} userTimezone={profile?.timezone} />
         <ChatWindow
           languageCode={languageCode}
           messages={messages}
@@ -550,6 +550,9 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           onEnd={handleEnd}
           isEnding={endConversation.isPending}
           ended={ended}
+          isQuotaExceeded={Boolean(
+            sendMessage.error instanceof ApiError && sendMessage.error.status === 429,
+          )}
         />
         {ended && summary && <ConversationSummaryCard summary={summary} />}
       </Flex>

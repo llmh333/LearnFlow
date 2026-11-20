@@ -33,6 +33,7 @@ interface ChatWindowProps {
   onEnd: () => void
   isEnding: boolean
   ended: boolean
+  isQuotaExceeded?: boolean
 }
 
 export function ChatWindow({
@@ -44,6 +45,7 @@ export function ChatWindow({
   onEnd,
   isEnding,
   ended,
+  isQuotaExceeded = false,
 }: ChatWindowProps) {
   const [form] = Form.useForm<{ draft: string }>()
   const draft: string = Form.useWatch('draft', form) ?? ''
@@ -51,7 +53,7 @@ export function ChatWindow({
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' })
   }, [messages.length, streamingReply])
 
   function handleFinish(values: { draft?: string }) {
@@ -153,6 +155,16 @@ export function ChatWindow({
         <div ref={bottomRef} />
       </div>
 
+      {/* Quota Exceeded Inline Warning */}
+      {isQuotaExceeded && (
+        <div className="rounded-2xl border-2 border-amber-300 bg-[#FFF9E6] dark:border-amber-700/60 dark:bg-amber-950/40 px-3.5 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 animate-fade-in">
+          <span>
+            ⚠️ Đã hết lượt gọi AI hôm nay (tối đa 50 lượt/ngày). Hạn mức sẽ tự động được mở lại vào
+            00:00!
+          </span>
+        </div>
+      )}
+
       {/* Input form */}
       <Form
         form={form}
@@ -162,8 +174,14 @@ export function ChatWindow({
         <Form.Item name="draft" noStyle>
           <Input
             size="large"
-            placeholder={ended ? 'This session has concluded.' : langGreeting.placeholder}
-            disabled={ended || isSending}
+            placeholder={
+              ended
+                ? 'This session has concluded.'
+                : isQuotaExceeded
+                  ? 'Đã hết lượt AI hôm nay (tự động làm mới lúc 00:00)...'
+                  : langGreeting.placeholder
+            }
+            disabled={ended || isSending || isQuotaExceeded}
             className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
           />
         </Form.Item>
@@ -173,7 +191,7 @@ export function ChatWindow({
           size="large"
           icon={<SendOutlined />}
           loading={isSending}
-          disabled={ended || isSending || !draft.trim()}
+          disabled={ended || isSending || isQuotaExceeded || !draft.trim()}
           className="shrink-0 px-5 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black"
         >
           {isSending ? 'Sending...' : 'Send'}

@@ -20,6 +20,7 @@ import {
   updateMockProfile,
 } from './state'
 import { MOCK_AUTH_RESPONSE } from './data/auth'
+import { ApiError } from '@/api/client'
 import type { ConversationSummaryResult } from '@/api/ai'
 import type { AuthResponse, ProfileUpdate } from '@/types/domain'
 
@@ -121,6 +122,41 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
   if (path === '/auth/logout' && method === 'POST') {
     setMockMode(false)
     return undefined as T
+  }
+
+  if (path === '/auth/change-password' && method === 'POST') {
+    const cur = (body.currentPassword as string) || ''
+    const newP = (body.newPassword as string) || ''
+    const conf = (body.confirmNewPassword as string) || ''
+    if (!cur.trim()) {
+      throw new ApiError(400, 'Current password is required', {
+        currentPassword: 'Current password is required',
+      })
+    }
+    if (newP !== conf) {
+      throw new ApiError(400, 'Passwords do not match', {
+        confirmNewPassword: 'Passwords do not match',
+      })
+    }
+    if (newP.length < 8 || !/[a-zA-Z]/.test(newP) || !/\d/.test(newP)) {
+      throw new ApiError(
+        400,
+        'Password must be 8+ characters and contain both letters and digits',
+        {
+          newPassword: 'Password must be 8+ characters and contain both letters and digits',
+        },
+      )
+    }
+    if (newP === cur) {
+      throw new ApiError(400, 'New password must differ from current password', {
+        newPassword: 'New password must differ from current password',
+      })
+    }
+    return {
+      token: 'mock-jwt-token-after-password-change',
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      user: getMockUser(),
+    } as T
   }
 
   // Password reset: any email gets a "code", any 6 digits pass (real codes live in the backend log).

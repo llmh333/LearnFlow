@@ -21,3 +21,6 @@ globalThis.ResizeObserver ??= class {
   unobserve() {}
   disconnect() {}
 }
+
+// jsdom has no scrollIntoView; mock it for chat and scroll containers
+window.HTMLElement.prototype.scrollIntoView ??= () => {}

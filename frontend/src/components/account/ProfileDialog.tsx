@@ -85,29 +85,56 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
       }}
       onFinish={handleFinish}
     >
-      {/* Onboarding Wizard shortcut */}
-      <Flex
-        align="center"
-        justify="space-between"
-        className="mb-4 rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50"
-      >
-        <div>
-          <p className="text-xs font-black text-slate-800 dark:text-white">Onboarding Wizard</p>
-          <p className="text-[11px] text-slate-400">Select language course, level &amp; goals</p>
-        </div>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => {
-            onSaved()
-            navigate('/onboarding')
-          }}
-          className="text-xs font-bold"
+      {/* Shortcuts */}
+      <div className="mb-4 space-y-2">
+        <Flex
+          align="center"
+          justify="space-between"
+          className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50"
         >
-          Open Wizard
-        </Button>
-      </Flex>
+          <div>
+            <p className="text-xs font-black text-slate-800 dark:text-white">Onboarding Wizard</p>
+            <p className="text-[11px] text-slate-400">Select language course, level &amp; goals</p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              onSaved()
+              navigate('/onboarding')
+            }}
+            className="text-xs font-bold"
+          >
+            Open Wizard
+          </Button>
+        </Flex>
+
+        <Flex
+          align="center"
+          justify="space-between"
+          className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50"
+        >
+          <div>
+            <p className="text-xs font-black text-slate-800 dark:text-white">Bảo mật tài khoản</p>
+            <p className="text-[11px] text-slate-400">
+              Đổi mật khẩu &amp; thu hồi các phiên đăng nhập khác
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              onSaved()
+              navigate('/change-password')
+            }}
+            className="text-xs font-bold text-slate-700 dark:text-slate-200"
+          >
+            Đổi mật khẩu
+          </Button>
+        </Flex>
+      </div>
 
       <Form.Item
         name="timezone"
