@@ -46,6 +46,11 @@ frontend/src/
   padding, kích thước) và biến thể responsive (`md:flex-row`, `md:gap-6` vẫn đè được vì style antd nằm trong
   `@layer antd` dưới Tailwind utilities — `StyleProvider layer` ở `App.tsx`, thứ tự layer ở `index.css`).
   Ngoại lệ: phần tử có thể không có con (ví dụ ô chỉ chứa `''`) giữ `div`, vì `Flex` tự ẩn khi `:empty`.
+- **Ưu tiên component antd thay vì tự viết HTML/CSS**: form dùng `Form` + `Form.Item name=…` (lỗi `errors.<field>`
+  từ backend đưa vào bằng `form.setFields`), ô nhập `Input`/`Input.TextArea`/`InputNumber`/`Select`, nhãn `Tag`,
+  loading `Spin`, popover `Popover`, nhóm lựa chọn `Radio.Group` (có sẵn phím mũi tên). Hộp thoại dùng
+  `components/ui/Dialog` (bọc antd `Modal`) hoặc `ConfirmModal`/`useConfirm`. Chỉ giữ component tự viết khi nó mang
+  kiểu dáng riêng của app mà antd không có (`ui/Button` 3D).
 - Không thêm dependency ngoài danh sách đã chốt nếu không ghi lý do vào decision log.
 - Thiết kế **mobile-first**: dùng được ở chiều rộng 375px, vùng chạm đủ lớn, không cuộn ngang.
 - Component và hàm thuần trong `lib/` dễ test; tách logic khỏi JSX khi logic phức tạp.

@@ -69,6 +69,7 @@ export function VocabularyPage() {
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchInputDraft, setSearchInputDraft] = useState('')
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL')
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(20)
@@ -101,7 +102,16 @@ export function VocabularyPage() {
   const totalWordsCount = (levelCounts ?? []).reduce((sum, item) => sum + item.wordCount, 0)
 
   function handleSearch(value: string) {
-    setSearchQuery(value.trim())
+    const trimmed = value.trim()
+    setSearchQuery(trimmed)
+    setSearchInputDraft(trimmed)
+    setPage(0)
+  }
+
+  function handleResetFilters() {
+    setSearchQuery('')
+    setSearchInputDraft('')
+    setSelectedLevel('ALL')
     setPage(0)
   }
 
@@ -246,85 +256,130 @@ export function VocabularyPage() {
 
       {/* Search and Filters Toolbar */}
       <Card
-        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-sm"
         styles={{ body: { padding: '1.25rem 1.5rem' } }}
       >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Search Box */}
-          <div className="flex-1 max-w-xl">
-            <Input.Search
+        <div className="flex flex-col gap-4">
+          {/* Tier 1: Search Bar (Full-width, spacious, beautiful 3D button) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="relative flex-1">
+              <Input
+                size="large"
+                placeholder="Nhập chữ Hán, Hiragana, Katakana, tiếng Việt hoặc tiếng Anh (ví dụ: 学生, gakusei, học sinh)..."
+                allowClear
+                prefix={<SearchOutlined className="text-slate-400 text-lg mr-2" />}
+                value={searchInputDraft}
+                onChange={(e) => {
+                  setSearchInputDraft(e.target.value)
+                  if (!e.target.value) {
+                    setSearchQuery('')
+                    setPage(0)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch(searchInputDraft)
+                  }
+                }}
+                className="w-full !h-12 !rounded-2xl !border-2 !border-slate-200 hover:!border-[#58CC02] focus:!border-[#58CC02] dark:!border-[#2B3940] dark:!bg-[#131F24] font-medium text-sm !px-4 shadow-2xs transition-all"
+              />
+            </div>
+            <Button
+              type="primary"
               size="large"
-              placeholder="Nhập chữ Hán, Hiragana, Katakana, tiếng Việt hoặc tiếng Anh..."
-              allowClear
-              enterButton={
-                <Button
-                  type="primary"
-                  icon={<SearchOutlined />}
-                  className="!rounded-r-2xl font-black"
-                >
-                  Tìm kiếm
-                </Button>
-              }
-              onSearch={handleSearch}
-              className="w-full !rounded-2xl [&_.ant-input]:!rounded-l-2xl [&_.ant-input]:!py-2 font-medium"
-            />
+              icon={<SearchOutlined />}
+              onClick={() => handleSearch(searchInputDraft)}
+              className="!h-12 !px-7 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-sm uppercase tracking-wider shadow-xs shrink-0 cursor-pointer transition-all"
+            >
+              Tìm kiếm
+            </Button>
           </div>
 
-          {/* Level Filter Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
-              <FilterOutlined />
-              <span>Cấp độ:</span>
-            </span>
+          {/* Divider */}
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800/80" />
 
-            <Radio.Group
-              value={selectedLevel}
-              onChange={(e) => handleLevelChange(e.target.value)}
-              buttonStyle="solid"
-              className="flex gap-1.5 shrink-0"
-            >
-              <Radio.Button
-                value="ALL"
-                className={cn(
-                  '!rounded-2xl !h-9 !px-3.5 !border-2 !border-b-4 font-black text-xs transition-all flex items-center',
-                  selectedLevel === 'ALL'
-                    ? '!bg-[#58cc02] !border-[#46a302] !text-white'
-                    : '!border-slate-200 !bg-slate-50 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
-                )}
+          {/* Tier 2: JLPT Level Filters & Status Badges */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-1">
+                <FilterOutlined className="text-amber-500 text-sm" />
+                <span>Cấp độ JLPT:</span>
+              </span>
+
+              <Radio.Group
+                value={selectedLevel}
+                onChange={(e) => handleLevelChange(e.target.value)}
+                buttonStyle="solid"
+                className="flex flex-wrap gap-2 items-center"
               >
-                Tất cả
-              </Radio.Button>
-
-              {(['N5', 'N4', 'N3', 'N2', 'N1'] as const).map((lvl) => {
-                const count = levelCountsMap[lvl]
-                return (
-                  <Radio.Button
-                    key={lvl}
-                    value={lvl}
+                {/* Tất cả */}
+                <Radio.Button
+                  value="ALL"
+                  className={cn(
+                    '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
+                    selectedLevel === 'ALL'
+                      ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
+                      : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                  )}
+                >
+                  <span>Tất cả</span>
+                  <span
                     className={cn(
-                      '!rounded-2xl !h-9 !px-3.5 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-1.5',
-                      selectedLevel === lvl
-                        ? '!bg-[#58cc02] !border-[#46a302] !text-white'
-                        : '!border-slate-200 !bg-slate-50 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                      'text-[10px] px-2 py-0.5 rounded-full font-black tracking-wide',
+                      selectedLevel === 'ALL'
+                        ? 'bg-white/25 text-white'
+                        : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
                     )}
                   >
-                    <span>{lvl}</span>
-                    {count !== undefined && count > 0 && (
+                    {totalWordsCount > 0 ? totalWordsCount.toLocaleString() : '1,348+'}
+                  </span>
+                </Radio.Button>
+
+                {/* N5 to N1 */}
+                {(['N5', 'N4', 'N3', 'N2', 'N1'] as const).map((lvl) => {
+                  const count = levelCountsMap[lvl]
+                  const isSelected = selectedLevel === lvl
+                  return (
+                    <Radio.Button
+                      key={lvl}
+                      value={lvl}
+                      className={cn(
+                        '!rounded-2xl !h-10 !px-4 !border-2 !border-b-4 font-black text-xs transition-all flex items-center gap-2 before:!hidden cursor-pointer select-none',
+                        isSelected
+                          ? '!bg-[#58cc02] !border-[#46a302] !text-white shadow-xs'
+                          : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                      )}
+                    >
+                      <span className="tracking-wide">{lvl}</span>
                       <span
                         className={cn(
-                          'text-[10px] px-1.5 py-0.2 rounded-full font-extrabold',
-                          selectedLevel === lvl
-                            ? 'bg-white/20 text-white'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+                          'text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-black',
+                          isSelected
+                            ? 'bg-white/25 text-white'
+                            : count !== undefined && count > 0
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-slate-200/60 dark:bg-slate-800 text-slate-400 dark:text-slate-500',
                         )}
                       >
-                        {count}
+                        {count !== undefined && count > 0 ? count.toLocaleString() : '0'}
                       </span>
-                    )}
-                  </Radio.Button>
-                )
-              })}
-            </Radio.Group>
+                    </Radio.Button>
+                  )
+                })}
+              </Radio.Group>
+            </div>
+
+            {/* Quick Filter Reset */}
+            {(searchQuery || selectedLevel !== 'ALL') && (
+              <Button
+                type="text"
+                size="small"
+                onClick={handleResetFilters}
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 !rounded-xl !h-8 px-2.5 transition-colors cursor-pointer"
+              >
+                ✕ Xóa bộ lọc
+              </Button>
+            )}
           </div>
         </div>
       </Card>
