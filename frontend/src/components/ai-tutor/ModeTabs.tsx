@@ -1,12 +1,43 @@
-import { IconSparkles, IconCheckCircle, IconBot } from '@/components/ui/Icon'
+import { Flex, Radio } from 'antd'
 import { cn } from '@/lib/cn'
 
-export type AiTutorMode = 'ask' | 'correct' | 'chat'
+export type AiTutorMode = 'chat' | 'correct' | 'ask' | 'examples'
 
-const TABS: { mode: AiTutorMode; label: string; icon: typeof IconSparkles }[] = [
-  { mode: 'ask', label: 'Grammar Q&A', icon: IconSparkles },
-  { mode: 'correct', label: 'Sentence Check', icon: IconCheckCircle },
-  { mode: 'chat', label: 'Interactive Chat', icon: IconBot },
+const TABS: {
+  mode: AiTutorMode
+  label: string
+  emoji: string
+  desc: string
+  activeClass: string
+}[] = [
+  {
+    mode: 'chat',
+    label: 'AI Conversation',
+    emoji: '💬',
+    desc: 'Interactive live dialogue',
+    activeClass: 'bg-[#58cc02] border-[#46a302] text-white hover:text-white shadow-xs',
+  },
+  {
+    mode: 'correct',
+    label: 'Sentence Doctor',
+    emoji: '🩺',
+    desc: 'Check grammar & nuance',
+    activeClass: 'bg-[#1cb0f6] border-[#1899d6] text-white hover:text-white shadow-xs',
+  },
+  {
+    mode: 'ask',
+    label: 'Grammar Clinic',
+    emoji: '📖',
+    desc: 'Clear rules & patterns',
+    activeClass: 'bg-[#ffc800] border-[#e5a500] text-amber-950 hover:text-amber-950 shadow-xs',
+  },
+  {
+    mode: 'examples',
+    label: 'Example Generator',
+    emoji: '✨',
+    desc: 'Sentences for any word',
+    activeClass: 'bg-[#a855f7] border-[#9333ea] text-white hover:text-white shadow-xs',
+  },
 ]
 
 interface ModeTabsProps {
@@ -14,32 +45,54 @@ interface ModeTabsProps {
   onChange: (mode: AiTutorMode) => void
 }
 
+/**
+ * The four AI tools as a radio group (arrow keys move between them, screen readers announce the
+ * choice), laid out as 3D cards. The antd button look is replaced through Tailwind classes, which
+ * win over antd because antd's styles sit in a lower CSS layer.
+ */
 export function ModeTabs({ active, onChange }: ModeTabsProps) {
   return (
-    <div className="flex gap-1.5 rounded-2xl bg-[#F0F2F5] p-1.5 dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#2C2C2C]">
+    <Radio.Group
+      value={active}
+      onChange={(event) => onChange(event.target.value as AiTutorMode)}
+      aria-label="AI tool"
+      className="grid w-full grid-cols-2 gap-2.5 lg:grid-cols-4"
+    >
       {TABS.map((tab) => {
-        const Icon = tab.icon
         const isActive = active === tab.mode
         return (
-          <button
+          <Radio.Button
             key={tab.mode}
-            type="button"
-            onClick={() => onChange(tab.mode)}
+            value={tab.mode}
             className={cn(
-              'flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none',
+              'h-auto rounded-2xl border-2 border-b-4 p-3 leading-normal transition-all duration-75 select-none before:hidden active:border-b-2 active:translate-y-[2px] sm:p-3.5',
               isActive
-                ? 'bg-[#B6F23A] text-[#1A1A1A] shadow-xs'
-                : 'text-slate-700 hover:text-[#1A1A1A] hover:bg-white/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#262626]',
+                ? tab.activeClass
+                : 'bg-white border-slate-200 border-b-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-700 dark:bg-[#1B272C] dark:border-[#2B3940] dark:border-b-[#202c32] dark:text-slate-300 dark:hover:bg-[#223238]',
             )}
           >
-            <Icon
-              size={16}
-              className={isActive ? 'text-[#1A1A1A]' : 'text-slate-500 dark:text-slate-400'}
-            />
-            <span>{tab.label}</span>
-          </button>
+            <Flex
+              component="span"
+              align="center"
+              gap={10}
+              className="flex-col sm:flex-row sm:items-start"
+            >
+              <span className="text-2xl shrink-0">{tab.emoji}</span>
+              <span className="block text-center sm:text-left min-w-0">
+                <span className="block font-extrabold text-sm leading-tight">{tab.label}</span>
+                <span
+                  className={cn(
+                    'block text-[11px] font-semibold mt-0.5 truncate',
+                    isActive ? 'opacity-90' : 'text-slate-400 dark:text-slate-500',
+                  )}
+                >
+                  {tab.desc}
+                </span>
+              </span>
+            </Flex>
+          </Radio.Button>
         )
       })}
-    </div>
+    </Radio.Group>
   )
 }

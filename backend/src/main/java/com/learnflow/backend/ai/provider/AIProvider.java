@@ -26,15 +26,8 @@ public interface AIProvider {
      * fully received. Lets the AI Tutor chat show text appearing progressively (Phase 8) instead of
      * waiting for the whole response.
      */
-    void streamConversation(ConversationRequest request, Consumer<String> onDelta, Runnable onComplete);
+    void streamConversation(
+            ConversationRequest request, Consumer<String> onDelta, Runnable onComplete);
 
     ConversationSummary summarizeConversation(ConversationSummaryRequest request);
-
-    String generateDailyPlan(DailyPlanContext context);
-
-    /** Generates {@code request.count()} practice exercises (a mix of sentence-scramble and
-     * multiple-choice) themed around the learner's context. Used by
-     * {@code exercise.scheduler.ExerciseGenerationScheduler} to pre-generate upcoming days' AI
-     * exercises ahead of time. */
-    List<GeneratedExercise> generateExercises(ExerciseGenerationRequest request);
 }

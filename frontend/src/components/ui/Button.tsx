@@ -2,46 +2,56 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'outline' | 'inverted' | 'lime'
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'ghost'
+    | 'danger'
+    | 'success'
+    | 'outline'
+    | 'inverted'
+    | 'lime'
+    | 'coral'
+    | 'sky'
+    | 'yellow'
   size?: 'sm' | 'md' | 'lg' | 'icon'
 }
 
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-[#B6F23A] text-[#1A1A1A] hover:bg-[#a6e828] active:bg-[#95d71c] shadow-xs font-bold',
+    'bg-[#58cc02] border-2 border-b-4 border-[#46a302] text-white hover:bg-[#61e002] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
+  sky: 'bg-[#1cb0f6] border-2 border-b-4 border-[#1899d6] text-white hover:bg-[#34bdff] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
+  yellow:
+    'bg-[#ffc800] border-2 border-b-4 border-[#e5a500] text-amber-950 hover:bg-[#ffd226] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
   secondary:
-    'bg-[#F0F2F5] text-[#1A1A1A] hover:bg-[#E4E7EB] active:bg-[#D8DCE1] border border-transparent dark:bg-[#262626] dark:text-white dark:hover:bg-[#333333] dark:active:bg-[#3d3d3d] font-medium',
+    'bg-white border-2 border-b-4 border-slate-200 border-b-slate-300 text-slate-700 hover:bg-slate-50 active:border-b-2 active:translate-y-[2px] dark:bg-slate-800 dark:border-slate-700 dark:border-b-slate-600 dark:text-slate-100 font-bold shadow-xs',
   inverted:
-    'bg-[#1A1A1A] text-white hover:bg-[#282828] active:bg-[#333333] shadow-xs dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-slate-100 font-semibold',
+    'bg-slate-900 border-2 border-b-4 border-black text-white hover:bg-slate-800 active:border-b-2 active:translate-y-[2px] dark:bg-white dark:border-slate-300 dark:text-slate-900 font-extrabold shadow-xs',
   outline:
-    'bg-transparent text-[#1A1A1A] border border-slate-300 hover:bg-slate-100 active:bg-slate-200 dark:border-[#404040] dark:text-white dark:hover:bg-[#262626] dark:active:bg-[#303030]',
-  lime:
-    'bg-[#B6F23A] text-[#1A1A1A] hover:bg-[#a6e22c] active:bg-[#94cd22] shadow-xs font-bold',
+    'bg-transparent border-2 border-b-4 border-slate-300 border-b-slate-400 text-slate-700 hover:bg-slate-100 active:border-b-2 active:translate-y-[2px] dark:border-slate-700 dark:border-b-slate-600 dark:text-slate-200 font-bold',
+  lime: 'bg-[#58cc02] border-2 border-b-4 border-[#46a302] text-white hover:bg-[#61e002] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
+  coral:
+    'bg-[#ff4b4b] border-2 border-b-4 border-[#ea2b2b] text-white hover:bg-[#ff5f5f] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
   ghost:
-    'bg-transparent text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-[#262626] dark:hover:text-white',
+    'bg-transparent text-slate-600 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800 font-bold border-2 border-transparent',
   danger:
-    'bg-[#B91C1C] text-white hover:bg-[#991B1B] active:bg-[#7F1D1D] shadow-xs font-semibold',
+    'bg-[#ff4b4b] border-2 border-b-4 border-[#ea2b2b] text-white hover:bg-[#ff5f5f] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
   success:
-    'bg-[#365314] text-white hover:bg-[#2b4210] dark:bg-[#93D620] dark:text-[#1A1A1A] dark:hover:bg-[#82c219] font-semibold',
+    'bg-[#58cc02] border-2 border-b-4 border-[#46a302] text-white hover:bg-[#61e002] active:border-b-2 active:translate-y-[2px] font-extrabold shadow-xs',
 }
 
 const SIZE_CLASSES: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
-  md: 'px-4 py-2 text-sm rounded-xl gap-2',
-  lg: 'px-5 py-2.5 text-base rounded-xl gap-2.5',
-  icon: 'h-9 w-9 p-0 rounded-full items-center justify-center',
+  sm: 'px-3 py-1.5 text-xs rounded-xl gap-1.5',
+  md: 'px-4 py-2 text-sm rounded-2xl gap-2',
+  lg: 'px-6 py-3 text-base rounded-2xl gap-2.5',
+  icon: 'h-10 w-10 p-0 rounded-2xl items-center justify-center',
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  className,
-  ...props
-}: ButtonProps) {
+export function Button({ variant = 'primary', size = 'md', className, ...props }: ButtonProps) {
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center transition-all duration-150 cursor-pointer select-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100',
+        'inline-flex items-center justify-center transition-all duration-75 cursor-pointer select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:border-b-2 disabled:translate-y-0',
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,

@@ -9,5 +9,5 @@ public interface LanguageRepository extends JpaRepository<Language, Short> {
 
     Optional<Language> findByCode(String code);
 
-    List<Language> findAllByOrderByIdAsc();
+    List<Language> findAllByEnabledTrueOrderByIdAsc();
 }

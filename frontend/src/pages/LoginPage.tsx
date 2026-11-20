@@ -1,95 +1,231 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
-import { IconSparkles } from '@/components/ui/Icon'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Alert, Button, Card, Divider, Flex, Form, Input } from 'antd'
+import {
+  FireFilled,
+  LockOutlined,
+  LoginOutlined,
+  MailOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons'
 import { ApiError } from '@/api/client'
+import { ChinaFlagBadge, EnglishFlagBadge, Flowy, JapanFlagBadge } from '@/assets'
 import { useAuth } from '@/hooks/useAuth'
+import { MOCK_AUTH_RESPONSE, setMockMode } from '@/mock'
+import { useAuthStore } from '@/stores/authStore'
+import { useUiStore } from '@/stores/uiStore'
 
 export function LoginPage() {
   const { isAuthenticated, login } = useAuth()
   const navigate = useNavigate()
+  const passwordReset = (useLocation().state as { passwordReset?: boolean } | null)?.passwordReset
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    const isOnboarded = useUiStore.getState().isOnboarded
+    return <Navigate to={isOnboarded ? '/' : '/onboarding'} replace />
   }
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
+  function handleSubmit() {
+    setMockMode(false)
     login.mutate(
       { email, password },
-      { onSuccess: () => navigate('/', { replace: true }) },
+      {
+        onSuccess: () => {
+          const isOnboarded = useUiStore.getState().isOnboarded
+          navigate(isOnboarded ? '/' : '/onboarding', { replace: true })
+        },
+      },
     )
   }
 
+  function handleMockLogin() {
+    setMockMode(true)
+    useAuthStore.getState().setAuth(MOCK_AUTH_RESPONSE.token, MOCK_AUTH_RESPONSE.user)
+    navigate('/', { replace: true })
+  }
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 bg-[#F0F2F5] dark:bg-[#121212] overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-[#B6F23A]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-[#93D620]/10 blur-3xl" />
+    <Flex
+      align="center"
+      justify="center"
+      className="relative min-h-screen p-4 bg-[#F7F9FA] dark:bg-[#131F24] overflow-hidden selection:bg-[#58CC02] selection:text-white"
+    >
+      {/* Decorative playful floating character badges (EN, ZH, JA) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-8 -left-8 text-7xl font-black text-slate-200/50 dark:text-[#202F36] select-none"
+      >
+        A
+      </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/4 -right-6 text-8xl font-black text-slate-200/50 dark:text-[#202F36] select-none"
+      >
+        中
+      </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-10 left-1/4 text-8xl font-black text-slate-200/50 dark:text-[#202F36] select-none"
+      >
+        あ
+      </div>
 
-      <Card className="relative w-full max-w-md p-8 shadow-xl border-slate-200 dark:border-[#2C2C2C] bg-white/95 dark:bg-[#1E1E1E]/95 backdrop-blur-md">
-        {/* Brand header */}
-        <div className="mb-6 flex flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#365314] text-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A] shadow-xs mb-3">
-            <IconSparkles size={24} />
+      <Card
+        className="relative w-full max-w-md !rounded-3xl !border-2 !border-b-4 !border-slate-200 dark:!border-[#2B3940] !bg-white dark:!bg-[#1A262C] shadow-lg"
+        styles={{ body: { padding: '2rem 1.5rem' } }}
+      >
+        {/* Mascot Banner */}
+        <Flex vertical align="center" className="mb-6 text-center">
+          <Flex align="center" justify="center" className="relative mb-3">
+            <Flex
+              align="center"
+              justify="center"
+              className="h-16 w-16 rounded-2xl bg-white dark:bg-[#131F24] shadow-sm border-2 border-b-4 border-slate-200 dark:border-[#2B3940]"
+            >
+              <Flowy size={46} />
+            </Flex>
+            <span className="absolute -bottom-1 -right-2 inline-flex items-center gap-1 rounded-full bg-[#FFC800] px-2 py-0.5 text-[10px] font-black uppercase text-amber-950 border border-[#E5A500]">
+              <FireFilled className="text-amber-700 text-xs" />
+              <span>7 Streak</span>
+            </span>
+          </Flex>
+
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-[#202F36] px-3.5 py-1 mb-2">
+            <Flex align="center" gap={4}>
+              <EnglishFlagBadge size={15} />
+              <ChinaFlagBadge size={15} />
+              <JapanFlagBadge size={15} />
+            </Flex>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              English • 中文 • 日本語
+            </span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-[#1A1A1A] dark:text-white">
-            Log in to LearnFlow
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Welcome back! Continue your personalized learning streak.
-          </p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Email address
-            </label>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            Welcome back!
+          </h1>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
+            Keep your streak alive and practice English, Chinese &amp; Japanese today.
+          </p>
+        </Flex>
+
+        {passwordReset && (
+          <Alert
+            type="success"
+            showIcon
+            title="Your password has been reset. Please log in."
+            className="mb-4 rounded-2xl"
+          />
+        )}
+
+        <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} className="space-y-1">
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Email address
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
             <Input
               type="email"
+              size="large"
               placeholder="you@example.com"
+              prefix={<MailOutlined className="text-slate-400 mr-1.5" />}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Password
-            </label>
-            <Input
-              type="password"
+          <Form.Item
+            label={
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Password
+              </span>
+            }
+            required
+            className="!mb-3"
+          >
+            <Input.Password
+              size="large"
               placeholder="••••••••"
+              prefix={<LockOutlined className="text-slate-400 mr-1.5" />}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="!rounded-2xl !py-2.5 font-medium"
               required
             />
-          </div>
+          </Form.Item>
+
+          <Flex justify="flex-end" className="-mt-2 mb-2">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-bold text-[#1CB0F6] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </Flex>
 
           {login.isError && (
-            <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
-              {login.error instanceof ApiError ? login.error.message : 'Login failed'}
+            <div className="mb-3">
+              <Alert
+                type="error"
+                showIcon
+                title={login.error instanceof ApiError ? login.error.message : 'Login failed'}
+                className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50 dark:!bg-rose-950/40 text-xs font-bold"
+              />
             </div>
           )}
 
-          <Button type="submit" variant="primary" disabled={login.isPending} className="mt-2 w-full py-2.5 shadow-xs font-bold">
-            {login.isPending ? 'Logging in...' : 'Log in'}
-          </Button>
-        </form>
+          <Form.Item className="!mb-2 !mt-4">
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={login.isPending}
+              icon={<LoginOutlined />}
+              className="w-full !h-12 !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-base !tracking-wide uppercase shadow-xs transition-all"
+            >
+              {login.isPending ? 'Logging in…' : 'Log in 🚀'}
+            </Button>
+          </Form.Item>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+          {/* Playground Mock Option */}
+          <Divider dashed plain className="!my-3 !text-xs !font-bold !text-slate-400">
+            or no backend?
+          </Divider>
+
+          <Button
+            type="default"
+            size="large"
+            onClick={handleMockLogin}
+            icon={<PlayCircleOutlined />}
+            className="w-full !h-11 !rounded-2xl !bg-[#1cb0f6] hover:!bg-[#34bdff] !border-b-4 !border-[#1899d6] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-xs !tracking-wide uppercase shadow-xs transition-all"
+          >
+            Explore in Mock Mode
+          </Button>
+        </Form>
+
+        <p className="mt-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           No account yet?{' '}
-          <Link to="/register" className="font-bold text-[#365314] dark:text-[#B6F23A] hover:underline">
-            Register for free
+          <Link
+            to="/register"
+            className="font-bold text-[#1CB0F6] hover:underline dark:text-[#1CB0F6]"
+          >
+            Create an account free
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
+          <Link to="/sources" className="hover:underline">
+            📖 Data sources &amp; open licences
           </Link>
         </p>
       </Card>
-    </div>
+    </Flex>
   )
 }

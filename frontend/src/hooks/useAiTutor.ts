@@ -14,6 +14,13 @@ export function useExplainGrammar() {
   })
 }
 
+export function useGenerateExamples() {
+  return useMutation({
+    mutationFn: ({ languageCode, word }: { languageCode: string; word: string }) =>
+      aiApi.generateExamples(languageCode, word),
+  })
+}
+
 export function useCorrectSentence() {
   return useMutation({
     mutationFn: ({ languageCode, text }: { languageCode: string; text: string }) =>

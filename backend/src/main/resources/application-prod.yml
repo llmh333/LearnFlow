@@ -7,14 +7,30 @@ spring:
       # Single-user app — the default pool of 10 is pure overhead on a tiny VPS.
       maximum-pool-size: 3
 
+  # No default host: startup fails without SMTP, so reset codes are never only logged in prod.
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 server:
+  # Caddy sends X-Forwarded-For; Tomcat trusts private-network proxies by default, so
+  # request.getRemoteAddr() becomes the real client IP (login rate limit keys on it).
+  forward-headers-strategy: native
   tomcat:
     threads:
       max: 10
 
 app:
   auth:
-    jwt-secret: ${JWT_SECRET:change-me-to-a-long-random-string-at-least-32-bytes}
+    # No default: startup fails without a real secret (AuthProperties validates length >= 32).
+    jwt-secret: ${JWT_SECRET}
+  mail:
+    from: ${MAIL_FROM}
   ai:
     provider: ${AI_PROVIDER:claude}
     anthropic-api-key: ${ANTHROPIC_API_KEY:}

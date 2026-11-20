@@ -26,8 +26,13 @@ public class Language {
     @Column(nullable = false)
     private String name;
 
-    public Language(String code, String name) {
+    /** Hidden from the UI until the language has content (D3). */
+    @Column(nullable = false)
+    private boolean enabled;
+
+    public Language(String code, String name, boolean enabled) {
         this.code = code;
         this.name = name;
+        this.enabled = enabled;
     }
 }

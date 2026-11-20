@@ -15,13 +15,18 @@ public record AIProperties(
         String geminiApiKey,
         String groqApiKey,
         String model,
-        int timeoutSeconds) {
+        int timeoutSeconds,
+        int dailyQuota) {
 
     private static final int DEFAULT_TIMEOUT_SECONDS = 60;
+    private static final int DEFAULT_DAILY_QUOTA = 50;
 
     public AIProperties {
         if (timeoutSeconds <= 0) {
             timeoutSeconds = DEFAULT_TIMEOUT_SECONDS;
+        }
+        if (dailyQuota <= 0) {
+            dailyQuota = DEFAULT_DAILY_QUOTA;
         }
     }
 }

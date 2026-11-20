@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { IconSun, IconMoon } from '@/components/ui/Icon'
+import { IconSun, IconMoon } from '@/assets'
 import { useUiStore } from '@/stores/uiStore'
 
 export function ThemeToggle({ className }: { className?: string }) {

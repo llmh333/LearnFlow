@@ -1,224 +1,337 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
+import { Button, Card, Drawer, Flex, Form, Input, Tag } from 'antd'
+import {
+  BookOutlined,
+  BulbOutlined,
+  CheckCircleOutlined,
+  CheckOutlined,
+  ClockCircleOutlined,
+  CloseOutlined,
+  HistoryOutlined,
+  MedicineBoxOutlined,
+  PlusOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { ChatWindow } from '@/components/ai-tutor/ChatWindow'
 import { ConversationList } from '@/components/ai-tutor/ConversationList'
 import { ConversationSummaryCard } from '@/components/ai-tutor/ConversationSummaryCard'
 import { ModeTabs, type AiTutorMode } from '@/components/ai-tutor/ModeTabs'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
-import { Textarea } from '@/components/ui/Textarea'
-import { Badge } from '@/components/ui/Badge'
-import {
-  IconSparkles,
-  IconCheck,
-  IconCheckCircle,
-  IconBookmark,
-} from '@/components/ui/Icon'
+import { Flowy } from '@/assets'
 import {
   useConversation,
   useConversationList,
   useCorrectSentence,
   useEndConversation,
   useExplainGrammar,
+  useGenerateExamples,
   useScenarios,
   useSendConversationMessage,
 } from '@/hooks/useAiTutor'
-import { useCreateMistake } from '@/hooks/useMistakes'
+import { useProfile } from '@/hooks/useAccount'
 import { useUiStore } from '@/stores/uiStore'
 import { ApiError } from '@/api/client'
 import { streamConversationMessage } from '@/api/ai'
 import type { ConversationMessageItem, ConversationSummaryResult } from '@/api/ai'
+import { AiQuotaNotice } from '@/components/ai-tutor/AiQuotaNotice'
+import { cn } from '@/lib/cn'
 
-function ErrorNotice({ error }: { error: unknown }) {
-  if (!error) return null
-  const message =
-    error instanceof ApiError ? error.message : 'Something went wrong. Please try again.'
+function AskTab({ languageCode }: { languageCode: string }) {
+  const [form] = Form.useForm<{ question: string }>()
+  const question: string = Form.useWatch('question', form) ?? ''
+  const explainGrammar = useExplainGrammar()
+  const { data: profile } = useProfile()
+
+  function handleFinish(values: { question: string }) {
+    explainGrammar.mutate({ languageCode, question: values.question.trim() })
+  }
+
+  const askPlaceholder =
+    languageCode === 'zh'
+      ? "例如：怎么正确区分 '的', '得' 和 '地'? 能举例说明吗？"
+      : languageCode === 'ja'
+        ? 'e.g. When should I use は (wa) versus が (ga)? Can you give me easy examples?'
+        : "e.g. When should I use 'since' versus 'for'? Can you explain with everyday examples?"
+
   return (
-    <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
-      {message}
-    </div>
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
+      <Card
+        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+        styles={{ body: { padding: '1.5rem' } }}
+      >
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-[#FFF5CC] border-2 border-b-4 border-amber-300 text-2xl shadow-xs"
+          >
+            <BookOutlined className="text-amber-800" />
+          </Flex>
+          <div>
+            <h2 className="text-base font-black text-slate-900 dark:text-white">
+              Grammar Clinic &amp; Guide
+            </h2>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Clear, friendly explanations with authentic example sentences in your target language.
+            </p>
+          </div>
+        </Flex>
+
+        <Form form={form} onFinish={handleFinish} className="flex flex-col gap-3">
+          <Form.Item name="question" noStyle>
+            <Input.TextArea
+              rows={3}
+              placeholder={askPlaceholder}
+              className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
+          <Flex justify="flex-end">
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={explainGrammar.isPending || !question.trim()}
+              loading={explainGrammar.isPending}
+              icon={<BookOutlined />}
+              className="!rounded-2xl !bg-[#ffc800] hover:!bg-[#ffd226] !border-b-4 !border-[#e5a500] active:!border-b-2 active:!translate-y-[2px] !text-amber-950 !font-extrabold shadow-xs"
+            >
+              {explainGrammar.isPending ? 'Consulting Coach...' : 'Ask Question 📖'}
+            </Button>
+          </Flex>
+        </Form>
+      </Card>
+
+      <AiQuotaNotice error={explainGrammar.error} userTimezone={profile?.timezone} />
+
+      {explainGrammar.data && (
+        <Card
+          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] animate-pop-in shadow-xs"
+          styles={{ body: { padding: '1.5rem' } }}
+        >
+          <Flex align="center" gap={8} className="mb-3 text-[#58CC02]">
+            <BulbOutlined className="text-xl" />
+            <span className="text-sm font-black uppercase tracking-wider">
+              AI Coach Explanation
+            </span>
+          </Flex>
+          <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200 font-medium">
+            {explainGrammar.data.explanation}
+          </div>
+        </Card>
+      )}
+    </Flex>
   )
 }
 
-function AskTab({ languageCode }: { languageCode: string }) {
-  const [question, setQuestion] = useState('')
-  const explainGrammar = useExplainGrammar()
+function ExamplesTab({ languageCode }: { languageCode: string }) {
+  const [form] = Form.useForm<{ word: string }>()
+  const word: string = Form.useWatch('word', form) ?? ''
+  const generateExamples = useGenerateExamples()
+  const { data: profile } = useProfile()
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!question.trim()) return
-    explainGrammar.mutate({ languageCode, question: question.trim() })
+  function handleFinish(values: { word: string }) {
+    generateExamples.mutate({ languageCode, word: values.word.trim() })
   }
 
-  return (
-    <div className="flex flex-col gap-5 max-w-3xl">
-      <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
-        <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            Ask Any Grammar or Usage Question
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Get instant, in-depth explanations with real-world examples in your target language.
-          </p>
-        </div>
+  const placeholder =
+    languageCode === 'zh'
+      ? '例如：咖啡, 学习, 朋友...'
+      : languageCode === 'ja'
+        ? '例：食べる, 友達, 楽しい...'
+        : 'e.g. wanderlust, serendipity, negotiate...'
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Textarea
-            rows={3}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="e.g. What is the difference between 'I have done' and 'I did'? When should I use each?"
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={explainGrammar.isPending || !question.trim()}
-              className="gap-2 self-end font-semibold"
-            >
-              <IconSparkles size={16} />
-              <span>{explainGrammar.isPending ? 'Thinking...' : 'Ask AI Tutor'}</span>
-            </Button>
+  return (
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
+      <Card
+        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+        styles={{ body: { padding: '1.5rem' } }}
+      >
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-purple-100 border-2 border-b-4 border-purple-300 text-2xl shadow-xs"
+          >
+            <ThunderboltOutlined className="text-purple-700" />
+          </Flex>
+          <div>
+            <h2 className="text-base font-black text-slate-900 dark:text-white">
+              Vocabulary Example Generator
+            </h2>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Generate real-world authentic sentences for any word or phrase in your target
+              language.
+            </p>
           </div>
-        </form>
+        </Flex>
+
+        <Form form={form} onFinish={handleFinish} className="flex flex-col sm:flex-row gap-3">
+          <Form.Item name="word" noStyle>
+            <Input
+              size="large"
+              placeholder={placeholder}
+              className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            loading={generateExamples.isPending}
+            disabled={generateExamples.isPending || !word.trim()}
+            icon={<ThunderboltOutlined />}
+            className="!rounded-2xl !bg-[#a855f7] hover:!bg-[#9333ea] !border-b-4 !border-[#7e22ce] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black shadow-xs shrink-0"
+          >
+            {generateExamples.isPending ? 'Generating…' : 'Generate Examples ✨'}
+          </Button>
+        </Form>
       </Card>
 
-      <ErrorNotice error={explainGrammar.error} />
+      <AiQuotaNotice error={generateExamples.error} userTimezone={profile?.timezone} />
 
-      {explainGrammar.data && (
-        <Card className="border-slate-200 bg-white p-6 shadow-xs dark:border-[#2C2C2C] dark:bg-[#1E1E1E] animate-fade-in">
-          <div className="flex items-center gap-2 mb-3 text-[#365314] dark:text-[#B6F23A]">
-            <IconSparkles size={18} />
-            <span className="text-xs font-bold uppercase tracking-wider">Explanation</span>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200">
-            {explainGrammar.data.explanation}
-          </p>
+      {generateExamples.data && (
+        <Card
+          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] animate-pop-in shadow-xs"
+          styles={{ body: { padding: '1.5rem' } }}
+        >
+          <Flex align="center" gap={8} className="mb-3 text-purple-600 dark:text-purple-400">
+            <ThunderboltOutlined className="text-lg" />
+            <span className="text-sm font-black uppercase tracking-wider">
+              Example Sentences for &quot;{word}&quot;
+            </span>
+          </Flex>
+          <Flex vertical gap={10}>
+            {generateExamples.data.examples.map((example, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 text-sm font-medium text-slate-800 dark:border-[#2B3940] dark:bg-[#131F24] dark:text-slate-200 leading-relaxed"
+              >
+                {example}
+              </div>
+            ))}
+          </Flex>
         </Card>
       )}
-    </div>
+    </Flex>
   )
 }
 
 function CorrectTab({ languageCode }: { languageCode: string }) {
-  const [text, setText] = useState('')
+  const [form] = Form.useForm<{ text: string }>()
+  const text: string = Form.useWatch('text', form) ?? ''
   const correctSentence = useCorrectSentence()
-  const createMistake = useCreateMistake()
+  const { data: profile } = useProfile()
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!text.trim()) return
-    createMistake.reset()
-    correctSentence.mutate({ languageCode, text: text.trim() })
+  function handleFinish(values: { text: string }) {
+    correctSentence.mutate({ languageCode, text: values.text.trim() })
   }
 
-  function handleSaveToMistakeBook() {
-    if (!correctSentence.data || !correctSentence.data.suggestedCategory) return
-    createMistake.mutate({
-      languageCode,
-      category: correctSentence.data.suggestedCategory,
-      topic: correctSentence.data.suggestedTopic,
-      original: text.trim(),
-      corrected: correctSentence.data.corrected,
-      explanation: correctSentence.data.explanation,
-    })
-  }
+  const correctPlaceholder =
+    languageCode === 'zh'
+      ? '输入你想检查的中文句子，例如：昨天我和朋友去吃中国菜...'
+      : languageCode === 'ja'
+        ? 'Type your sentence here, e.g. 私は寿司を食べます...'
+        : 'Type your sentence here, e.g. Yesterday I go to cinema with my friend...'
 
   return (
-    <div className="flex flex-col gap-5 max-w-3xl">
-      <Card className="flex flex-col gap-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
-        <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            Sentence Checker & Error Correction
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Type any sentence you wrote to inspect grammar, vocabulary nuances, and natural phrasing.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Textarea
-            rows={3}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type a sentence you are not sure about..."
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={correctSentence.isPending || !text.trim()}
-              className="gap-2 font-semibold"
-            >
-              <IconCheckCircle size={16} />
-              <span>{correctSentence.isPending ? 'Checking...' : 'Check Sentence'}</span>
-            </Button>
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
+      <Card
+        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+        styles={{ body: { padding: '1.5rem' } }}
+      >
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-[#DDF4FF] border-2 border-b-4 border-sky-300 text-2xl shadow-xs"
+          >
+            <MedicineBoxOutlined className="text-[#0284c7]" />
+          </Flex>
+          <div>
+            <h2 className="text-base font-black text-slate-900 dark:text-white">Sentence Doctor</h2>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Type any sentence in your target language to polish grammar, word choice, and native
+              flow.
+            </p>
           </div>
-        </form>
+        </Flex>
+
+        <Form form={form} onFinish={handleFinish} className="flex flex-col gap-3">
+          <Form.Item name="text" noStyle>
+            <Input.TextArea
+              rows={3}
+              placeholder={correctPlaceholder}
+              className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
+          <Flex justify="flex-end">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={correctSentence.isPending}
+              disabled={correctSentence.isPending || !text.trim()}
+              icon={<CheckCircleOutlined />}
+              className="!rounded-2xl !bg-[#1cb0f6] hover:!bg-[#34bdff] !border-b-4 !border-[#1899d6] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black shadow-xs"
+            >
+              {correctSentence.isPending ? 'Diagnosing...' : 'Check Sentence 🩺'}
+            </Button>
+          </Flex>
+        </Form>
       </Card>
 
-      <ErrorNotice error={correctSentence.error} />
+      <AiQuotaNotice error={correctSentence.error} userTimezone={profile?.timezone} />
 
       {correctSentence.data && (
-        <Card className="flex flex-col gap-5 border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in">
-          <div className="rounded-xl border border-slate-200 bg-slate-100 p-3.5 dark:border-slate-700 dark:bg-slate-800">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
-              Your Input
-            </p>
-            <p className="text-sm text-slate-800 dark:text-slate-200 line-through">
+        <Card
+          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] flex flex-col gap-5 animate-pop-in shadow-xs"
+          styles={{ body: { padding: '1.5rem' } }}
+        >
+          {/* Original sentence box */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-[#131F24]">
+            <p className="text-xs font-bold text-slate-400 mb-1">Original Sentence</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 line-through">
               {text.trim()}
             </p>
           </div>
 
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40">
-            <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 mb-1">
-              <IconCheck size={16} />
-              <p className="text-xs font-bold uppercase tracking-wider">Corrected Phrasing</p>
-            </div>
-            <p className="text-base font-bold text-emerald-900 dark:text-emerald-200">
+          {/* Corrected sentence box */}
+          <div className="rounded-2xl border-2 border-b-4 border-emerald-300 bg-[#D7FFB8]/50 p-4 dark:border-emerald-700 dark:bg-emerald-950/40">
+            <Flex align="center" gap={8} className="text-[#347800] dark:text-[#79e32a] mb-1.5">
+              <CheckOutlined />
+              <p className="text-xs font-black uppercase tracking-wide">Natural Native Phrasing</p>
+            </Flex>
+            <p className="text-base font-black text-[#265900] dark:text-emerald-100">
               {correctSentence.data.corrected}
             </p>
           </div>
 
+          {/* Explanation */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-              Why this change was made
+            <p className="text-xs font-black text-slate-500 uppercase tracking-wide mb-1.5">
+              Why this was corrected
             </p>
-            <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
               {correctSentence.data.explanation}
             </p>
           </div>
 
           {correctSentence.data.suggestedCategory && (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Category:</span>
-                <Badge variant="purple">{correctSentence.data.suggestedCategory}</Badge>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {correctSentence.data.suggestedTopic}
-                </span>
-              </div>
-              {createMistake.isSuccess ? (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  <IconCheck size={15} /> Saved to Mistake Book
-                </span>
-              ) : (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleSaveToMistakeBook}
-                  disabled={createMistake.isPending}
-                  className="gap-1.5 font-semibold"
-                >
-                  <IconBookmark size={14} />
-                  <span>{createMistake.isPending ? 'Saving...' : 'Save to Mistake Book'}</span>
-                </Button>
-              )}
-            </div>
+            <Flex
+              align="center"
+              gap={8}
+              className="pt-3 border-t-2 border-slate-100 dark:border-slate-800"
+            >
+              <span className="text-xs font-bold text-slate-400">Category:</span>
+              <Tag color="purple" className="!rounded-md !font-bold">
+                {correctSentence.data.suggestedCategory}
+              </Tag>
+              <span className="text-xs font-black text-slate-700 dark:text-slate-300">
+                {correctSentence.data.suggestedTopic}
+              </span>
+            </Flex>
           )}
         </Card>
       )}
-    </div>
+    </Flex>
   )
 }
 
@@ -230,12 +343,16 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [ended, setEnded] = useState(false)
   const [summary, setSummary] = useState<ConversationSummaryResult | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
+  const { data: profile } = useProfile()
   const { data: scenarios } = useScenarios(languageCode)
   const conversationList = useConversationList()
   const conversationDetail = useConversation(activeConversationId ?? undefined)
   const sendMessage = useSendConversationMessage()
   const endConversation = useEndConversation()
+
+  const pastCount = conversationList.data?.length ?? 0
 
   useEffect(() => {
     if (conversationDetail.data) {
@@ -270,6 +387,10 @@ function ChatTab({ languageCode }: { languageCode: string }) {
               { role: 'ASSISTANT', content: result.reply, createdAt: new Date().toISOString() },
             ])
           },
+          onError: () => {
+            // Roll back the optimistic user turn if rejected (e.g. 429 quota reached)
+            setMessages((prev) => prev.slice(0, -1))
+          },
         },
       )
       return
@@ -289,6 +410,10 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           return ''
         })
       })
+      .catch(() => {
+        // Roll back the optimistic user turn on streaming failure
+        setMessages((prev) => prev.slice(0, -1))
+      })
       .finally(() => setIsStreaming(false))
   }
 
@@ -303,34 +428,121 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   }
 
   return (
-    <div className="grid gap-5 md:grid-cols-[17rem_1fr]">
-      <div className="flex flex-col gap-3">
-        {activeConversationId === null && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Pick Scenario
-            </label>
-            <Select value={scenario} onChange={(e) => setScenario(e.target.value)}>
-              <option value="">Daily conversation</option>
-              {(scenarios ?? []).map((s) => (
-                <option key={s.code} value={s.label}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-        )}
-        <ConversationList
-          conversations={conversationList.data ?? []}
-          activeId={activeConversationId}
-          onSelect={setActiveConversationId}
-          onNew={handleNew}
-        />
-      </div>
+    <Flex vertical gap={16} className="w-full animate-fade-in">
+      {/* Top Action Bar & Status */}
+      <Flex vertical justify="space-between" gap={12} className="sm:flex-row sm:items-center">
+        {/* Left: New chat & active scenario info */}
+        <Flex align="center" gap={8} wrap>
+          <Button
+            type="primary"
+            size="middle"
+            onClick={handleNew}
+            icon={<PlusOutlined />}
+            className="!rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] active:!border-b-2 active:!translate-y-[2px] !text-white !font-black !text-xs shadow-xs"
+          >
+            Đoạn chat mới
+          </Button>
 
-      <div className="flex flex-col gap-4">
-        <ErrorNotice error={sendMessage.error} />
+          {activeConversationId !== null ? (
+            <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-[#2B3940] dark:bg-[#1B272C] dark:text-slate-200">
+              <span className="text-slate-400 font-medium">Chủ đề:</span>
+              <span className="font-extrabold text-[#58CC02]">
+                {(conversationDetail.data?.scenario ?? scenario) || 'Trò chuyện tự do'}
+              </span>
+            </div>
+          ) : scenario ? (
+            <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-[#2B3940] dark:bg-[#1B272C] dark:text-slate-200">
+              <span className="text-slate-400 font-medium">Đã chọn:</span>
+              <span className="font-extrabold text-[#58CC02]">{scenario}</span>
+              <button
+                type="button"
+                onClick={() => setScenario('')}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer ml-1"
+                title="Bỏ chọn chủ đề"
+              >
+                <CloseOutlined className="text-xs" />
+              </button>
+            </div>
+          ) : null}
+        </Flex>
+
+        {/* Right: History Drawer Trigger */}
+        <Flex align="center" gap={8}>
+          <Button
+            type="default"
+            size="middle"
+            onClick={() => setHistoryOpen(true)}
+            icon={<HistoryOutlined />}
+            className="!rounded-2xl !border-2 !border-b-4 !border-slate-200 !bg-white text-xs font-extrabold text-slate-700 hover:!bg-slate-50 dark:!border-[#2B3940] dark:!bg-[#1B272C] dark:!text-slate-200"
+          >
+            <span>Lịch sử hội thoại</span>
+            {pastCount > 0 && (
+              <Tag
+                color="cyan"
+                className="!rounded-full !font-black !text-[10px] !px-1.5 !py-0 !m-0 !ml-1"
+              >
+                {pastCount}
+              </Tag>
+            )}
+          </Button>
+        </Flex>
+      </Flex>
+
+      {/* Scenario Selection Pills Wrap */}
+      {activeConversationId === null && (
+        <Card
+          className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+          styles={{ body: { padding: '1rem 1.25rem' } }}
+        >
+          <div className="flex flex-col gap-3">
+            <Flex align="center" justify="space-between" className="text-xs">
+              <span className="font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <ThunderboltOutlined className="text-amber-500" />
+                <span>Kịch bản luyện tập:</span>
+              </span>
+              <span className="text-[11px] font-bold text-slate-400">
+                {(scenarios ?? []).length + 1} tình huống thực tế
+              </span>
+            </Flex>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type={scenario === '' ? 'primary' : 'default'}
+                onClick={() => setScenario('')}
+                className={cn(
+                  '!rounded-2xl !text-xs !font-black !h-9 !px-3.5 !border-2 !border-b-4 transition-all cursor-pointer',
+                  scenario === ''
+                    ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white shadow-xs'
+                    : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                )}
+              >
+                ☕ Trò chuyện tự do
+              </Button>
+              {(scenarios ?? []).map((s) => (
+                <Button
+                  key={s.code}
+                  type={scenario === s.label ? 'primary' : 'default'}
+                  onClick={() => setScenario(s.label)}
+                  className={cn(
+                    '!rounded-2xl !text-xs !font-black !h-9 !px-3.5 !border-2 !border-b-4 transition-all cursor-pointer',
+                    scenario === s.label
+                      ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white shadow-xs'
+                      : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                  )}
+                >
+                  {s.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Main Full-Width Chat Canvas */}
+      <Flex vertical gap={16} className="min-w-0 w-full">
+        <AiQuotaNotice error={sendMessage.error} userTimezone={profile?.timezone} />
         <ChatWindow
+          languageCode={languageCode}
           messages={messages}
           streamingReply={streamingReply}
           onSend={handleSend}
@@ -338,47 +550,123 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           onEnd={handleEnd}
           isEnding={endConversation.isPending}
           ended={ended}
+          isQuotaExceeded={Boolean(
+            sendMessage.error instanceof ApiError && sendMessage.error.status === 429,
+          )}
         />
-        {ended && summary && (
-          <ConversationSummaryCard summary={summary} languageCode={languageCode} />
-        )}
-      </div>
-    </div>
+        {ended && summary && <ConversationSummaryCard summary={summary} />}
+      </Flex>
+
+      {/* Ant Design Slide-over Conversation History Drawer */}
+      <Drawer
+        title={
+          <Flex align="center" gap={10}>
+            <Flex
+              align="center"
+              justify="center"
+              className="h-9 w-9 rounded-2xl bg-sky-100 text-[#0284C7] dark:bg-sky-950 dark:text-sky-300"
+            >
+              <ClockCircleOutlined />
+            </Flex>
+            <div>
+              <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">
+                Lịch Sử Hội Thoại
+              </h3>
+              <p className="text-[11px] text-slate-400 font-normal">
+                {pastCount} cuộc hội thoại đã lưu
+              </p>
+            </div>
+          </Flex>
+        }
+        placement="right"
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        className="dark:!bg-[#1A262C]"
+      >
+        <Flex vertical gap={16}>
+          <Button
+            type="primary"
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              handleNew()
+              setHistoryOpen(false)
+            }}
+            className="w-full !rounded-2xl !bg-[#58cc02] hover:!bg-[#61e002] !border-b-4 !border-[#46a302] !text-white !font-black !text-xs uppercase tracking-wide"
+          >
+            Bắt đầu hội thoại mới
+          </Button>
+
+          <ConversationList
+            conversations={conversationList.data ?? []}
+            activeId={activeConversationId}
+            onSelect={(id) => {
+              setActiveConversationId(id)
+              setHistoryOpen(false)
+            }}
+            onNew={() => {
+              handleNew()
+              setHistoryOpen(false)
+            }}
+          />
+        </Flex>
+      </Drawer>
+    </Flex>
   )
 }
 
 export function AiTutorPage() {
   const selectedLanguageCode = useUiStore((state) => state.selectedLanguageCode)
   const setSelectedLanguageCode = useUiStore((state) => state.setSelectedLanguageCode)
-  const [mode, setMode] = useState<AiTutorMode>('ask')
+  const [mode, setMode] = useState<AiTutorMode>('chat')
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <span>AI Language Tutor</span>
-            <Badge variant="primary" className="text-xs font-bold">
-              Powered by AI
-            </Badge>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Ask complex grammar doubts, correct phrasing, or practice interactive roleplay scenarios.
-          </p>
-        </div>
-        <div className="w-full sm:w-44">
-          <LanguageSwitcher
-            value={selectedLanguageCode || 'en'}
-            onChange={setSelectedLanguageCode}
-          />
-        </div>
-      </div>
+    <Flex vertical gap={24}>
+      {/* Playful Hero Header */}
+      <Card
+        className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
+        styles={{ body: { padding: '1.5rem' } }}
+      >
+        <Flex vertical gap={16} className="sm:flex-row sm:items-center sm:justify-between">
+          <Flex align="center" gap={16}>
+            <Flex
+              align="center"
+              justify="center"
+              className="h-14 w-14 rounded-3xl bg-white dark:bg-[#131F24] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-sm"
+            >
+              <Flowy size={42} className="animate-bounce-playful" />
+            </Flex>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <span>AI Language Practice Studio</span>
+                <Tag color="success" className="!rounded-full !font-black !text-xs !px-2.5 !py-0.5">
+                  EN • 中文 • 日本語
+                </Tag>
+              </h1>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                Practice everyday conversations, diagnose grammar nuances, and level up your
+                fluency.
+              </p>
+            </div>
+          </Flex>
 
+          <div className="w-full sm:w-44 shrink-0">
+            <LanguageSwitcher
+              value={selectedLanguageCode || 'en'}
+              onChange={setSelectedLanguageCode}
+            />
+          </div>
+        </Flex>
+      </Card>
+
+      {/* Playful 3D Mode Switcher */}
       <ModeTabs active={mode} onChange={setMode} />
 
-      {mode === 'ask' && <AskTab languageCode={selectedLanguageCode || 'en'} />}
-      {mode === 'correct' && <CorrectTab languageCode={selectedLanguageCode || 'en'} />}
-      {mode === 'chat' && <ChatTab languageCode={selectedLanguageCode || 'en'} />}
-    </div>
+      {/* Active Tab View */}
+      {mode === 'chat' && <ChatTab languageCode={selectedLanguageCode || 'ja'} />}
+      {mode === 'correct' && <CorrectTab languageCode={selectedLanguageCode || 'ja'} />}
+      {mode === 'ask' && <AskTab languageCode={selectedLanguageCode || 'ja'} />}
+      {mode === 'examples' && <ExamplesTab languageCode={selectedLanguageCode || 'ja'} />}
+    </Flex>
   )
 }
