@@ -234,6 +234,8 @@ export function VocabularyPage() {
 
           <div className="flex items-center gap-2">
             <Segmented
+              shape="round"
+              size="middle"
               value={viewMode}
               onChange={(val) => setViewMode(val as 'grid' | 'table')}
               options={[
@@ -248,7 +250,7 @@ export function VocabularyPage() {
                   label: 'Bảng tra',
                 },
               ]}
-              className="!rounded-2xl p-1 bg-slate-100 dark:bg-slate-800 font-bold"
+              className="!rounded-full p-1 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-200/80 dark:border-slate-700/80 [&_.ant-segmented-group]:!rounded-full [&_.ant-segmented-item]:!rounded-full [&_.ant-segmented-thumb]:!rounded-full [&_.ant-segmented-item-selected]:!rounded-full [&_.ant-segmented-thumb]:!shadow-xs shadow-2xs select-none"
             />
           </div>
         </div>
