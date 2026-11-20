@@ -488,45 +488,53 @@ function ChatTab({ languageCode }: { languageCode: string }) {
         </Flex>
       </Flex>
 
-      {/* Horizontal Scenario Pills Carousel */}
+      {/* Scenario Selection Pills Wrap */}
       {activeConversationId === null && (
         <Card
           className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
-          styles={{ body: { padding: '0.875rem' } }}
+          styles={{ body: { padding: '1rem 1.25rem' } }}
         >
-          <Flex align="center" gap={8} className="overflow-x-auto pb-1 pt-0.5 no-scrollbar">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1.5 pl-1 pr-1">
-              <ThunderboltOutlined className="text-amber-500" />
-              <span>Kịch bản:</span>
-            </span>
-            <Button
-              type={scenario === '' ? 'primary' : 'default'}
-              onClick={() => setScenario('')}
-              className={cn(
-                '!rounded-2xl !text-xs !font-black shrink-0 !border-2 !border-b-4 transition-all',
-                scenario === ''
-                  ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white'
-                  : '!border-slate-200 !bg-slate-50 !text-slate-700 dark:!border-slate-700 dark:!bg-slate-800 dark:!text-slate-200',
-              )}
-            >
-              ☕ Trò chuyện tự do
-            </Button>
-            {(scenarios ?? []).map((s) => (
+          <div className="flex flex-col gap-3">
+            <Flex align="center" justify="space-between" className="text-xs">
+              <span className="font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <ThunderboltOutlined className="text-amber-500" />
+                <span>Kịch bản luyện tập:</span>
+              </span>
+              <span className="text-[11px] font-bold text-slate-400">
+                {(scenarios ?? []).length + 1} tình huống thực tế
+              </span>
+            </Flex>
+
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                key={s.code}
-                type={scenario === s.label ? 'primary' : 'default'}
-                onClick={() => setScenario(s.label)}
+                type={scenario === '' ? 'primary' : 'default'}
+                onClick={() => setScenario('')}
                 className={cn(
-                  '!rounded-2xl !text-xs !font-black shrink-0 !border-2 !border-b-4 transition-all',
-                  scenario === s.label
-                    ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white'
-                    : '!border-slate-200 !bg-slate-50 !text-slate-700 dark:!border-slate-700 dark:!bg-slate-800 dark:!text-slate-200',
+                  '!rounded-2xl !text-xs !font-black !h-9 !px-3.5 !border-2 !border-b-4 transition-all cursor-pointer',
+                  scenario === ''
+                    ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white shadow-xs'
+                    : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
                 )}
               >
-                {s.label}
+                ☕ Trò chuyện tự do
               </Button>
-            ))}
-          </Flex>
+              {(scenarios ?? []).map((s) => (
+                <Button
+                  key={s.code}
+                  type={scenario === s.label ? 'primary' : 'default'}
+                  onClick={() => setScenario(s.label)}
+                  className={cn(
+                    '!rounded-2xl !text-xs !font-black !h-9 !px-3.5 !border-2 !border-b-4 transition-all cursor-pointer',
+                    scenario === s.label
+                      ? '!bg-[#58cc02] hover:!bg-[#61e002] !border-[#46a302] !text-white shadow-xs'
+                      : '!border-slate-200 !bg-slate-50 hover:!bg-slate-100 !text-slate-700 dark:!border-[#2B3940] dark:!bg-[#131F24] dark:!text-slate-300',
+                  )}
+                >
+                  {s.label}
+                </Button>
+              ))}
+            </div>
+          </div>
         </Card>
       )}
 
