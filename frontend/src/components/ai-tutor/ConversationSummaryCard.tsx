@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { Badge } from '@/components/ui/Badge'
 import type { ConversationSummaryResult } from '@/api/ai'
 
@@ -7,13 +8,17 @@ interface ConversationSummaryCardProps {
 
 export function ConversationSummaryCard({ summary }: ConversationSummaryCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 text-sm dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs animate-fade-in">
-      <div className="flex items-center gap-2">
+    <Flex
+      vertical
+      gap={16}
+      className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 text-sm dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs animate-fade-in"
+    >
+      <Flex align="center" gap={8}>
         <span className="text-2xl animate-bounce-playful">🌟</span>
         <h3 className="font-black text-base text-slate-800 dark:text-white">
           Session Analysis & Feedback
         </h3>
-      </div>
+      </Flex>
 
       <div className="rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] p-4 text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
         <p className="text-xs sm:text-sm font-bold leading-relaxed">{summary.overview}</p>
@@ -90,6 +95,6 @@ export function ConversationSummaryCard({ summary }: ConversationSummaryCardProp
           </ul>
         </div>
       )}
-    </div>
+    </Flex>
   )
 }

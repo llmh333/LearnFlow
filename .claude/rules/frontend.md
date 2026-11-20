@@ -41,6 +41,11 @@ frontend/src/
   `ProtectedRoute` gọi `refreshSession()` để khôi phục phiên. Gặp 401 → `apiFetch` gọi `refreshSession()`
   (một request tại một thời điểm — backend thu hồi cả phiên nếu một refresh token bị dùng hai lần) rồi thử lại
   đúng một lần. Gọi `fetch` trực tiếp (ví dụ stream SSE) cũng phải làm như vậy.
+- **Layout dùng `Flex` của antd**, không dùng `<div className="flex ...">`: hàng → `<Flex align="center" gap={8}>`,
+  cột → `<Flex vertical>`, `justify="space-between"`, `wrap`. Tailwind giữ cho phần trang trí (màu, viền, bo góc,
+  padding, kích thước) và biến thể responsive (`md:flex-row`, `md:gap-6` vẫn đè được vì style antd nằm trong
+  `@layer antd` dưới Tailwind utilities — `StyleProvider layer` ở `App.tsx`, thứ tự layer ở `index.css`).
+  Ngoại lệ: phần tử có thể không có con (ví dụ ô chỉ chứa `''`) giữ `div`, vì `Flex` tự ẩn khi `:empty`.
 - Không thêm dependency ngoài danh sách đã chốt nếu không ghi lý do vào decision log.
 - Thiết kế **mobile-first**: dùng được ở chiều rộng 375px, vùng chạm đủ lớn, không cuộn ngang.
 - Component và hàm thuần trong `lib/` dễ test; tách logic khỏi JSX khi logic phức tạp.

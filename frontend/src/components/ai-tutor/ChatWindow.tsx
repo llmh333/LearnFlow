@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Button, Input } from 'antd'
+import { Button, Flex, Input } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
 import { Flowy } from '@/assets'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
@@ -87,14 +87,28 @@ export function ChatWindow({
           }
 
   return (
-    <div className="flex h-[38rem] flex-col gap-3 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
+    <Flex
+      vertical
+      gap={12}
+      className="h-[38rem] rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs"
+    >
       {/* Messages Scroll Area */}
       <div className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden pr-1.5">
         {messages.length === 0 && !streamingReply && (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center p-6 animate-fade-in">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#FFF5CC] border-2 border-b-4 border-amber-300 shadow-sm">
+          <Flex
+            vertical
+            align="center"
+            justify="center"
+            gap={16}
+            className="h-full text-center p-6 animate-fade-in"
+          >
+            <Flex
+              align="center"
+              justify="center"
+              className="h-16 w-16 rounded-3xl bg-[#FFF5CC] border-2 border-b-4 border-amber-300 shadow-sm"
+            >
               <Flowy size={44} className="animate-bounce-playful" />
-            </div>
+            </Flex>
             <div className="max-w-md">
               <h3 className="text-base font-black text-slate-800 dark:text-white">
                 {langGreeting.title}
@@ -104,7 +118,7 @@ export function ChatWindow({
               </p>
             </div>
             {/* Quick Prompts */}
-            <div className="flex flex-wrap justify-center gap-2.5 mt-2 max-w-xl">
+            <Flex wrap justify="center" gap={10} className="mt-2 max-w-xl">
               {quickPrompts.map((prompt) => (
                 <Button
                   key={prompt}
@@ -115,8 +129,8 @@ export function ChatWindow({
                   {prompt}
                 </Button>
               ))}
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         )}
 
         {messages.map((message, index) => (
@@ -126,10 +140,14 @@ export function ChatWindow({
         {streamingReply && <MessageBubble role="ASSISTANT" content={streamingReply} />}
 
         {isSending && !streamingReply && (
-          <div className="flex items-center gap-2 text-xs font-bold text-[#58CC02] p-2 italic animate-pulse">
+          <Flex
+            align="center"
+            gap={8}
+            className="text-xs font-bold text-[#58CC02] p-2 italic animate-pulse"
+          >
             <Flowy size={18} />
             <span>AI Coach is formulating a thoughtful reply...</span>
-          </div>
+          </Flex>
         )}
         <div ref={bottomRef} />
       </div>
@@ -161,7 +179,7 @@ export function ChatWindow({
       </form>
 
       {!ended && messages.length > 0 && (
-        <div className="flex justify-end pt-1">
+        <Flex justify="flex-end" className="pt-1">
           <Button
             type="default"
             size="small"
@@ -171,7 +189,7 @@ export function ChatWindow({
           >
             {isEnding ? 'Analyzing session...' : '✨ End & review session'}
           </Button>
-        </div>
+        </Flex>
       )}
 
       <ConfirmModal
@@ -189,6 +207,6 @@ export function ChatWindow({
         icon="mascot"
         isLoading={isEnding}
       />
-    </div>
+    </Flex>
   )
 }

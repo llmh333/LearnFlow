@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Alert, Button, Card, Drawer, Input, Tag } from 'antd'
+import { Alert, Button, Card, Drawer, Flex, Input, Tag } from 'antd'
 import {
   BookOutlined,
   BulbOutlined,
@@ -66,15 +66,19 @@ function AskTab({ languageCode }: { languageCode: string }) {
         : "e.g. When should I use 'since' versus 'for'? Can you explain with everyday examples?"
 
   return (
-    <div className="flex flex-col gap-5 max-w-4xl animate-fade-in">
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
       <Card
         className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
         styles={{ body: { padding: '1.5rem' } }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF5CC] border-2 border-b-4 border-amber-300 text-2xl shadow-xs">
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-[#FFF5CC] border-2 border-b-4 border-amber-300 text-2xl shadow-xs"
+          >
             <BookOutlined className="text-amber-800" />
-          </div>
+          </Flex>
           <div>
             <h2 className="text-base font-black text-slate-900 dark:text-white">
               Grammar Clinic &amp; Guide
@@ -83,7 +87,7 @@ function AskTab({ languageCode }: { languageCode: string }) {
               Clear, friendly explanations with authentic example sentences in your target language.
             </p>
           </div>
-        </div>
+        </Flex>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input.TextArea
@@ -93,7 +97,7 @@ function AskTab({ languageCode }: { languageCode: string }) {
             placeholder={askPlaceholder}
             className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
           />
-          <div className="flex justify-end">
+          <Flex justify="flex-end">
             <Button
               type="primary"
               htmlType="submit"
@@ -104,7 +108,7 @@ function AskTab({ languageCode }: { languageCode: string }) {
             >
               {explainGrammar.isPending ? 'Consulting Coach...' : 'Ask Question 📖'}
             </Button>
-          </div>
+          </Flex>
         </form>
       </Card>
 
@@ -115,18 +119,18 @@ function AskTab({ languageCode }: { languageCode: string }) {
           className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] animate-pop-in shadow-xs"
           styles={{ body: { padding: '1.5rem' } }}
         >
-          <div className="flex items-center gap-2 mb-3 text-[#58CC02]">
+          <Flex align="center" gap={8} className="mb-3 text-[#58CC02]">
             <BulbOutlined className="text-xl" />
             <span className="text-sm font-black uppercase tracking-wider">
               AI Coach Explanation
             </span>
-          </div>
+          </Flex>
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200 font-medium">
             {explainGrammar.data.explanation}
           </div>
         </Card>
       )}
-    </div>
+    </Flex>
   )
 }
 
@@ -148,15 +152,19 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
         : 'e.g. wanderlust, serendipity, negotiate...'
 
   return (
-    <div className="flex flex-col gap-5 max-w-4xl animate-fade-in">
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
       <Card
         className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
         styles={{ body: { padding: '1.5rem' } }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-100 border-2 border-b-4 border-purple-300 text-2xl shadow-xs">
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-purple-100 border-2 border-b-4 border-purple-300 text-2xl shadow-xs"
+          >
             <ThunderboltOutlined className="text-purple-700" />
-          </div>
+          </Flex>
           <div>
             <h2 className="text-base font-black text-slate-900 dark:text-white">
               Vocabulary Example Generator
@@ -166,7 +174,7 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
               language.
             </p>
           </div>
-        </div>
+        </Flex>
 
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
           <Input
@@ -197,13 +205,13 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
           className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] animate-pop-in shadow-xs"
           styles={{ body: { padding: '1.5rem' } }}
         >
-          <div className="flex items-center gap-2 mb-3 text-purple-600 dark:text-purple-400">
+          <Flex align="center" gap={8} className="mb-3 text-purple-600 dark:text-purple-400">
             <ThunderboltOutlined className="text-lg" />
             <span className="text-sm font-black uppercase tracking-wider">
               Example Sentences for &quot;{word}&quot;
             </span>
-          </div>
-          <div className="flex flex-col gap-2.5">
+          </Flex>
+          <Flex vertical gap={10}>
             {generateExamples.data.examples.map((example, idx) => (
               <div
                 key={idx}
@@ -212,10 +220,10 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
                 {example}
               </div>
             ))}
-          </div>
+          </Flex>
         </Card>
       )}
-    </div>
+    </Flex>
   )
 }
 
@@ -237,15 +245,19 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
         : 'Type your sentence here, e.g. Yesterday I go to cinema with my friend...'
 
   return (
-    <div className="flex flex-col gap-5 max-w-4xl animate-fade-in">
+    <Flex vertical gap={20} className="max-w-4xl animate-fade-in">
       <Card
         className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
         styles={{ body: { padding: '1.5rem' } }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF4FF] border-2 border-b-4 border-sky-300 text-2xl shadow-xs">
+        <Flex align="center" gap={12} className="mb-4">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-11 w-11 rounded-2xl bg-[#DDF4FF] border-2 border-b-4 border-sky-300 text-2xl shadow-xs"
+          >
             <MedicineBoxOutlined className="text-[#0284c7]" />
-          </div>
+          </Flex>
           <div>
             <h2 className="text-base font-black text-slate-900 dark:text-white">Sentence Doctor</h2>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -253,7 +265,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
               flow.
             </p>
           </div>
-        </div>
+        </Flex>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input.TextArea
@@ -263,7 +275,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
             placeholder={correctPlaceholder}
             className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
           />
-          <div className="flex justify-end">
+          <Flex justify="flex-end">
             <Button
               type="primary"
               htmlType="submit"
@@ -274,7 +286,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
             >
               {correctSentence.isPending ? 'Diagnosing...' : 'Check Sentence 🩺'}
             </Button>
-          </div>
+          </Flex>
         </form>
       </Card>
 
@@ -295,10 +307,10 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
 
           {/* Corrected sentence box */}
           <div className="rounded-2xl border-2 border-b-4 border-emerald-300 bg-[#D7FFB8]/50 p-4 dark:border-emerald-700 dark:bg-emerald-950/40">
-            <div className="flex items-center gap-2 text-[#347800] dark:text-[#79e32a] mb-1.5">
+            <Flex align="center" gap={8} className="text-[#347800] dark:text-[#79e32a] mb-1.5">
               <CheckOutlined />
               <p className="text-xs font-black uppercase tracking-wide">Natural Native Phrasing</p>
-            </div>
+            </Flex>
             <p className="text-base font-black text-[#265900] dark:text-emerald-100">
               {correctSentence.data.corrected}
             </p>
@@ -315,7 +327,11 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
           </div>
 
           {correctSentence.data.suggestedCategory && (
-            <div className="flex items-center gap-2 pt-3 border-t-2 border-slate-100 dark:border-slate-800">
+            <Flex
+              align="center"
+              gap={8}
+              className="pt-3 border-t-2 border-slate-100 dark:border-slate-800"
+            >
               <span className="text-xs font-bold text-slate-400">Category:</span>
               <Tag color="purple" className="!rounded-md !font-bold">
                 {correctSentence.data.suggestedCategory}
@@ -323,11 +339,11 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
               <span className="text-xs font-black text-slate-700 dark:text-slate-300">
                 {correctSentence.data.suggestedTopic}
               </span>
-            </div>
+            </Flex>
           )}
         </Card>
       )}
-    </div>
+    </Flex>
   )
 }
 
@@ -415,11 +431,11 @@ function ChatTab({ languageCode }: { languageCode: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full animate-fade-in">
+    <Flex vertical gap={16} className="w-full animate-fade-in">
       {/* Top Action Bar & Status */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Flex vertical justify="space-between" gap={12} className="sm:flex-row sm:items-center">
         {/* Left: New chat & active scenario info */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <Flex align="center" gap={8} wrap>
           <Button
             type="primary"
             size="middle"
@@ -451,10 +467,10 @@ function ChatTab({ languageCode }: { languageCode: string }) {
               </button>
             </div>
           ) : null}
-        </div>
+        </Flex>
 
         {/* Right: History Drawer Trigger */}
-        <div className="flex items-center gap-2">
+        <Flex align="center" gap={8}>
           <Button
             type="default"
             size="middle"
@@ -472,8 +488,8 @@ function ChatTab({ languageCode }: { languageCode: string }) {
               </Tag>
             )}
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
 
       {/* Horizontal Scenario Pills Carousel */}
       {activeConversationId === null && (
@@ -481,7 +497,7 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
           styles={{ body: { padding: '0.875rem' } }}
         >
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
+          <Flex align="center" gap={8} className="overflow-x-auto pb-1 pt-0.5 no-scrollbar">
             <span className="text-xs font-black text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1.5 pl-1 pr-1">
               <ThunderboltOutlined className="text-amber-500" />
               <span>Kịch bản:</span>
@@ -513,12 +529,12 @@ function ChatTab({ languageCode }: { languageCode: string }) {
                 {s.label}
               </Button>
             ))}
-          </div>
+          </Flex>
         </Card>
       )}
 
       {/* Main Full-Width Chat Canvas */}
-      <div className="flex flex-col gap-4 min-w-0 w-full">
+      <Flex vertical gap={16} className="min-w-0 w-full">
         <ErrorNotice error={sendMessage.error} />
         <ChatWindow
           languageCode={languageCode}
@@ -531,15 +547,19 @@ function ChatTab({ languageCode }: { languageCode: string }) {
           ended={ended}
         />
         {ended && summary && <ConversationSummaryCard summary={summary} />}
-      </div>
+      </Flex>
 
       {/* Ant Design Slide-over Conversation History Drawer */}
       <Drawer
         title={
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-100 text-[#0284C7] dark:bg-sky-950 dark:text-sky-300">
+          <Flex align="center" gap={10}>
+            <Flex
+              align="center"
+              justify="center"
+              className="h-9 w-9 rounded-2xl bg-sky-100 text-[#0284C7] dark:bg-sky-950 dark:text-sky-300"
+            >
               <ClockCircleOutlined />
-            </div>
+            </Flex>
             <div>
               <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">
                 Lịch Sử Hội Thoại
@@ -548,14 +568,14 @@ function ChatTab({ languageCode }: { languageCode: string }) {
                 {pastCount} cuộc hội thoại đã lưu
               </p>
             </div>
-          </div>
+          </Flex>
         }
         placement="right"
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         className="dark:!bg-[#1A262C]"
       >
-        <div className="flex flex-col gap-4">
+        <Flex vertical gap={16}>
           <Button
             type="primary"
             size="large"
@@ -581,9 +601,9 @@ function ChatTab({ languageCode }: { languageCode: string }) {
               setHistoryOpen(false)
             }}
           />
-        </div>
+        </Flex>
       </Drawer>
-    </div>
+    </Flex>
   )
 }
 
@@ -593,17 +613,21 @@ export function AiTutorPage() {
   const [mode, setMode] = useState<AiTutorMode>('chat')
 
   return (
-    <div className="flex flex-col gap-6">
+    <Flex vertical gap={24}>
       {/* Playful Hero Header */}
       <Card
         className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1B272C] shadow-xs"
         styles={{ body: { padding: '1.5rem' } }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-white dark:bg-[#131F24] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-sm">
+        <Flex vertical gap={16} className="sm:flex-row sm:items-center sm:justify-between">
+          <Flex align="center" gap={16}>
+            <Flex
+              align="center"
+              justify="center"
+              className="h-14 w-14 rounded-3xl bg-white dark:bg-[#131F24] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-sm"
+            >
               <Flowy size={42} className="animate-bounce-playful" />
-            </div>
+            </Flex>
             <div>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <span>AI Language Practice Studio</span>
@@ -616,7 +640,7 @@ export function AiTutorPage() {
                 fluency.
               </p>
             </div>
-          </div>
+          </Flex>
 
           <div className="w-full sm:w-44 shrink-0">
             <LanguageSwitcher
@@ -624,7 +648,7 @@ export function AiTutorPage() {
               onChange={setSelectedLanguageCode}
             />
           </div>
-        </div>
+        </Flex>
       </Card>
 
       {/* Playful 3D Mode Switcher */}
@@ -635,6 +659,6 @@ export function AiTutorPage() {
       {mode === 'correct' && <CorrectTab languageCode={selectedLanguageCode || 'ja'} />}
       {mode === 'ask' && <AskTab languageCode={selectedLanguageCode || 'ja'} />}
       {mode === 'examples' && <ExamplesTab languageCode={selectedLanguageCode || 'ja'} />}
-    </div>
+    </Flex>
   )
 }

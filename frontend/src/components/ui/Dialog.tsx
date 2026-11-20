@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -37,8 +38,10 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   if (!open) return null
 
   const modal = (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-modal-fade"
+    <Flex
+      align="center"
+      justify="center"
+      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs p-4 animate-modal-fade"
       onClick={onClose}
     >
       <div
@@ -48,7 +51,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-5 flex items-center justify-between">
+        <Flex align="center" justify="space-between" className="mb-5">
           {title && (
             <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">{title}</h2>
           )}
@@ -60,10 +63,10 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
           >
             <IconX size={18} />
           </button>
-        </div>
+        </Flex>
         {children}
       </div>
-    </div>
+    </Flex>
   )
 
   if (typeof document !== 'undefined') {

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Alert, Button, Card, Spin, Table, Tag } from 'antd'
+import { Alert, Button, Card, Flex, Spin, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ArrowLeftOutlined, BookOutlined } from '@ant-design/icons'
 import { useContentSources } from '@/hooks/useCurriculum'
@@ -93,10 +93,14 @@ export function SourcesPage() {
           className="!rounded-3xl !border-2 !border-b-4 !border-slate-200 !bg-white dark:!border-[#2B3940] dark:!bg-[#1A262C] shadow-sm"
           styles={{ body: { padding: '1.75rem' } }}
         >
-          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-[#FFC800] text-4xl border-2 border-b-4 border-[#E5A500] shadow-sm">
+          <Flex vertical align="center" gap={24} className="sm:flex-row text-center sm:text-left">
+            <Flex
+              align="center"
+              justify="center"
+              className="h-20 w-20 shrink-0 rounded-3xl bg-[#FFC800] text-4xl border-2 border-b-4 border-[#E5A500] shadow-sm"
+            >
               <BookOutlined className="text-amber-900" />
-            </div>
+            </Flex>
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-[#202F36] px-3 py-1 mb-2">
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -112,13 +116,13 @@ export function SourcesPage() {
                 from the global language-learning community.
               </p>
             </div>
-          </div>
+          </Flex>
         </Card>
 
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
+          <Flex align="center" justify="center" className="py-12">
             <Spin size="large" />
-          </div>
+          </Flex>
         )}
 
         {isError && (

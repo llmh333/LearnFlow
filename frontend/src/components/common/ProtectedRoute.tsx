@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { useEffect, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { refreshSession } from '@/api/client'
@@ -18,9 +19,9 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (status === 'unknown') {
     return (
-      <div role="status" className="flex min-h-screen items-center justify-center text-slate-500">
+      <Flex role="status" align="center" justify="center" className="min-h-screen text-slate-500">
         Loading…
-      </div>
+      </Flex>
     )
   }
 

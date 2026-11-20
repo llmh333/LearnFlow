@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
@@ -56,7 +57,11 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* Onboarding Wizard shortcut */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50 flex items-center justify-between">
+      <Flex
+        align="center"
+        justify="space-between"
+        className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900/50"
+      >
         <div>
           <p className="text-xs font-black text-slate-800 dark:text-white">Onboarding Wizard</p>
           <p className="text-[11px] text-slate-400">Select language course, level &amp; goals</p>
@@ -73,7 +78,7 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
         >
           Open Wizard
         </Button>
-      </div>
+      </Flex>
       <div className="space-y-1.5">
         <label htmlFor="profile-timezone" className={labelClass}>
           Time zone (your day starts at midnight here)

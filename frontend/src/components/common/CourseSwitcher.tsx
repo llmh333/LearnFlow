@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -103,8 +104,12 @@ export function CourseSwitcher({ className }: CourseSwitcherProps) {
       {isOpen && (
         <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 sm:w-96 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 shadow-2xl z-50 animate-scale-in dark:border-[#2B3940] dark:bg-[#1A262C]">
           {/* Popover Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 dark:border-[#25343B]">
-            <div className="flex items-center gap-2">
+          <Flex
+            align="center"
+            justify="space-between"
+            className="border-b border-slate-100 pb-3 mb-3 dark:border-[#25343B]"
+          >
+            <Flex align="center" gap={8}>
               <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#58CC02]/15 text-[#58CC02]">
                 <IconSparkles size={16} />
               </span>
@@ -114,11 +119,11 @@ export function CourseSwitcher({ className }: CourseSwitcherProps) {
                 </h4>
                 <p className="text-[11px] text-slate-400">Choose active language or adjust level</p>
               </div>
-            </div>
+            </Flex>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500 dark:bg-slate-800 dark:text-slate-400">
               3 Languages
             </span>
-          </div>
+          </Flex>
 
           {/* Courses List */}
           <div className="space-y-2.5">
@@ -141,37 +146,41 @@ export function CourseSwitcher({ className }: CourseSwitcherProps) {
                     onClick={() => handleSelectCourse(course.code)}
                     className="w-full flex items-center justify-between text-left cursor-pointer"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <Flex align="center" gap={10}>
                       <LanguageFlagBadge code={course.code} size={24} />
                       <div>
-                        <div className="flex items-center gap-2">
+                        <Flex align="center" gap={8}>
                           <span className="text-sm font-black text-slate-800 dark:text-white">
                             {course.name}
                           </span>
                           <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                             {course.nativeName}
                           </span>
-                        </div>
+                        </Flex>
                         <p className="text-[11px] text-slate-400 font-medium">{course.tagline}</p>
                       </div>
-                    </div>
+                    </Flex>
 
-                    <div className="flex items-center gap-2">
+                    <Flex align="center" gap={8}>
                       <span className="rounded-full bg-white dark:bg-[#1B272C] px-2.5 py-1 text-xs font-black text-[#0284C7] border border-sky-200 dark:border-sky-800 shadow-2xs">
                         {courseLevel}
                       </span>
                       {isCurrentCourse && (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#58CC02] text-white">
+                        <Flex
+                          align="center"
+                          justify="center"
+                          className="h-6 w-6 rounded-full bg-[#58CC02] text-white"
+                        >
                           <IconCheck size={14} />
-                        </div>
+                        </Flex>
                       )}
-                    </div>
+                    </Flex>
                   </button>
 
                   {/* Level Pill Quick Switcher (Visible when course is selected) */}
                   {isCurrentCourse && (
                     <div className="mt-3 pt-2.5 border-t border-sky-100 dark:border-sky-900/50">
-                      <div className="flex items-center justify-between mb-1.5">
+                      <Flex align="center" justify="space-between" className="mb-1.5">
                         <span className="text-[10px] font-black uppercase text-sky-800 dark:text-sky-300 tracking-wider">
                           Select Level:
                         </span>
@@ -181,8 +190,8 @@ export function CourseSwitcher({ className }: CourseSwitcherProps) {
                             ?.description.slice(0, 32)}
                           ...
                         </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      </Flex>
+                      <Flex wrap gap={6}>
                         {course.levels.map((lvl) => {
                           const isLevelActive = lvl.code === courseLevel
                           return (
@@ -205,7 +214,7 @@ export function CourseSwitcher({ className }: CourseSwitcherProps) {
                             </button>
                           )
                         })}
-                      </div>
+                      </Flex>
                     </div>
                   )}
                 </div>

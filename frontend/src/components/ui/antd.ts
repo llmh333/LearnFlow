@@ -16,6 +16,7 @@ export {
   Drawer,
   Dropdown,
   Empty,
+  Flex,
   Form,
   Input,
   InputNumber,

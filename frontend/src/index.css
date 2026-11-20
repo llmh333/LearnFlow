@@ -1,3 +1,6 @@
+/* antd (StyleProvider layer) sits under Tailwind utilities, so utility classes win over antd defaults. */
+@layer theme, base, antd, components, utilities;
+
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));

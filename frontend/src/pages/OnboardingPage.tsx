@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -109,11 +110,15 @@ export function OnboardingPage() {
   const stepProgress = (step / 5) * 100
 
   return (
-    <div className="min-h-screen bg-[#F7F9FA] text-[#374151] dark:bg-[#131F24] dark:text-[#E5E7EB] flex flex-col justify-between selection:bg-[#58CC02] selection:text-white">
+    <Flex
+      vertical
+      justify="space-between"
+      className="min-h-screen bg-[#F7F9FA] text-[#374151] dark:bg-[#131F24] dark:text-[#E5E7EB] selection:bg-[#58CC02] selection:text-white"
+    >
       {/* Top Header & Wizard Progress */}
       <header className="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/95 px-4 sm:px-8 py-3.5 backdrop-blur-md dark:border-[#2B3940] dark:bg-[#1A262C]/95">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <Flex align="center" justify="space-between" gap={16} className="mx-auto max-w-4xl">
+          <Flex align="center" gap={12}>
             {step > 1 && (
               <button
                 type="button"
@@ -124,11 +129,11 @@ export function OnboardingPage() {
                 <IconArrowLeft size={18} />
               </button>
             )}
-            <div className="flex items-center gap-2 font-black text-slate-800 dark:text-white">
+            <Flex align="center" gap={8} className="font-black text-slate-800 dark:text-white">
               <Flowy size={26} />
               <span className="text-base tracking-tight">LearnFlow Onboarding</span>
-            </div>
-          </div>
+            </Flex>
+          </Flex>
 
           {/* Step Progress Bar */}
           <div className="flex-1 max-w-xs sm:max-w-md mx-4">
@@ -138,10 +143,13 @@ export function OnboardingPage() {
                 style={{ width: `${stepProgress}%` }}
               />
             </div>
-            <div className="mt-1 flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <Flex
+              justify="space-between"
+              className="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400"
+            >
               <span>Step {step} of 5</span>
               <span>{Math.round(stepProgress)}% Completed</span>
-            </div>
+            </Flex>
           </div>
 
           {/* Quick Skip button */}
@@ -152,7 +160,7 @@ export function OnboardingPage() {
           >
             Skip to App
           </button>
-        </div>
+        </Flex>
       </header>
 
       {/* Main Wizard Content Area */}
@@ -160,10 +168,14 @@ export function OnboardingPage() {
         {/* Step 1: Select Language Course */}
         {step === 1 && (
           <div className="w-full space-y-6 animate-fade-in">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-[#1A262C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-xs">
+            <Flex align="flex-start" gap={16}>
+              <Flex
+                align="center"
+                justify="center"
+                className="shrink-0 h-14 w-14 rounded-2xl bg-white dark:bg-[#1A262C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-xs"
+              >
                 <Flowy size={40} className="animate-bounce-playful" />
-              </div>
+              </Flex>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F6FD] px-3 py-0.5 text-xs font-black text-[#0284C7] dark:bg-sky-950/60 dark:text-sky-300 mb-1">
                   <IconSparkles size={13} />
@@ -176,7 +188,7 @@ export function OnboardingPage() {
                   LearnFlow hỗ trợ học chuyên sâu 3 ngôn ngữ với AI Tutor, từ vựng và luyện phản xạ.
                 </p>
               </div>
-            </div>
+            </Flex>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               {COURSES.map((course) => {
@@ -195,16 +207,20 @@ export function OnboardingPage() {
                     )}
                   >
                     <div>
-                      <div className="flex items-center justify-between mb-4">
+                      <Flex align="center" justify="space-between" className="mb-4">
                         <LanguageFlagBadge code={course.code} size={36} />
                         {isSelected ? (
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#58CC02] text-white shadow-xs">
+                          <Flex
+                            align="center"
+                            justify="center"
+                            className="h-7 w-7 rounded-full bg-[#58CC02] text-white shadow-xs"
+                          >
                             <IconCheck size={16} />
-                          </div>
+                          </Flex>
                         ) : (
                           <div className="h-7 w-7 rounded-full border-2 border-slate-200 dark:border-slate-700" />
                         )}
-                      </div>
+                      </Flex>
 
                       <h3 className="text-lg font-black text-slate-800 dark:text-white">
                         {course.name}
@@ -215,12 +231,16 @@ export function OnboardingPage() {
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px] font-black text-slate-400">
+                    <Flex
+                      align="center"
+                      justify="space-between"
+                      className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800 text-[11px] font-black text-slate-400"
+                    >
                       <span>{course.tagline}</span>
                       <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-slate-700 dark:text-slate-300">
                         {course.levels.length} Cấp độ
                       </span>
-                    </div>
+                    </Flex>
                   </button>
                 )
               })}
@@ -231,10 +251,14 @@ export function OnboardingPage() {
         {/* Step 2: Select Starting Proficiency Level */}
         {step === 2 && (
           <div className="w-full space-y-6 animate-fade-in">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-[#1A262C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-xs">
+            <Flex align="flex-start" gap={16}>
+              <Flex
+                align="center"
+                justify="center"
+                className="shrink-0 h-14 w-14 rounded-2xl bg-white dark:bg-[#1A262C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-xs"
+              >
                 <Flowy size={40} className="animate-bounce-playful" />
-              </div>
+              </Flex>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 mb-1">
                   <IconGraduationCap size={13} />
@@ -248,7 +272,7 @@ export function OnboardingPage() {
                   Chọn trình độ phù hợp nhất để AI đề xuất từ vựng và kịch bản hội thoại đúng sức.
                 </p>
               </div>
-            </div>
+            </Flex>
 
             <div className="space-y-3 pt-2">
               {activeCourse.levels.map((level: LevelDefinition) => {
@@ -266,15 +290,17 @@ export function OnboardingPage() {
                         : 'border-slate-200 bg-white hover:border-slate-300 dark:border-[#2B3940] dark:bg-[#1A262C] dark:hover:bg-[#202F36]',
                     )}
                   >
-                    <div className="flex items-center gap-3.5">
-                      <div
+                    <Flex align="center" gap={14}>
+                      <Flex
+                        align="center"
+                        justify="center"
                         className={cn(
-                          'flex h-12 w-16 sm:w-20 shrink-0 items-center justify-center rounded-2xl font-black text-sm border shadow-2xs',
+                          'h-12 w-16 sm:w-20 shrink-0 rounded-2xl font-black text-sm border shadow-2xs',
                           level.pillColor,
                         )}
                       >
                         {level.code}
-                      </div>
+                      </Flex>
 
                       <div>
                         <h4 className="text-base font-black text-slate-800 dark:text-white">
@@ -284,13 +310,17 @@ export function OnboardingPage() {
                           {level.description}
                         </p>
                       </div>
-                    </div>
+                    </Flex>
 
                     <div className="shrink-0 ml-3">
                       {isSelected ? (
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1CB0F6] text-white shadow-xs">
+                        <Flex
+                          align="center"
+                          justify="center"
+                          className="h-7 w-7 rounded-full bg-[#1CB0F6] text-white shadow-xs"
+                        >
                           <IconCheck size={16} />
-                        </div>
+                        </Flex>
                       ) : (
                         <div className="h-7 w-7 rounded-full border-2 border-slate-200 dark:border-slate-700" />
                       )}
@@ -305,10 +335,14 @@ export function OnboardingPage() {
         {/* Step 3: Select Learning Goal */}
         {step === 3 && (
           <div className="w-full space-y-6 animate-fade-in">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+            <Flex align="flex-start" gap={16}>
+              <Flex
+                align="center"
+                justify="center"
+                className="shrink-0 h-14 w-14 rounded-2xl bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+              >
                 <IconTrophy size={36} />
-              </div>
+              </Flex>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-0.5 text-xs font-black text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 mb-1">
                   <IconZap size={13} />
@@ -321,7 +355,7 @@ export function OnboardingPage() {
                   LearnFlow sẽ ưu tiên các bài luyện tập và chủ đề tương thích với động lực của bạn.
                 </p>
               </div>
-            </div>
+            </Flex>
 
             <div className="space-y-3 pt-2">
               {GOAL_OPTIONS.map((opt) => {
@@ -339,7 +373,7 @@ export function OnboardingPage() {
                         : 'border-slate-200 bg-white hover:border-slate-300 dark:border-[#2B3940] dark:bg-[#1A262C] dark:hover:bg-[#202F36]',
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <Flex align="center" gap={16}>
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-[#162025] text-2xl border border-slate-200 dark:border-slate-700 shadow-2xs">
                         {opt.iconEmoji}
                       </span>
@@ -352,13 +386,17 @@ export function OnboardingPage() {
                           {opt.description}
                         </p>
                       </div>
-                    </div>
+                    </Flex>
 
                     <div className="shrink-0 ml-3">
                       {isSelected ? (
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF9600] text-white shadow-xs">
+                        <Flex
+                          align="center"
+                          justify="center"
+                          className="h-7 w-7 rounded-full bg-[#FF9600] text-white shadow-xs"
+                        >
                           <IconCheck size={16} />
-                        </div>
+                        </Flex>
                       ) : (
                         <div className="h-7 w-7 rounded-full border-2 border-slate-200 dark:border-slate-700" />
                       )}
@@ -373,10 +411,14 @@ export function OnboardingPage() {
         {/* Step 4: Select Daily Time Commitment */}
         {step === 4 && (
           <div className="w-full space-y-6 animate-fade-in">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF9600]/15 text-[#FF9600]">
+            <Flex align="flex-start" gap={16}>
+              <Flex
+                align="center"
+                justify="center"
+                className="shrink-0 h-14 w-14 rounded-2xl bg-[#FF9600]/15 text-[#FF9600]"
+              >
                 <IconFlame size={36} className="animate-bounce-playful" />
-              </div>
+              </Flex>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-0.5 text-xs font-black text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 mb-1">
                   <IconClock size={13} />
@@ -390,7 +432,7 @@ export function OnboardingPage() {
                   nào.
                 </p>
               </div>
-            </div>
+            </Flex>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               {DAILY_TARGET_OPTIONS.map((opt) => {
@@ -409,18 +451,22 @@ export function OnboardingPage() {
                     )}
                   >
                     <div>
-                      <div className="flex items-center justify-between mb-3">
+                      <Flex align="center" justify="space-between" className="mb-3">
                         <span className="text-2xl font-black text-slate-800 dark:text-white">
                           {opt.label}
                         </span>
                         {isSelected ? (
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#58CC02] text-white shadow-xs">
+                          <Flex
+                            align="center"
+                            justify="center"
+                            className="h-7 w-7 rounded-full bg-[#58CC02] text-white shadow-xs"
+                          >
                             <IconCheck size={16} />
-                          </div>
+                          </Flex>
                         ) : (
                           <div className="h-7 w-7 rounded-full border-2 border-slate-200 dark:border-slate-700" />
                         )}
-                      </div>
+                      </Flex>
                       <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
                         {opt.tagline}
                       </p>
@@ -443,12 +489,16 @@ export function OnboardingPage() {
         {/* Step 5: Summary & Celebration */}
         {step === 5 && (
           <div className="w-full space-y-6 text-center animate-scale-in">
-            <div className="relative mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white dark:bg-[#1A262C] border-4 border-b-8 border-slate-200 dark:border-[#2B3940] shadow-xl">
+            <Flex
+              align="center"
+              justify="center"
+              className="relative mx-auto h-24 w-24 rounded-3xl bg-white dark:bg-[#1A262C] border-4 border-b-8 border-slate-200 dark:border-[#2B3940] shadow-xl"
+            >
               <FlowyHappy size={70} className="animate-bounce-playful" />
               <span className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#FFC800] text-white border-2 border-white shadow-sm">
                 ⭐
               </span>
-            </div>
+            </Flex>
 
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 mb-2">
@@ -466,17 +516,25 @@ export function OnboardingPage() {
 
             {/* Summary Card */}
             <Card className="mx-auto max-w-lg p-5 rounded-3xl border-2 border-b-4 border-slate-200 dark:border-[#2B3940] bg-white dark:bg-[#1A262C] text-left space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Flex
+                align="center"
+                justify="space-between"
+                className="border-b border-slate-100 dark:border-slate-800 pb-3"
+              >
                 <span className="text-xs font-bold text-slate-400 uppercase">Khóa Học:</span>
-                <div className="flex items-center gap-2">
+                <Flex align="center" gap={8}>
                   <LanguageFlagBadge code={activeCourse.code} size={20} />
                   <span className="text-sm font-black text-slate-800 dark:text-white">
                     {activeCourse.name}
                   </span>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
 
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Flex
+                align="center"
+                justify="space-between"
+                className="border-b border-slate-100 dark:border-slate-800 pb-3"
+              >
                 <span className="text-xs font-bold text-slate-400 uppercase">
                   Trình Độ Bắt Đầu:
                 </span>
@@ -484,21 +542,25 @@ export function OnboardingPage() {
                   {selectedLevel} -{' '}
                   {activeCourse.levels.find((l) => l.code === selectedLevel)?.name}
                 </span>
-              </div>
+              </Flex>
 
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Flex
+                align="center"
+                justify="space-between"
+                className="border-b border-slate-100 dark:border-slate-800 pb-3"
+              >
                 <span className="text-xs font-bold text-slate-400 uppercase">Mục Tiêu:</span>
                 <span className="text-xs font-black text-slate-800 dark:text-white">
                   {GOAL_OPTIONS.find((g) => g.goal === selectedGoal)?.title}
                 </span>
-              </div>
+              </Flex>
 
-              <div className="flex items-center justify-between">
+              <Flex align="center" justify="space-between">
                 <span className="text-xs font-bold text-slate-400 uppercase">Cam Kết:</span>
                 <span className="text-xs font-black text-[#58CC02]">
                   {selectedDailyMinutes} phút mỗi ngày
                 </span>
-              </div>
+              </Flex>
             </Card>
           </div>
         )}
@@ -506,7 +568,7 @@ export function OnboardingPage() {
 
       {/* Bottom Sticky Action Footer */}
       <footer className="sticky bottom-0 z-20 border-t-2 border-slate-200 bg-white/95 px-4 sm:px-8 py-4 backdrop-blur-md dark:border-[#2B3940] dark:bg-[#1A262C]/95">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+        <Flex align="center" justify="space-between" gap={16} className="mx-auto max-w-3xl">
           {step > 1 ? (
             <Button
               type="button"
@@ -544,8 +606,8 @@ export function OnboardingPage() {
               <span>🚀 Bắt Đầu Học Ngay!</span>
             </Button>
           )}
-        </div>
+        </Flex>
       </footer>
-    </div>
+    </Flex>
   )
 }

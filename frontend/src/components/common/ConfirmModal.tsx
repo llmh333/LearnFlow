@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import type { ReactNode } from 'react'
 import { Flowy, IconCheck, IconLogOut, IconSparkles, IconTrash, IconZap } from '@/assets'
 import { Button, type ButtonProps } from '@/components/ui/Button'
@@ -49,41 +50,65 @@ export function ConfirmModal({
     switch (icon) {
       case 'success':
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 border-2 border-b-4 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400 shadow-sm">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-emerald-50 text-emerald-500 border-2 border-b-4 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400 shadow-sm"
+          >
             <IconCheck size={32} />
-          </div>
+          </Flex>
         )
       case 'danger':
       case 'trash':
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-[#FF4B4B] border-2 border-b-4 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-400 shadow-sm">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-rose-50 text-[#FF4B4B] border-2 border-b-4 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-400 shadow-sm"
+          >
             <IconTrash size={30} />
-          </div>
+          </Flex>
         )
       case 'logout':
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-[#FF4B4B] border-2 border-b-4 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-400 shadow-sm">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-rose-50 text-[#FF4B4B] border-2 border-b-4 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-400 shadow-sm"
+          >
             <IconLogOut size={30} />
-          </div>
+          </Flex>
         )
       case 'warning':
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 border-2 border-b-4 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400 shadow-sm">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-amber-50 text-amber-500 border-2 border-b-4 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400 shadow-sm"
+          >
             <IconZap size={30} />
-          </div>
+          </Flex>
         )
       case 'info':
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-50 text-[#1CB0F6] border-2 border-b-4 border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 dark:text-[#1CB0F6] shadow-sm">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-sky-50 text-[#1CB0F6] border-2 border-b-4 border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 dark:text-[#1CB0F6] shadow-sm"
+          >
             <IconSparkles size={30} />
-          </div>
+          </Flex>
         )
       case 'mascot':
       default:
         return (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm border-2 border-b-4 border-slate-200 dark:bg-[#131F24] dark:border-[#2B3940]">
+          <Flex
+            align="center"
+            justify="center"
+            className="h-16 w-16 rounded-2xl bg-white shadow-sm border-2 border-b-4 border-slate-200 dark:bg-[#131F24] dark:border-[#2B3940]"
+          >
             <Flowy size={44} />
-          </div>
+          </Flex>
         )
     }
   }
@@ -97,7 +122,7 @@ export function ConfirmModal({
       onClose={isLoading ? () => {} : onClose}
       className={cn('max-w-md', className)}
     >
-      <div className="flex flex-col items-center text-center">
+      <Flex vertical align="center" className="text-center">
         {/* Visual Badge */}
         <div className="mb-4">{renderIcon()}</div>
 
@@ -115,7 +140,7 @@ export function ConfirmModal({
         {children && <div className="mt-4 w-full text-left">{children}</div>}
 
         {/* Action Buttons */}
-        <div className="mt-6 flex w-full flex-col-reverse gap-2.5 sm:flex-row sm:gap-3">
+        <Flex className="mt-6 w-full flex-col-reverse gap-2.5 sm:flex-row sm:gap-3">
           <Button
             type="button"
             variant="secondary"
@@ -134,8 +159,8 @@ export function ConfirmModal({
           >
             {isLoading ? 'Đang xử lý…' : confirmText}
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     </Dialog>
   )
 }

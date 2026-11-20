@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Alert, Button, Card, Divider, Form, Input } from 'antd'
+import { Alert, Button, Card, Divider, Flex, Form, Input } from 'antd'
 import {
   LockOutlined,
   MailOutlined,
@@ -70,7 +70,11 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 bg-[#F7F9FA] dark:bg-[#131F24] overflow-hidden selection:bg-[#58CC02] selection:text-white">
+    <Flex
+      align="center"
+      justify="center"
+      className="relative min-h-screen p-4 bg-[#F7F9FA] dark:bg-[#131F24] overflow-hidden selection:bg-[#58CC02] selection:text-white"
+    >
       {/* Decorative playful floating character badges */}
       <div
         aria-hidden="true"
@@ -96,22 +100,26 @@ export function RegisterPage() {
         styles={{ body: { padding: '2rem 1.5rem' } }}
       >
         {/* Mascot Banner */}
-        <div className="mb-6 flex flex-col items-center text-center">
-          <div className="relative mb-3 flex items-center justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-[#131F24] shadow-sm border-2 border-b-4 border-slate-200 dark:border-[#2B3940]">
+        <Flex vertical align="center" className="mb-6 text-center">
+          <Flex align="center" justify="center" className="relative mb-3">
+            <Flex
+              align="center"
+              justify="center"
+              className="h-16 w-16 rounded-2xl bg-white dark:bg-[#131F24] shadow-sm border-2 border-b-4 border-slate-200 dark:border-[#2B3940]"
+            >
               <Flowy size={46} />
-            </div>
+            </Flex>
             <span className="absolute -bottom-1 -right-2 inline-flex items-center rounded-full bg-[#58CC02] px-2 py-0.5 text-[10px] font-black uppercase text-white border border-[#46A302]">
               Level 1
             </span>
-          </div>
+          </Flex>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-[#202F36] px-3.5 py-1 mb-2">
-            <div className="flex items-center gap-1">
+            <Flex align="center" gap={4}>
               <EnglishFlagBadge size={15} />
               <ChinaFlagBadge size={15} />
               <JapanFlagBadge size={15} />
-            </div>
+            </Flex>
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
               Start Your Journey
             </span>
@@ -123,7 +131,7 @@ export function RegisterPage() {
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
             Build an exciting, rewarding daily habit across English, Chinese, and Japanese.
           </p>
-        </div>
+        </Flex>
 
         <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} className="space-y-1">
           <Form.Item
@@ -299,16 +307,20 @@ export function RegisterPage() {
         isLoading={register.isPending}
       >
         <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3.5 text-xs dark:border-[#2B3940] dark:bg-[#131F24]">
-          <div className="flex items-center justify-between py-1">
+          <Flex align="center" justify="space-between" className="py-1">
             <span className="text-slate-500 font-medium">Họ tên:</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{displayName}</span>
-          </div>
-          <div className="flex items-center justify-between py-1 border-t border-slate-200/60 dark:border-slate-800">
+          </Flex>
+          <Flex
+            align="center"
+            justify="space-between"
+            className="py-1 border-t border-slate-200/60 dark:border-slate-800"
+          >
             <span className="text-slate-500 font-medium">Email:</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{email}</span>
-          </div>
+          </Flex>
         </div>
       </ConfirmModal>
-    </div>
+    </Flex>
   )
 }

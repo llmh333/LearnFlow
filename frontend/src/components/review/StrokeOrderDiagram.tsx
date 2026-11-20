@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { useEffect, useState } from 'react'
 import { IconRotate } from '@/assets'
 
@@ -54,17 +55,25 @@ export function StrokeOrderDiagram({
 
   if (failed) {
     return (
-      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-slate-300 text-3xl text-slate-400 dark:border-slate-700">
+      <Flex
+        align="center"
+        justify="center"
+        className="h-32 w-32 rounded-xl border border-dashed border-slate-300 text-3xl text-slate-400 dark:border-slate-700"
+      >
         {character}
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <Flex vertical align="center" gap={4}>
       {/* Always a white "paper" background, even in dark mode: the animated stroke is drawn in a
           fixed dark color (see index.css), which would be invisible on a dark card. */}
-      <div className="stroke-order-canvas flex h-32 w-32 items-center justify-center rounded-xl border border-slate-200 bg-white">
+      <Flex
+        align="center"
+        justify="center"
+        className="stroke-order-canvas h-32 w-32 rounded-xl border border-slate-200 bg-white"
+      >
         {svg ? (
           <div
             key={playCount}
@@ -75,7 +84,7 @@ export function StrokeOrderDiagram({
         ) : (
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
         )}
-      </div>
+      </Flex>
       {svg && (
         <button
           type="button"
@@ -86,6 +95,6 @@ export function StrokeOrderDiagram({
           <span>Replay</span>
         </button>
       )}
-    </div>
+    </Flex>
   )
 }

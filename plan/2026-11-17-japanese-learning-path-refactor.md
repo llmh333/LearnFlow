@@ -35,6 +35,7 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 | D14 | SRS | Thẻ `srs_card` trỏ thẳng tới nội dung global (exclusive arc), không chép sang bảng của user; "Từ của tôi" là bảng `user_word` riêng, cũng có thẻ | Thay §5.2 cũ (`vocabulary.catalog_word_id`). Bảng học/ôn tập tạo ở migration của R2–R4. |
 | D15 | Đa ngôn ngữ | Chỉ `course` (và `ai_conversation`) có `language_id`; bảng nội dung đặt tên `jp_*` | Ngôn ngữ khác có bảng riêng khi tới lúc. |
 | D16 | Phiên đăng nhập | Access token JWT 15 phút trong body + refresh token xoay vòng 30 ngày trong cookie HttpOnly (bảng `refresh_token`, lưu SHA-256, thu hồi cả chuỗi khi token bị dùng lại); đăng ký có xác nhận mật khẩu; có đổi mật khẩu | Thay JWT 12 giờ không thu hồi được. Đổi mật khẩu đăng xuất mọi thiết bị (access token cũ còn tối đa 15 phút). |
+| D17 | UI kit | Ant Design 6 (`antd`, `@ant-design/icons`) + Tailwind 4. Style antd nằm trong `@layer antd` (`@ant-design/cssinjs` `StyleProvider layer`), xếp dưới Tailwind utilities; layout hàng/cột dùng `Flex` của antd | antd cho form, modal, table có sẵn khả năng truy cập; layer để class Tailwind luôn đè được mặc định của antd. Bundle JS tăng (> 500 kB), cần tách chunk sau. |
 
 ## 3. Nguồn nội dung tiếng Nhật
 

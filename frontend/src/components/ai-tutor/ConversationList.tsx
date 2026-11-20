@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { IconPlus, IconBot } from '@/assets'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -18,7 +19,7 @@ export function ConversationList({
   onNew,
 }: ConversationListProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <Flex vertical gap={12}>
       <Button type="button" variant="primary" onClick={onNew} className="w-full gap-2 py-3">
         <IconPlus size={16} />
         <span>Start New Chat</span>
@@ -39,7 +40,7 @@ export function ConversationList({
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-[#2B3940] dark:bg-[#1B272C] dark:text-slate-200 dark:hover:bg-[#223238]',
                 )}
               >
-                <div className="flex items-center justify-between gap-1 mb-1.5">
+                <Flex align="center" justify="space-between" gap={4} className="mb-1.5">
                   <span className="font-extrabold text-xs truncate">
                     {conversation.scenario ?? 'General Practice'}
                   </span>
@@ -52,7 +53,7 @@ export function ConversationList({
                   >
                     {conversation.language?.code.toUpperCase() ?? 'JA'}
                   </Badge>
-                </div>
+                </Flex>
                 <div
                   className={cn(
                     'truncate text-[11px] font-bold',
@@ -78,6 +79,6 @@ export function ConversationList({
           </li>
         )}
       </ul>
-    </div>
+    </Flex>
   )
 }

@@ -1,3 +1,4 @@
+import { Flex } from 'antd'
 import { Flowy, StudentAvatar } from '@/assets'
 import { cn } from '@/lib/cn'
 
@@ -10,16 +11,20 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
   const isUser = role === 'USER'
 
   return (
-    <div
-      className={cn(
-        'flex items-end gap-2.5 my-3 animate-fade-in',
-        isUser ? 'justify-end' : 'justify-start',
-      )}
+    <Flex
+      align="flex-end"
+      justify={isUser ? 'flex-end' : 'flex-start'}
+      gap={10}
+      className="my-3 animate-fade-in"
     >
       {!isUser && (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-[#1B272C] border-2 border-b-3 border-slate-200 dark:border-[#2B3940] shadow-xs select-none">
+        <Flex
+          align="center"
+          justify="center"
+          className="h-9 w-9 shrink-0 rounded-2xl bg-white dark:bg-[#1B272C] border-2 border-b-3 border-slate-200 dark:border-[#2B3940] shadow-xs select-none"
+        >
           <Flowy size={25} />
-        </div>
+        </Flex>
       )}
       <div
         className={cn(
@@ -32,10 +37,14 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
         {content}
       </div>
       {isUser && (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#1CB0F6] border-2 border-b-4 border-[#1899D6] text-white shadow-xs select-none">
+        <Flex
+          align="center"
+          justify="center"
+          className="h-9 w-9 shrink-0 rounded-2xl bg-[#1CB0F6] border-2 border-b-4 border-[#1899D6] text-white shadow-xs select-none"
+        >
           <StudentAvatar size={24} />
-        </div>
+        </Flex>
       )}
-    </div>
+    </Flex>
   )
 }

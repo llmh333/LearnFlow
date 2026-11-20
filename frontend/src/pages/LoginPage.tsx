@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Alert, Button, Card, Divider, Form, Input } from 'antd'
+import { Alert, Button, Card, Divider, Flex, Form, Input } from 'antd'
 import {
   FireFilled,
   LockOutlined,
@@ -46,7 +46,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 bg-[#F7F9FA] dark:bg-[#131F24] overflow-hidden selection:bg-[#58CC02] selection:text-white">
+    <Flex
+      align="center"
+      justify="center"
+      className="relative min-h-screen p-4 bg-[#F7F9FA] dark:bg-[#131F24] overflow-hidden selection:bg-[#58CC02] selection:text-white"
+    >
       {/* Decorative playful floating character badges (EN, ZH, JA) */}
       <div
         aria-hidden="true"
@@ -72,23 +76,27 @@ export function LoginPage() {
         styles={{ body: { padding: '2rem 1.5rem' } }}
       >
         {/* Mascot Banner */}
-        <div className="mb-6 flex flex-col items-center text-center">
-          <div className="relative mb-3 flex items-center justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-[#131F24] shadow-sm border-2 border-b-4 border-slate-200 dark:border-[#2B3940]">
+        <Flex vertical align="center" className="mb-6 text-center">
+          <Flex align="center" justify="center" className="relative mb-3">
+            <Flex
+              align="center"
+              justify="center"
+              className="h-16 w-16 rounded-2xl bg-white dark:bg-[#131F24] shadow-sm border-2 border-b-4 border-slate-200 dark:border-[#2B3940]"
+            >
               <Flowy size={46} />
-            </div>
+            </Flex>
             <span className="absolute -bottom-1 -right-2 inline-flex items-center gap-1 rounded-full bg-[#FFC800] px-2 py-0.5 text-[10px] font-black uppercase text-amber-950 border border-[#E5A500]">
               <FireFilled className="text-amber-700 text-xs" />
               <span>7 Streak</span>
             </span>
-          </div>
+          </Flex>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-[#202F36] px-3.5 py-1 mb-2">
-            <div className="flex items-center gap-1">
+            <Flex align="center" gap={4}>
               <EnglishFlagBadge size={15} />
               <ChinaFlagBadge size={15} />
               <JapanFlagBadge size={15} />
-            </div>
+            </Flex>
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
               English • 中文 • 日本語
             </span>
@@ -100,7 +108,7 @@ export function LoginPage() {
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
             Keep your streak alive and practice English, Chinese &amp; Japanese today.
           </p>
-        </div>
+        </Flex>
 
         <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} className="space-y-1">
           <Form.Item
@@ -199,6 +207,6 @@ export function LoginPage() {
           </Link>
         </p>
       </Card>
-    </div>
+    </Flex>
   )
 }

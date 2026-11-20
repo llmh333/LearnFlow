@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate, NavLink, Outlet } from 'react-router-dom'
-import { Avatar, Button, Drawer, Progress, Tooltip } from 'antd'
+import { Avatar, Button, Drawer, Flex, Progress, Tooltip } from 'antd'
 import {
   CheckOutlined,
   CloseOutlined,
@@ -96,24 +96,28 @@ export function AppLayout() {
       {/* Top Gaming HUD Bar */}
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b-2 border-slate-200 bg-white/95 px-4 sm:px-6 backdrop-blur-md dark:border-[#2B3940] dark:bg-[#1B272C]/95">
         {/* Left: Brand Logo & Mascot */}
-        <div className="flex items-center gap-3">
+        <Flex align="center" gap={12}>
           <NavLink to="/ai-tutor" className="group flex items-center gap-2.5 select-none">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white dark:bg-[#1B272C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-sm transition-transform group-hover:scale-105 active:scale-95">
+            <Flex
+              align="center"
+              justify="center"
+              className="h-11 w-11 rounded-2xl bg-white dark:bg-[#1B272C] border-2 border-b-4 border-slate-200 dark:border-[#2B3940] shadow-sm transition-transform group-hover:scale-105 active:scale-95"
+            >
               <Flowy size={32} />
-            </div>
+            </Flex>
             <div>
-              <div className="flex items-center gap-1">
+              <Flex align="center" gap={4}>
                 <span className="text-xl font-black tracking-tight text-slate-800 dark:text-white">
                   LearnFlow
                 </span>
                 <span className="h-2 w-2 rounded-full bg-[#58CC02]" />
-              </div>
+              </Flex>
               <p className="text-[11px] font-extrabold tracking-wide text-[#58CC02] uppercase">
                 EN • 中文 • 日本語
               </p>
             </div>
           </NavLink>
-        </div>
+        </Flex>
 
         {/* Center: Language & Stats HUD */}
         <div className="hidden sm:flex items-center gap-2.5">
@@ -122,15 +126,23 @@ export function AppLayout() {
 
           {/* Streak Flame Pill with Ant Design Tooltip */}
           <Tooltip title="Daily study streak!">
-            <div className="flex items-center gap-1.5 rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] px-3 py-1.5 text-xs font-black text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
+            <Flex
+              align="center"
+              gap={6}
+              className="rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] px-3 py-1.5 text-xs font-black text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300"
+            >
               <FireFilled className="text-amber-500 text-sm" />
               <span>7 Days</span>
-            </div>
+            </Flex>
           </Tooltip>
 
           {/* Mock / Live Backend Status Pill */}
           {mockActive ? (
-            <div className="flex items-center gap-1.5 rounded-2xl border-2 border-emerald-200 bg-[#D7FFB8] px-3 py-1 text-xs font-bold text-[#347800] dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <Flex
+              align="center"
+              gap={6}
+              className="rounded-2xl border-2 border-emerald-200 bg-[#D7FFB8] px-3 py-1 text-xs font-bold text-[#347800] dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+            >
               <span className="h-2 w-2 rounded-full bg-[#58CC02] animate-pulse" />
               <span>Mock Data</span>
               <button
@@ -141,9 +153,13 @@ export function AppLayout() {
               >
                 Off
               </button>
-            </div>
+            </Flex>
           ) : (
-            <div className="flex items-center gap-1.5 rounded-2xl border-2 border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 dark:border-[#2B3940] dark:bg-[#1A262C] dark:text-slate-300">
+            <Flex
+              align="center"
+              gap={6}
+              className="rounded-2xl border-2 border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 dark:border-[#2B3940] dark:bg-[#1A262C] dark:text-slate-300"
+            >
               <span
                 className={cn(
                   'h-2 w-2 rounded-full',
@@ -151,12 +167,12 @@ export function AppLayout() {
                 )}
               />
               <span>{health.data?.status === 'UP' ? 'Live API 🟢' : 'Connecting API…'}</span>
-            </div>
+            </Flex>
           )}
         </div>
 
         {/* Right: Actions, Theme & Profile */}
-        <div className="flex items-center gap-2">
+        <Flex align="center" gap={8}>
           <ThemeToggle />
 
           {/* Profile Trigger Button with Ant Design Avatar */}
@@ -194,11 +210,11 @@ export function AppLayout() {
           >
             {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
           </button>
-        </div>
+        </Flex>
       </header>
 
       {/* Main 3-Column Learning Playground */}
-      <div className="mx-auto flex max-w-[1536px] gap-6 p-4 sm:p-6 lg:p-8">
+      <Flex gap={24} className="mx-auto max-w-[1536px] p-4 sm:p-6 lg:p-8">
         {/* Column 1: Left Navigation Rail (Desktop) */}
         <aside className="hidden lg:flex w-64 shrink-0 flex-col gap-6">
           <nav className="flex flex-col gap-2">
@@ -216,7 +232,7 @@ export function AppLayout() {
                 }
               >
                 {({ isActive }) => (
-                  <div className="flex items-center gap-3">
+                  <Flex align="center" gap={12}>
                     <span className="text-lg transition-transform group-hover:scale-110">
                       {item.emoji}
                     </span>
@@ -226,7 +242,7 @@ export function AppLayout() {
                         {item.badge}
                       </span>
                     )}
-                  </div>
+                  </Flex>
                 )}
               </NavLink>
             ))}
@@ -234,10 +250,10 @@ export function AppLayout() {
 
           {/* Cheerful Mascot Motivational Card */}
           <div className="rounded-3xl border-2 border-b-4 border-amber-200 bg-[#FFF5CC] p-4 text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200 shadow-xs">
-            <div className="flex items-center gap-2 mb-2">
+            <Flex align="center" gap={8} className="mb-2">
               <Flowy size={32} className="animate-bounce-playful" />
               <span className="text-xs font-black uppercase tracking-wider">Flowy Companion</span>
-            </div>
+            </Flex>
             <p className="text-xs leading-relaxed font-bold">
               &quot;Học ngoại ngữ để kết nối mọi người! Luyện tập 10 phút mỗi ngày cùng cộng đồng
               toàn cầu.&quot;
@@ -254,64 +270,88 @@ export function AppLayout() {
         <aside className="hidden xl:flex w-72 shrink-0 flex-col gap-5">
           {/* Daily Quests Board */}
           <div className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
+            <Flex align="center" justify="space-between" className="mb-3">
+              <Flex align="center" gap={8}>
                 <QuestTargetBadge size={22} />
                 <h3 className="font-black text-slate-800 dark:text-white text-sm">Daily Quests</h3>
-              </div>
+              </Flex>
               <span className="text-xs font-bold text-[#58CC02]">2 / 3 Done</span>
-            </div>
+            </Flex>
 
             <Progress percent={66} strokeColor="#58CC02" showInfo={false} className="!mb-3" />
 
             <div className="space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#58CC02] text-white">
+              <Flex
+                align="center"
+                gap={12}
+                className="rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800"
+              >
+                <Flex
+                  align="center"
+                  justify="center"
+                  className="h-8 w-8 shrink-0 rounded-xl bg-[#58CC02] text-white"
+                >
                   <CheckOutlined />
-                </div>
+                </Flex>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                     Daily Check-in
                   </p>
                   <p className="text-[11px] text-slate-400">Completed today</p>
                 </div>
-              </div>
+              </Flex>
 
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#58CC02] text-white">
+              <Flex
+                align="center"
+                gap={12}
+                className="rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800"
+              >
+                <Flex
+                  align="center"
+                  justify="center"
+                  className="h-8 w-8 shrink-0 rounded-xl bg-[#58CC02] text-white"
+                >
                   <CheckOutlined />
-                </div>
+                </Flex>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                     Conversation Practice
                   </p>
                   <p className="text-[11px] text-slate-400">Practice 1 conversation</p>
                 </div>
-              </div>
+              </Flex>
 
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#1CB0F6] text-white">
+              <Flex
+                align="center"
+                gap={12}
+                className="rounded-2xl bg-slate-50 p-3 dark:bg-[#131F24] border border-slate-100 dark:border-slate-800"
+              >
+                <Flex
+                  align="center"
+                  justify="center"
+                  className="h-8 w-8 shrink-0 rounded-xl bg-[#1CB0F6] text-white"
+                >
                   <ThunderboltFilled />
-                </div>
+                </Flex>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                     Grammar Clinic
                   </p>
                   <p className="text-[11px] text-slate-400">Ask 1 grammar question</p>
                 </div>
-              </div>
+              </Flex>
             </div>
           </div>
 
           {/* Weekly Habit Tracker */}
           <div className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
-            <div className="flex items-center gap-2 mb-3">
+            <Flex align="center" gap={8} className="mb-3">
               <StreakFlameBadge size={22} />
               <h3 className="font-black text-slate-800 dark:text-white text-sm">Weekly Streak</h3>
-            </div>
+            </Flex>
             <div className="grid grid-cols-7 gap-1.5 text-center">
               {WEEK_DAYS.map((d, index) => (
-                <div key={index} className="flex flex-col items-center gap-1">
+                <Flex key={index} vertical align="center" gap={4}>
                   <span className="text-[11px] font-bold text-slate-400">{d.label}</span>
                   <div
                     className={cn(
@@ -325,27 +365,27 @@ export function AppLayout() {
                   >
                     {d.done ? '✓' : ''}
                   </div>
-                </div>
+                </Flex>
               ))}
             </div>
           </div>
 
           {/* Language Progress Milestone */}
           <div className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
+            <Flex align="center" justify="space-between" className="mb-2">
+              <Flex align="center" gap={8}>
                 <TrophyFilled className="text-amber-500 text-base" />
                 <h3 className="font-black text-slate-800 dark:text-white text-sm">
                   Target: {currentLevel}
                 </h3>
-              </div>
+              </Flex>
               <NavLink
                 to="/onboarding"
                 className="text-[11px] font-bold text-[#1CB0F6] hover:underline"
               >
                 Change Level
               </NavLink>
-            </div>
+            </Flex>
             <p className="text-xs text-slate-500 mb-3">{langMeta.desc}</p>
             <Progress
               percent={45}
@@ -353,13 +393,13 @@ export function AppLayout() {
               showInfo={false}
               className="!mb-1"
             />
-            <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-1.5">
+            <Flex justify="space-between" className="text-[11px] font-bold text-slate-400 mt-1.5">
               <span>Foundation</span>
               <span className="text-[#58CC02]">{langMeta.progress}</span>
-            </div>
+            </Flex>
           </div>
         </aside>
-      </div>
+      </Flex>
 
       {/* Mobile Ant Design Drawer Navigation */}
       <Drawer
@@ -367,14 +407,14 @@ export function AppLayout() {
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         title={
-          <div className="flex items-center gap-2 font-black text-lg">
+          <Flex align="center" gap={8} className="font-black text-lg">
             <Flowy size={28} />
             <span>LearnFlow</span>
-          </div>
+          </Flex>
         }
         className="dark:!bg-[#1B272C]"
       >
-        <div className="flex flex-col gap-4">
+        <Flex vertical gap={16}>
           <CourseSwitcher className="w-full" />
 
           <nav className="flex flex-col gap-2 my-2">
@@ -392,10 +432,10 @@ export function AppLayout() {
                   )
                 }
               >
-                <div className="flex items-center gap-2.5">
+                <Flex align="center" gap={10}>
                   <span>{item.emoji}</span>
                   <span>{item.label}</span>
-                </div>
+                </Flex>
               </NavLink>
             ))}
           </nav>
@@ -413,7 +453,7 @@ export function AppLayout() {
           >
             Log out
           </Button>
-        </div>
+        </Flex>
       </Drawer>
 
       {/* Logout Confirmation Dialog */}
