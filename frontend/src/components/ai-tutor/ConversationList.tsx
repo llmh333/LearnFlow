@@ -1,6 +1,5 @@
-import { Flex } from 'antd'
+import { Flex, Tag } from 'antd'
 import { IconPlus, IconBot } from '@/assets'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
 import type { ConversationListItem } from '@/api/ai'
@@ -44,15 +43,14 @@ export function ConversationList({
                   <span className="font-extrabold text-xs truncate">
                     {conversation.scenario ?? 'General Practice'}
                   </span>
-                  <Badge
-                    variant={isActive ? 'outline' : 'default'}
+                  <Tag
                     className={cn(
-                      'text-[10px] py-0 px-2',
-                      isActive ? 'border-white/50 text-white' : '',
+                      'm-0 rounded-full border-2 px-2 text-[10px] font-bold',
+                      isActive && 'border-white/50 bg-transparent text-white',
                     )}
                   >
                     {conversation.language?.code.toUpperCase() ?? 'JA'}
-                  </Badge>
+                  </Tag>
                 </Flex>
                 <div
                   className={cn(

@@ -17,7 +17,15 @@ export class ApiError extends Error {
 }
 
 /** Auth calls whose 401 means "bad credentials / no session", not "access token expired". */
-const NO_REFRESH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout']
+const NO_REFRESH_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/password-reset/request',
+  '/auth/password-reset/verify',
+  '/auth/password-reset/confirm',
+]
 
 let refreshInFlight: Promise<boolean> | null = null
 
@@ -107,9 +115,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit, retried = fa
     )
   }
 
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  return response.json() as Promise<T>
+  // 202/204 and other empty bodies resolve to undefined instead of failing to parse.
+  const text = await response.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }

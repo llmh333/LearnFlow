@@ -92,3 +92,53 @@ export interface Course {
 export interface ExamplesResponse {
   examples: string[]
 }
+
+/** Generic paginated response mirroring backend PageResponse<T>. */
+export interface PageResponse<T> {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+/** JLPT Levels supported by Japanese dictionary. */
+export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
+
+/** Word summary item from GET /api/v1/dictionary/words. */
+export interface WordSummary {
+  id: number
+  written: string | null
+  reading: string
+  meaningsVi: string[]
+  partOfSpeech: string[]
+  jlptLevel: JlptLevel | null
+}
+
+/** Example sentence attached to a dictionary word. */
+export interface WordExample {
+  text: string
+  reading: string | null
+  translationVi: string
+  sourceAuthor?: string | null
+}
+
+/** Full word detail with examples & source from GET /api/v1/dictionary/words/{id}. */
+export interface WordDetail {
+  id: number
+  written: string | null
+  reading: string
+  meaningsVi: string[]
+  meaningsEn: string[]
+  partOfSpeech: string[]
+  jlptLevel: JlptLevel | null
+  note: string | null
+  examples: WordExample[]
+  source: ContentSource
+}
+
+/** Level count from GET /api/v1/dictionary/levels. */
+export interface LevelCount {
+  level: JlptLevel | null
+  wordCount: number
+}

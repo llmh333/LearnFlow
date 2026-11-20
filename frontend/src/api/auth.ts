@@ -51,3 +51,33 @@ export function changePassword(payload: ChangePasswordPayload): Promise<AuthResp
     body: JSON.stringify(payload),
   })
 }
+
+/** Always 202, whether or not the email has an account (no account probing). */
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiFetch<void>('/auth/password-reset/request', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export function verifyPasswordReset(email: string, code: string): Promise<void> {
+  return apiFetch<void>('/auth/password-reset/verify', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  })
+}
+
+export interface ConfirmPasswordResetPayload {
+  email: string
+  code: string
+  newPassword: string
+  confirmNewPassword: string
+}
+
+/** Sets the new password and signs out every device; the user then logs in again. */
+export function confirmPasswordReset(payload: ConfirmPasswordResetPayload): Promise<void> {
+  return apiFetch<void>('/auth/password-reset/confirm', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

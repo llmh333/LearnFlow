@@ -1,5 +1,6 @@
 import { MOCK_CONTENT_SOURCES, MOCK_COURSES } from './data/curriculum'
 import { MOCK_LANGUAGES } from './data/languages'
+import { MOCK_WORDS, MOCK_LEVEL_COUNTS, toWordSummary } from './data/dictionary'
 import {
   MOCK_CONVERSATION_SUMMARY,
   MOCK_SENTENCE_CORRECTION,
@@ -119,6 +120,11 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
 
   if (path === '/auth/logout' && method === 'POST') {
     setMockMode(false)
+    return undefined as T
+  }
+
+  // Password reset: any email gets a "code", any 6 digits pass (real codes live in the backend log).
+  if (path.startsWith('/auth/password-reset/') && method === 'POST') {
     return undefined as T
   }
 
@@ -242,6 +248,56 @@ export async function handleMockRequest<T>(path: string, init?: RequestInit): Pr
     }
     endMockConversation(id, summary)
     return summary as T
+  }
+
+  // 6. Dictionary endpoints
+  if (path === '/dictionary/levels' && method === 'GET') {
+    return MOCK_LEVEL_COUNTS as T
+  }
+
+  const wordDetailMatch = path.match(/^\/dictionary\/words\/(\d+)$/)
+  if (wordDetailMatch && method === 'GET') {
+    const id = parseInt(wordDetailMatch[1], 10)
+    const word = MOCK_WORDS.find((w) => w.id === id)
+    if (!word) {
+      throw new Error(`Word with id ${id} not found`)
+    }
+    return word as T
+  }
+
+  if (path.startsWith('/dictionary/words') && method === 'GET') {
+    const url = new URL(path, 'http://localhost')
+    const q = url.searchParams.get('q')?.toLowerCase() || ''
+    const level = url.searchParams.get('level')?.toUpperCase() || ''
+    const page = parseInt(url.searchParams.get('page') || '0', 10)
+    const size = parseInt(url.searchParams.get('size') || '20', 10)
+
+    let filtered = MOCK_WORDS
+    if (level) {
+      filtered = filtered.filter((w) => w.jlptLevel === level)
+    }
+    if (q) {
+      filtered = filtered.filter(
+        (w) =>
+          w.reading.toLowerCase().includes(q) ||
+          (w.written && w.written.toLowerCase().includes(q)) ||
+          w.meaningsVi.some((m) => m.toLowerCase().includes(q)) ||
+          w.meaningsEn.some((m) => m.toLowerCase().includes(q)),
+      )
+    }
+
+    const totalElements = filtered.length
+    const totalPages = Math.ceil(totalElements / size) || 1
+    const start = page * size
+    const pagedContent = filtered.slice(start, start + size).map(toWordSummary)
+
+    return {
+      content: pagedContent,
+      page,
+      size,
+      totalElements,
+      totalPages,
+    } as T
   }
 
   // Fallback for unknown paths

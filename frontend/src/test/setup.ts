@@ -14,3 +14,10 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 })
+
+// jsdom has no ResizeObserver; antd Select/Segmented/InputNumber observe their size.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}

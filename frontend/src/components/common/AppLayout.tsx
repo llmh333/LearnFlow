@@ -25,6 +25,7 @@ import { useUiStore } from '@/stores/uiStore'
 
 const NAV_ITEMS = [
   { to: '/ai-tutor', label: 'AI Tutor', icon: IconBot, emoji: '💬', badge: 'Live' },
+  { to: '/vocabulary', label: 'Từ vựng & Tra cứu', icon: IconBook, emoji: '📖', badge: 'JLPT' },
   { to: '/sources', label: 'Curriculum & Sources', icon: IconBook, emoji: '📚' },
 ]
 

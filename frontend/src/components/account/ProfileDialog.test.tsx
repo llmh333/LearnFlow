@@ -30,6 +30,12 @@ function renderDialog(onClose = vi.fn()) {
   return onClose
 }
 
+async function choose(label: string, option: string) {
+  fireEvent.mouseDown(screen.getByLabelText(label))
+  const items = await screen.findAllByTitle(option)
+  fireEvent.click(items[items.length - 1])
+}
+
 describe('ProfileDialog', () => {
   it('shows the saved profile and sends the changed values', async () => {
     updateProfile.mockResolvedValue({
@@ -41,9 +47,10 @@ describe('ProfileDialog', () => {
     })
     const onClose = renderDialog()
 
-    expect(await screen.findByLabelText(/time zone/i)).toHaveValue('Asia/Ho_Chi_Minh')
-    fireEvent.change(screen.getByLabelText('Goal'), { target: { value: 'JLPT' } })
-    fireEvent.change(screen.getByLabelText('Minutes per day'), { target: { value: '15' } })
+    // antd Select shows the chosen option as text; pick new ones from the opened dropdown.
+    expect(await screen.findByText('Asia/Ho_Chi_Minh')).toBeInTheDocument()
+    await choose('Goal', 'Pass the JLPT')
+    await choose('Minutes per day', '15 minutes')
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(onClose).toHaveBeenCalled())

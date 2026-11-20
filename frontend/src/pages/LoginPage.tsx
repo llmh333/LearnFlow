@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Alert, Button, Card, Divider, Flex, Form, Input } from 'antd'
 import {
   FireFilled,
@@ -18,6 +18,7 @@ import { useUiStore } from '@/stores/uiStore'
 export function LoginPage() {
   const { isAuthenticated, login } = useAuth()
   const navigate = useNavigate()
+  const passwordReset = (useLocation().state as { passwordReset?: boolean } | null)?.passwordReset
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -110,6 +111,15 @@ export function LoginPage() {
           </p>
         </Flex>
 
+        {passwordReset && (
+          <Alert
+            type="success"
+            showIcon
+            title="Your password has been reset. Please log in."
+            className="mb-4 rounded-2xl"
+          />
+        )}
+
         <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} className="space-y-1">
           <Form.Item
             label={
@@ -152,12 +162,21 @@ export function LoginPage() {
             />
           </Form.Item>
 
+          <Flex justify="flex-end" className="-mt-2 mb-2">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-bold text-[#1CB0F6] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </Flex>
+
           {login.isError && (
             <div className="mb-3">
               <Alert
                 type="error"
                 showIcon
-                message={login.error instanceof ApiError ? login.error.message : 'Login failed'}
+                title={login.error instanceof ApiError ? login.error.message : 'Login failed'}
                 className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50 dark:!bg-rose-950/40 text-xs font-bold"
               />
             </div>

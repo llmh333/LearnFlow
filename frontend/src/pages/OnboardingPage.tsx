@@ -1,4 +1,4 @@
-import { Flex } from 'antd'
+import { Card, Flex } from 'antd'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -16,7 +16,6 @@ import {
   LanguageFlagBadge,
 } from '@/assets'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { useProfile, useUpdateProfile } from '@/hooks/useAccount'
 import {
   COURSES,
@@ -515,7 +514,10 @@ export function OnboardingPage() {
             </div>
 
             {/* Summary Card */}
-            <Card className="mx-auto max-w-lg p-5 rounded-3xl border-2 border-b-4 border-slate-200 dark:border-[#2B3940] bg-white dark:bg-[#1A262C] text-left space-y-3">
+            <Card
+              className="mx-auto max-w-lg rounded-3xl border-2 border-b-4 border-slate-200 dark:border-[#2B3940] bg-white dark:bg-[#1A262C] text-left"
+              classNames={{ body: 'space-y-3 p-5' }}
+            >
               <Flex
                 align="center"
                 justify="space-between"

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Button, Flex, Input } from 'antd'
+import { useEffect, useRef, useState } from 'react'
+import { Button, Flex, Form, Input } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
 import { Flowy } from '@/assets'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
@@ -45,7 +45,8 @@ export function ChatWindow({
   isEnding,
   ended,
 }: ChatWindowProps) {
-  const [draft, setDraft] = useState('')
+  const [form] = Form.useForm<{ draft: string }>()
+  const draft: string = Form.useWatch('draft', form) ?? ''
   const [confirmEndOpen, setConfirmEndOpen] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -53,11 +54,11 @@ export function ChatWindow({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length, streamingReply])
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!draft.trim() || isSending || ended) return
-    onSend(draft.trim())
-    setDraft('')
+  function handleFinish(values: { draft?: string }) {
+    const text = values.draft?.trim()
+    if (!text || isSending || ended) return
+    onSend(text)
+    form.resetFields()
   }
 
   function handleQuickPrompt(text: string) {
@@ -153,18 +154,19 @@ export function ChatWindow({
       </div>
 
       {/* Input form */}
-      <form
-        onSubmit={handleSubmit}
+      <Form
+        form={form}
+        onFinish={handleFinish}
         className="flex gap-2.5 pt-3 border-t-2 border-slate-100 dark:border-[#2B3940]"
       >
-        <Input
-          size="large"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={ended ? 'This session has concluded.' : langGreeting.placeholder}
-          disabled={ended || isSending}
-          className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
-        />
+        <Form.Item name="draft" noStyle>
+          <Input
+            size="large"
+            placeholder={ended ? 'This session has concluded.' : langGreeting.placeholder}
+            disabled={ended || isSending}
+            className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+          />
+        </Form.Item>
         <Button
           type="primary"
           htmlType="submit"
@@ -176,7 +178,7 @@ export function ChatWindow({
         >
           {isSending ? 'Sending...' : 'Send'}
         </Button>
-      </form>
+      </Form>
 
       {!ended && messages.length > 0 && (
         <Flex justify="flex-end" className="pt-1">

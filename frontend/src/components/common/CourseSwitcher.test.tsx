@@ -52,9 +52,8 @@ describe('CourseSwitcher', () => {
     const trigger = screen.getByRole('button', { name: /current course: english/i })
     fireEvent.click(trigger)
 
-    // Switch to A2
-    const a2Button = screen.getByRole('button', { name: 'A2' })
-    fireEvent.click(a2Button)
+    // Levels are a radio group: switch to A2
+    fireEvent.click(screen.getByRole('radio', { name: 'A2' }))
 
     expect(useUiStore.getState().userLevels.en).toBe('A2')
   })

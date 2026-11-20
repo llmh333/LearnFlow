@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Alert, Button, Card, Drawer, Flex, Input, Tag } from 'antd'
+import { useEffect, useState } from 'react'
+import { Alert, Button, Card, Drawer, Flex, Form, Input, Tag } from 'antd'
 import {
   BookOutlined,
   BulbOutlined,
@@ -42,20 +42,19 @@ function ErrorNotice({ error }: { error: unknown }) {
     <Alert
       type="error"
       showIcon
-      message={message}
+      title={message}
       className="!rounded-2xl !border-2 !border-rose-200 !bg-rose-50 text-xs font-bold"
     />
   )
 }
 
 function AskTab({ languageCode }: { languageCode: string }) {
-  const [question, setQuestion] = useState('')
+  const [form] = Form.useForm<{ question: string }>()
+  const question: string = Form.useWatch('question', form) ?? ''
   const explainGrammar = useExplainGrammar()
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!question.trim()) return
-    explainGrammar.mutate({ languageCode, question: question.trim() })
+  function handleFinish(values: { question: string }) {
+    explainGrammar.mutate({ languageCode, question: values.question.trim() })
   }
 
   const askPlaceholder =
@@ -89,14 +88,14 @@ function AskTab({ languageCode }: { languageCode: string }) {
           </div>
         </Flex>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input.TextArea
-            rows={3}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder={askPlaceholder}
-            className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
-          />
+        <Form form={form} onFinish={handleFinish} className="flex flex-col gap-3">
+          <Form.Item name="question" noStyle>
+            <Input.TextArea
+              rows={3}
+              placeholder={askPlaceholder}
+              className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
           <Flex justify="flex-end">
             <Button
               type="primary"
@@ -109,7 +108,7 @@ function AskTab({ languageCode }: { languageCode: string }) {
               {explainGrammar.isPending ? 'Consulting Coach...' : 'Ask Question 📖'}
             </Button>
           </Flex>
-        </form>
+        </Form>
       </Card>
 
       <ErrorNotice error={explainGrammar.error} />
@@ -135,13 +134,12 @@ function AskTab({ languageCode }: { languageCode: string }) {
 }
 
 function ExamplesTab({ languageCode }: { languageCode: string }) {
-  const [word, setWord] = useState('')
+  const [form] = Form.useForm<{ word: string }>()
+  const word: string = Form.useWatch('word', form) ?? ''
   const generateExamples = useGenerateExamples()
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!word.trim()) return
-    generateExamples.mutate({ languageCode, word: word.trim() })
+  function handleFinish(values: { word: string }) {
+    generateExamples.mutate({ languageCode, word: values.word.trim() })
   }
 
   const placeholder =
@@ -176,14 +174,14 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
           </div>
         </Flex>
 
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-          <Input
-            size="large"
-            value={word}
-            onChange={(e) => setWord(e.target.value)}
-            placeholder={placeholder}
-            className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
-          />
+        <Form form={form} onFinish={handleFinish} className="flex flex-col sm:flex-row gap-3">
+          <Form.Item name="word" noStyle>
+            <Input
+              size="large"
+              placeholder={placeholder}
+              className="flex-1 !rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
           <Button
             type="primary"
             htmlType="submit"
@@ -195,7 +193,7 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
           >
             {generateExamples.isPending ? 'Generating…' : 'Generate Examples ✨'}
           </Button>
-        </form>
+        </Form>
       </Card>
 
       <ErrorNotice error={generateExamples.error} />
@@ -228,13 +226,12 @@ function ExamplesTab({ languageCode }: { languageCode: string }) {
 }
 
 function CorrectTab({ languageCode }: { languageCode: string }) {
-  const [text, setText] = useState('')
+  const [form] = Form.useForm<{ text: string }>()
+  const text: string = Form.useWatch('text', form) ?? ''
   const correctSentence = useCorrectSentence()
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!text.trim()) return
-    correctSentence.mutate({ languageCode, text: text.trim() })
+  function handleFinish(values: { text: string }) {
+    correctSentence.mutate({ languageCode, text: values.text.trim() })
   }
 
   const correctPlaceholder =
@@ -267,14 +264,14 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
           </div>
         </Flex>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input.TextArea
-            rows={3}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={correctPlaceholder}
-            className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
-          />
+        <Form form={form} onFinish={handleFinish} className="flex flex-col gap-3">
+          <Form.Item name="text" noStyle>
+            <Input.TextArea
+              rows={3}
+              placeholder={correctPlaceholder}
+              className="!rounded-2xl !border-2 text-sm !bg-slate-50 dark:!bg-[#131F24]"
+            />
+          </Form.Item>
           <Flex justify="flex-end">
             <Button
               type="primary"
@@ -287,7 +284,7 @@ function CorrectTab({ languageCode }: { languageCode: string }) {
               {correctSentence.isPending ? 'Diagnosing...' : 'Check Sentence 🩺'}
             </Button>
           </Flex>
-        </form>
+        </Form>
       </Card>
 
       <ErrorNotice error={correctSentence.error} />

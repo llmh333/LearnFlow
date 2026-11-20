@@ -129,7 +129,7 @@ export function SourcesPage() {
           <Alert
             type="error"
             showIcon
-            message="Could not load the source list."
+            title="Could not load the source list."
             className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50"
           />
         )}

@@ -228,7 +228,7 @@ export function RegisterPage() {
               <Alert
                 type="error"
                 showIcon
-                message="Passwords do not match. Please re-enter both passwords."
+                title="Passwords do not match. Please re-enter both passwords."
                 className="!rounded-2xl !border-2 !border-[#FF4B4B]/30 !bg-rose-50 dark:!bg-rose-950/40 text-xs font-bold"
               />
             </div>
@@ -239,7 +239,7 @@ export function RegisterPage() {
               <Alert
                 type="error"
                 showIcon
-                message={
+                title={
                   register.error instanceof ApiError
                     ? register.error.message
                     : 'Registration failed'

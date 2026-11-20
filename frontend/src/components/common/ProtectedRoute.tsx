@@ -1,4 +1,4 @@
-import { Flex } from 'antd'
+import { Flex, Spin } from 'antd'
 import { useEffect, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { refreshSession } from '@/api/client'
@@ -19,8 +19,8 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (status === 'unknown') {
     return (
-      <Flex role="status" align="center" justify="center" className="min-h-screen text-slate-500">
-        Loading…
+      <Flex role="status" align="center" justify="center" className="min-h-screen">
+        <Spin size="large" aria-label="Loading" />
       </Flex>
     )
   }

@@ -1,4 +1,4 @@
-import { Flex } from 'antd'
+import { Flex, Spin } from 'antd'
 import { useEffect, useState } from 'react'
 import { IconRotate } from '@/assets'
 
@@ -82,7 +82,7 @@ export function StrokeOrderDiagram({
             dangerouslySetInnerHTML={{ __html: svg }}
           />
         ) : (
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
+          <Spin size="small" />
         )}
       </Flex>
       {svg && (

@@ -1,5 +1,4 @@
-import { Flex } from 'antd'
-import { Badge } from '@/components/ui/Badge'
+import { Flex, Tag } from 'antd'
 import type { ConversationSummaryResult } from '@/api/ai'
 
 interface ConversationSummaryCardProps {
@@ -35,7 +34,11 @@ export function ConversationSummaryCard({ summary }: ConversationSummaryCardProp
                 key={m.original}
                 className="flex items-center gap-2.5 rounded-2xl bg-[#FFDFE0]/60 p-3 text-xs text-slate-800 border-2 border-[#FFB3B5] dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-800"
               >
-                {m.category && <Badge variant="danger">{m.category}</Badge>}
+                {m.category && (
+                  <Tag color="error" className="m-0 rounded-full border-2 font-bold">
+                    {m.category}
+                  </Tag>
+                )}
                 <span className="font-bold">{m.topic}</span>
               </li>
             ))}

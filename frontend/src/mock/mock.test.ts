@@ -123,4 +123,26 @@ describe('Mock System', () => {
     expect(summary.conversationId).toBe(msgResult.conversationId)
     expect(summary.overview).toBeDefined()
   })
+
+  it('handles dictionary levels, search and word details', async () => {
+    const levels =
+      await handleMockRequest<Array<{ level: string; wordCount: number }>>('/dictionary/levels')
+    expect(levels.length).toBeGreaterThan(0)
+    expect(levels.some((l) => l.level === 'N5')).toBe(true)
+
+    const searchResult = await handleMockRequest<{
+      content: Array<{ id: number; written: string; reading: string }>
+      totalElements: number
+    }>('/dictionary/words?level=N5&q=学生')
+    expect(searchResult.content.length).toBeGreaterThan(0)
+    expect(searchResult.content[0].reading).toBe('がくせい')
+
+    const detail = await handleMockRequest<{
+      id: number
+      written: string
+      examples: Array<{ text: string }>
+    }>('/dictionary/words/1')
+    expect(detail.id).toBe(1)
+    expect(detail.examples.length).toBeGreaterThan(0)
+  })
 })
