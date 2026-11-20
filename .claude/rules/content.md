@@ -86,7 +86,7 @@ Mọi mục đều cần `key`, `status`, `source`.
 |---|---|---|
 | JMdict, KANJIDIC2 | CC BY-SA 4.0 | Ghi nguồn; dữ liệu phái sinh giữ CC BY-SA. Không dùng số liệu tần suất của Halpern |
 | Tatoeba | CC BY 2.0 FR (một phần CC0) | Ghi nguồn và link; không dùng audio của Tatoeba |
-| Danh sách JLPT của Waller | Chưa xác minh | **Xác minh giấy phép trước khi dùng** (việc của R1) |
+| Danh sách JLPT của Waller | CC BY theo các repo phân phối lại (chưa xác minh trực tiếp; tanos.co.uk không truy cập được) | Đã nạp N5/N4 ở `DRAFT` bằng migration V21–V23. **Xác minh giấy phép (và việc nghĩa tiếng Anh có lấy từ JMdict, CC BY-SA, hay không) trước khi chuyển sang `reviewed`** |
 | AnimCJK | LGPL / Arphic | Giữ ghi nguồn như ở `WordStrokeOrder.tsx` |
 
 ## Quy trình

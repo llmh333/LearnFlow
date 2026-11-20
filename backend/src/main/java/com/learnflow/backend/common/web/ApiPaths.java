@@ -63,6 +63,15 @@ public final class ApiPaths {
             private Curriculum() {}
         }
 
+        public static final class Dictionary {
+            public static final String BASE = V1.ROOT + "/dictionary";
+            public static final String WORDS = "/words";
+            public static final String WORD = "/words/{id}";
+            public static final String LEVELS = "/levels";
+
+            private Dictionary() {}
+        }
+
         public static final class Ai {
             public static final String BASE = V1.ROOT + "/ai";
             public static final String GRAMMAR_EXPLAIN = "/grammar/explain";
