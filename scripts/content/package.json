@@ -1,0 +1,12 @@
+{
+  "name": "learnflow-content-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Content import/enrichment scripts (run by hand, see README.md). Node 22 runs the .ts files directly.",
+  "scripts": {
+    "test": "node --test scripts.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.140.0"
+  }
+}

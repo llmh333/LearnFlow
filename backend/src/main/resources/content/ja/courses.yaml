@@ -1,0 +1,15 @@
+courses:
+  - key: ja.course.kana
+    language: ja
+    level: KANA
+    title: Bảng chữ Kana
+    description: Hiragana và Katakana — nền tảng để đọc tiếng Nhật.
+    position: 1
+    status: draft
+  - key: ja.course.n5
+    language: ja
+    level: N5
+    title: Sơ cấp N5
+    description: Từ vựng, ngữ pháp và hội thoại cơ bản cấp N5.
+    position: 2
+    status: draft

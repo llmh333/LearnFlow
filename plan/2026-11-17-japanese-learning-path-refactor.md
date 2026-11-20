@@ -19,7 +19,7 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 
 | # | Vấn đề | Quyết định | Ghi chú |
 |---|---|---|---|
-| D1 | Đối tượng | Nhóm nhỏ (đăng ký bằng mã mời) → sau này công khai, có thanh toán để mở giới hạn AI | Bản cũ chỉ phục vụ 1 người dùng và không có gamification. Gamification chỉ ở mức nhẹ: streak, mục tiêu ngày. Không leaderboard. |
+| D1 | Đối tượng | Nhóm nhỏ → sau này công khai, có thanh toán để mở giới hạn AI | Bản cũ chỉ phục vụ 1 người dùng và không có gamification. Gamification chỉ ở mức nhẹ: streak, mục tiêu ngày. Không leaderboard. Đăng ký mở, **không dùng mã mời** (bỏ ngày 2026-11-19; tắt đăng ký bằng `app.auth.registration-enabled`). |
 | D2 | Nền tảng | Web, **mobile-first** (responsive). PWA cài được trên Android ở phase sau | Không có macOS nên không build iOS native. |
 | D3 | Ngôn ngữ ưu tiên | **Tiếng Nhật trước**, lộ trình Kana → N5 → N4 → N3 | Anh/Trung bị ẩn khỏi UI (cờ `language.enabled`) cho tới khi có nội dung, dữ liệu cũ giữ nguyên. |
 | D4 | Nguồn nội dung | Dữ liệu mở có giấy phép rõ ràng + AI sinh phần thiếu + **người duyệt** trước khi vào app | Xem §3. Nội dung là dữ liệu cố định trong DB, **không** sinh realtime lúc người dùng học. |
@@ -28,6 +28,14 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 | D7 | Múi giờ | Mỗi người dùng có `timezone`; "hôm nay", streak, giới hạn từ mới tính theo giờ địa phương | Sửa vấn đề hiện tại: mọi ranh giới ngày đang tính theo UTC (lệch 7h với VN). |
 | D8 | Giới hạn AI | Đếm lượt gọi AI theo user/ngày ngay từ bây giờ (`ai_usage`), quota cấu hình được | Chuẩn bị cho thanh toán sau này, đồng thời chặn chi phí AI bị đội lên. |
 | D9 | Formatter + tiêu chuẩn cho Claude Code | Backend: Spotless (google-java-format AOSP, `ratchetFrom origin/dev`). Frontend: Prettier (devDependency). Bộ `.claude/` gồm hook chặn cứng, skill `implement-feature`/`pre-pr`, subagent `code-reviewer`/`content-reviewer` | Spotless là maven plugin, không vào runtime. Ratchet tránh một diff format toàn repo. Quy tắc chi tiết: `AGENTS.md` §1.8, `CLAUDE.md`. |
+| D10 | ~~Bảng nội dung một bảng `content_item` + JSONB~~ | **Thay bằng D13** | Đã bỏ ngày 2026-11-18. |
+| D11 | Vị trí file nội dung | `backend/src/main/resources/content/` thay vì `content/` ở gốc | Docker build context của backend là `backend/`; để ở đây nội dung tự vào jar, không phải sửa Dockerfile/deploy. |
+| D12 | Reset database (2026-11-18) | Xoá V1–V15 và mọi module dùng schema cũ (`vocabulary`, `srs`, `study`, `dailyplan`, `dashboard`, `exercise`, `mistake`, `progress`), viết lại từ `V1`, **mỗi bảng một migration** (`V{n}__create_<table>_table.sql`). Ngoại lệ một lần của luật "không sửa migration đã apply" | Schema cũ gắn SRS vào bảng từ tự nhập, lặp `user_id` không ràng buộc, seed dữ liệu trong Flyway. **Prod phải xoá schema cũ trước khi deploy, mất toàn bộ dữ liệu cũ.** Thiết kế: `plan/2026-11-18-database-redesign.md`. `Sm2Algorithm` cũ lấy lại từ git history khi làm R2–R3. |
+| D13 | Bảng nội dung | Bảng riêng từng loại: `kana`, `jp_word`, `jp_kanji`, `grammar_point`, `example_sentence`, nghĩa dùng `TEXT[]`; liên kết đa hình theo kiểu exclusive arc (một cột FK cho mỗi loại + `CHECK num_nonnulls(...) = 1`) | Ràng buộc nằm ở DB. Chưa tạo `word_kanji`. |
+| D14 | SRS | Thẻ `srs_card` trỏ thẳng tới nội dung global (exclusive arc), không chép sang bảng của user; "Từ của tôi" là bảng `user_word` riêng, cũng có thẻ | Thay §5.2 cũ (`vocabulary.catalog_word_id`). Bảng học/ôn tập tạo ở migration của R2–R4. |
+| D15 | Đa ngôn ngữ | Chỉ `course` (và `ai_conversation`) có `language_id`; bảng nội dung đặt tên `jp_*` | Ngôn ngữ khác có bảng riêng khi tới lúc. |
+| D16 | Phiên đăng nhập | Access token JWT 15 phút trong body + refresh token xoay vòng 30 ngày trong cookie HttpOnly (bảng `refresh_token`, lưu SHA-256, thu hồi cả chuỗi khi token bị dùng lại); đăng ký có xác nhận mật khẩu; có đổi mật khẩu | Thay JWT 12 giờ không thu hồi được. Đổi mật khẩu đăng xuất mọi thiết bị (access token cũ còn tối đa 15 phút). |
+| D17 | UI kit | Ant Design 6 (`antd`, `@ant-design/icons`) + Tailwind 4. Style antd nằm trong `@layer antd` (`@ant-design/cssinjs` `StyleProvider layer`), xếp dưới Tailwind utilities; layout hàng/cột dùng `Flex` của antd | antd cho form, modal, table có sẵn khả năng truy cập; layer để class Tailwind luôn đè được mặc định của antd. Bundle JS tăng (> 500 kB), cần tách chunk sau. |
 
 ## 3. Nguồn nội dung tiếng Nhật
 
@@ -48,10 +56,10 @@ Người học tiếng Nhật từ con số 0 tới khoảng N3 mở app và:
 nguồn mở (JMdict, KANJIDIC2, JLPT list, Tatoeba)
         │  scripts/content/import-*.ts   (chạy tay, ngoài app)
         ▼
-content/ja/raw/…  (JSON trung gian, không commit file nguồn lớn)
+scripts/content/raw/…  (JSON trung gian, không commit file nguồn lớn)
         │  scripts/content/enrich-ai.ts  (AI: nghĩa tiếng Việt, ví dụ, chia bài)
         ▼
-content/ja/n5/unit-01.yaml …   status: draft
+backend/src/main/resources/content/ja/n5/unit-01.yaml …   status: draft (D11)
         │  người duyệt sửa → status: reviewed   (duyệt qua diff của PR)
         ▼
 ContentImporter (backend, chạy khi khởi động) upsert theo content_key
@@ -95,7 +103,7 @@ Số liệu chỉ để ước lượng công sức, sẽ chốt lại khi đã 
 Thay cho Daily Plan nhập số phút. Engine xác định (giữ tinh thần `PlanningEngine`) dựng một hàng đợi theo thời lượng mục tiêu: ôn đến hạn (có giới hạn) → bước tiếp theo của lộ trình → 1 bài luyện kỹ năng yếu nhất. Một nút bắt đầu, có thể dừng giữa chừng và học tiếp.
 
 ### 4.5. Ôn tập (SRS)
-- Giữ `Sm2Algorithm` và `ReviewService` (đây là phần ổn định nhất).
+- Thuật toán SM-2 viết lại trên `srs_card`/`review_log` (D12, D14); bản cũ lấy từ git history.
 - **Một thẻ, nhiều kiểu hỏi:** engine chọn kiểu theo độ thuộc — nghe → chọn nghĩa; nhìn kanji → chọn cách đọc; nghĩa → gõ kana. Từ mới bắt đầu bằng kiểu dễ.
 - Giới hạn từ mới mỗi ngày giữ nguyên, nhưng gắn với tiến độ lộ trình thay vì kho từ tự nhập.
 
@@ -126,26 +134,20 @@ Giữ `AIProvider` và 3 provider hiện có. AI được dùng để: giải th
 
 ## 5. Thay đổi kiến trúc backend
 
-### 5.1. Module mới
+### 5.1. Module
 
 | Module | Trách nhiệm |
 |---|---|
-| `curriculum` | Bảng nội dung global (course, unit, lesson, word, kanji, kana, grammar_point, example_sentence, passage), `ContentImporter`, API đọc lộ trình |
-| `learning` | Tiến độ người dùng: `lesson_progress`, mở khoá bài, engine phiên "Hôm nay" (thay cho `dailyplan`) |
-| `practice` | Sinh và chấm bài tập 4 kỹ năng, ghi `activity_log` (nguồn cho streak, biểu đồ kỹ năng). Gộp phần lớn `exercise` hiện tại vào đây |
-| `account` (mở rộng `auth`) | Hồ sơ: timezone, mục tiêu, phút/ngày, mã mời, quota AI |
+| `curriculum` | Bảng nội dung global, `ContentImporter`, API đọc lộ trình (đã có từ R1) |
+| `learning` | Tiến độ: `lesson_progress`, mở khoá bài, phiên "Hôm nay" |
+| `srs` | `srs_card`, `review_log`, thuật toán SM-2 (viết lại, D12) |
+| `practice` | Sinh và chấm bài tập 4 kỹ năng, ghi `activity_log` |
+| `account` (mở rộng `auth`) | Hồ sơ: timezone, mục tiêu, phút/ngày, quota AI |
 
-Giữ: `srs`, `vocabulary` ("Từ của tôi"), `ai`, `mistake`, `progress`, `common`. Bỏ dần: `dailyplan` (thay bằng `learning`), `dashboard` (gộp vào `learning`/`progress`).
+Đang có: `common`, `auth`, `language`, `curriculum`, `ai`, `health`. Các module cũ đã bị gỡ (D12).
 
-### 5.2. Nối nội dung global với SRS hiện có
-Cách ít thay đổi nhất: khi người dùng học một từ trong bài, tạo một dòng `vocabulary` của user có `catalog_word_id` trỏ về từ global (unique `(user_id, catalog_word_id)`), rồi `ReviewService.createScheduleFor` như bây giờ. SRS không cần sửa schema. Từ tự nhập thì `catalog_word_id = null`.
-
-Kanji, Kana và điểm ngữ pháp đưa vào SRS ở phase sau bằng cột `item_type` — chưa làm ở MVP.
-
-### 5.3. Bảng mới (phác thảo)
-- Global: `course`, `unit`, `lesson`, `lesson_item(lesson_id, item_type, item_id, order)`, `jp_word`, `jp_kanji`, `kana`, `grammar_point`, `example_sentence`, `passage`, `content_source` (ghi nguồn/giấy phép cho từng mục).
-- Theo user: `user_profile`, `lesson_progress`, `activity_log`, `ai_usage`, `invite_code`.
-- Sửa: `vocabulary` thêm `catalog_word_id`; `language` thêm `enabled`.
+### 5.2–5.3. Schema
+Xem `plan/2026-11-18-database-redesign.md` (D12–D15).
 
 ### 5.4. Sửa kèm theo (từ phân tích backend trước đó)
 - Không giữ transaction DB mở khi chờ AI: tách phần gọi AI ra khỏi `@Transactional` (pool prod chỉ có 3 kết nối).
@@ -167,7 +169,7 @@ Mỗi phase: chạy được, qua cổng kiểm tra `mvnw verify` + `lint/build/
 
 | Phase | Mục tiêu | Nội dung chính | Xong khi |
 |---|---|---|---|
-| **R0** Dọn nền | Sửa nợ kỹ thuật trước khi mở rộng | Các mục §5.4, `user_profile` + timezone, `language.enabled`, mã mời, `ai_usage` | Ranh giới ngày theo giờ VN; AI vượt quota trả 429 |
+| **R0** Dọn nền | Sửa nợ kỹ thuật trước khi mở rộng | Các mục §5.4, `user_profile` + timezone, `language.enabled`, `ai_usage` | Ranh giới ngày theo giờ VN; AI vượt quota trả 429 |
 | **R1** Pipeline nội dung | Có dữ liệu Kana + N5 đã duyệt trong DB | Schema `curriculum`, `ContentImporter`, script import JMdict/KANJIDIC2/JLPT list/Tatoeba, script AI làm giàu, trang "Nguồn & giấy phép" | Unit 1–3 N5 ở trạng thái `reviewed` và import được |
 | **R2** Kana | Người mới học xong Kana | Module Kana: bảng chữ, bài theo hàng, nhận diện, viết theo nét, SRS cho Kana | Người dùng thử đọc được toàn bộ Hiragana |
 | **R3** Lộ trình N5 | Học được bài theo lộ trình | `lesson_progress`, `LessonPlayer`, nối từ global → SRS, ôn nhiều kiểu hỏi | Học trọn Unit 1 N5 từ đầu tới cuối |

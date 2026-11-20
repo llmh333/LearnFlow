@@ -3,7 +3,6 @@ package com.learnflow.backend.ai;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,9 +11,9 @@ import com.learnflow.backend.ai.context.AIContextBuilder;
 import com.learnflow.backend.ai.context.LearnerContext;
 import com.learnflow.backend.ai.domain.AIConversation;
 import com.learnflow.backend.ai.domain.AIMessage;
-import com.learnflow.backend.ai.dto.ConversationMessageResponse;
-import com.learnflow.backend.ai.dto.ConversationSummaryResponse;
-import com.learnflow.backend.ai.dto.SentenceCorrectionApiResponse;
+import com.learnflow.backend.ai.dto.response.ConversationMessageResponse;
+import com.learnflow.backend.ai.dto.response.ConversationSummaryResponse;
+import com.learnflow.backend.ai.dto.response.SentenceCorrectionApiResponse;
 import com.learnflow.backend.ai.provider.AIProvider;
 import com.learnflow.backend.ai.provider.ConversationMistake;
 import com.learnflow.backend.ai.provider.ConversationSummary;
@@ -24,9 +23,6 @@ import com.learnflow.backend.ai.provider.SuggestedVocabulary;
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.LanguageService;
 import com.learnflow.backend.language.domain.Language;
-import com.learnflow.backend.mistake.MistakeService;
-import com.learnflow.backend.mistake.dto.CreateMistakeRequest;
-import com.learnflow.backend.mistake.dto.MistakeResponse;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,6 +34,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class AiTutorServiceTest {
@@ -49,10 +47,11 @@ class AiTutorServiceTest {
     @Mock private AIProvider aiProvider;
     @Mock private AIContextBuilder contextBuilder;
     @Mock private LanguageService languageService;
-    @Mock private MistakeService mistakeService;
     @Mock private AIConversationRepository conversationRepository;
     @Mock private AIMessageRepository messageRepository;
     @Mock private EntityManager entityManager;
+    @Mock private AiUsageService usageService;
+    @Mock private PlatformTransactionManager transactionManager;
 
     private AiTutorService service;
 
@@ -63,22 +62,27 @@ class AiTutorServiceTest {
                         aiProvider,
                         contextBuilder,
                         languageService,
-                        mistakeService,
                         conversationRepository,
                         messageRepository,
                         entityManager,
+                        usageService,
+                        new TransactionTemplate(transactionManager),
                         FIXED_CLOCK);
     }
 
     @Test
     void explainGrammar_passesInferredLevelToProvider() {
-        when(contextBuilder.build(USER_ID, "en")).thenReturn(new LearnerContext("en", "B1", List.of()));
+        when(contextBuilder.build(USER_ID, "en"))
+                .thenReturn(new LearnerContext("en", "B1", List.of()));
         when(aiProvider.explainGrammar(any())).thenReturn("Present perfect explanation");
 
-        String explanation = service.explainGrammar(USER_ID, "en", "present perfect vs past simple");
+        String explanation =
+                service.explainGrammar(USER_ID, "en", "present perfect vs past simple");
 
         assertThat(explanation).isEqualTo("Present perfect explanation");
-        var captor = org.mockito.ArgumentCaptor.forClass(com.learnflow.backend.ai.provider.GrammarExplainRequest.class);
+        var captor =
+                org.mockito.ArgumentCaptor.forClass(
+                        com.learnflow.backend.ai.provider.GrammarExplainRequest.class);
         verify(aiProvider).explainGrammar(captor.capture());
         assertThat(captor.getValue().currentLevel()).isEqualTo("B1");
         assertThat(captor.getValue().question()).isEqualTo("present perfect vs past simple");
@@ -86,10 +90,12 @@ class AiTutorServiceTest {
 
     @Test
     void correctSentence_whenTextChanges_alsoSuggestsCategoryAndTopic() {
-        when(contextBuilder.build(USER_ID, "en")).thenReturn(new LearnerContext("en", "A2", List.of()));
+        when(contextBuilder.build(USER_ID, "en"))
+                .thenReturn(new LearnerContext("en", "A2", List.of()));
         when(aiProvider.correctSentence(any()))
                 .thenReturn(new SentenceCorrection("I went home.", "Past tense needed."));
-        when(aiProvider.analyzeMistake(any())).thenReturn(new MistakeAnalysis("Grammar", "Past tense"));
+        when(aiProvider.analyzeMistake(any()))
+                .thenReturn(new MistakeAnalysis("Grammar", "Past tense"));
 
         SentenceCorrectionApiResponse result =
                 service.correctSentence(USER_ID, "en", "I go home yesterday.");
@@ -102,7 +108,8 @@ class AiTutorServiceTest {
 
     @Test
     void correctSentence_whenTextUnchanged_doesNotSuggestAMistake() {
-        when(contextBuilder.build(USER_ID, "en")).thenReturn(new LearnerContext("en", "A2", List.of()));
+        when(contextBuilder.build(USER_ID, "en"))
+                .thenReturn(new LearnerContext("en", "A2", List.of()));
         when(aiProvider.correctSentence(any()))
                 .thenReturn(new SentenceCorrection("I am fine.", "Already correct."));
 
@@ -117,11 +124,14 @@ class AiTutorServiceTest {
     void sendMessage_noConversationId_createsNewConversation() {
         Language english = newLanguage("en", "English");
         when(languageService.getByCode("en")).thenReturn(english);
-        when(conversationRepository.save(any(AIConversation.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(conversationRepository.save(any(AIConversation.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
         when(messageRepository.findByConversation_IdOrderByCreatedAtAsc(any()))
                 .thenReturn(List.of());
-        when(contextBuilder.build(USER_ID, "en")).thenReturn(new LearnerContext("en", "A1", List.of()));
-        when(aiProvider.continueConversation(any())).thenReturn("Hello! How can I help you practice today?");
+        when(contextBuilder.build(USER_ID, "en"))
+                .thenReturn(new LearnerContext("en", "A1", List.of()));
+        when(aiProvider.continueConversation(any()))
+                .thenReturn("Hello! How can I help you practice today?");
 
         ConversationMessageResponse response =
                 service.sendMessage(USER_ID, null, "en", "daily chat", "Hi!");
@@ -144,9 +154,11 @@ class AiTutorServiceTest {
     void streamMessage_deliversDeltasAndPersistsFullReplyOnComplete() {
         Language english = newLanguage("en", "English");
         AIConversation conversation = newConversation(english, 1L);
-        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID)).thenReturn(Optional.of(conversation));
+        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID))
+                .thenReturn(Optional.of(conversation));
         when(messageRepository.findByConversation_IdOrderByCreatedAtAsc(1L)).thenReturn(List.of());
-        when(contextBuilder.build(USER_ID, "en")).thenReturn(new LearnerContext("en", "A1", List.of()));
+        when(contextBuilder.build(USER_ID, "en"))
+                .thenReturn(new LearnerContext("en", "A1", List.of()));
         // Simulate the provider delivering "Hello" then " there!" then completing.
         org.mockito.Mockito.doAnswer(
                         invocation -> {
@@ -169,55 +181,59 @@ class AiTutorServiceTest {
     }
 
     @Test
-    void endConversation_pushesMistakesToMistakeBookAndSuggestsVocabulary() {
+    void endConversation_returnsMistakesAndSuggestsVocabulary() {
         Language english = newLanguage("en", "English");
         AIConversation conversation = newConversation(english, 1L);
-        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID)).thenReturn(Optional.of(conversation));
+        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID))
+                .thenReturn(Optional.of(conversation));
         when(messageRepository.findByConversation_IdOrderByCreatedAtAsc(1L)).thenReturn(List.of());
         ConversationSummary summary =
                 new ConversationSummary(
                         "Great practice session!",
-                        List.of(new ConversationMistake("Grammar", "Past tense", "I go yesterday.", "I went yesterday.", "past tense needed")),
+                        List.of(
+                                new ConversationMistake(
+                                        "Grammar",
+                                        "Past tense",
+                                        "I go yesterday.",
+                                        "I went yesterday.",
+                                        "past tense needed")),
                         List.of(new SuggestedVocabulary("achieve", "đạt được")),
                         List.of("could've said 'I'm doing well' instead of 'I good'"),
                         List.of("Past tense"));
         when(aiProvider.summarizeConversation(any())).thenReturn(summary);
-        MistakeResponse pushedMistake =
-                new MistakeResponse(1L, null, null, "Grammar", "Past tense", "I go yesterday.", "I went yesterday.", "past tense needed", 1, NOW);
-        when(mistakeService.createOrIncrement(eq(USER_ID), any(CreateMistakeRequest.class)))
-                .thenReturn(pushedMistake);
 
         ConversationSummaryResponse response = service.endConversation(USER_ID, 1L);
 
         assertThat(response.overview()).isEqualTo("Great practice session!");
-        assertThat(response.pushedMistakes()).containsExactly(pushedMistake);
+        assertThat(response.mistakes())
+                .extracting(ConversationMistake::original)
+                .containsExactly("I go yesterday.");
         assertThat(response.suggestedVocabulary()).hasSize(1);
         assertThat(response.suggestedVocabulary().get(0).word()).isEqualTo("achieve");
         assertThat(conversation.getEndedAt()).isNotNull();
-        assertThat(conversation.getSummary()).contains("Great practice session!").contains("Past tense");
-
-        var captor = org.mockito.ArgumentCaptor.forClass(CreateMistakeRequest.class);
-        verify(mistakeService).createOrIncrement(eq(USER_ID), captor.capture());
-        assertThat(captor.getValue().languageCode()).isEqualTo("en");
-        assertThat(captor.getValue().category()).isEqualTo("Grammar");
+        assertThat(conversation.getSummary())
+                .contains("Great practice session!")
+                .contains("Past tense");
     }
 
     @Test
-    void endConversation_calledAgain_doesNotRePushMistakes() {
+    void endConversation_calledAgain_doesNotSummarizeAgain() {
         Language english = newLanguage("en", "English");
         AIConversation conversation = newConversation(english, 1L);
-        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID)).thenReturn(Optional.of(conversation));
+        when(conversationRepository.findByIdAndUser_Id(1L, USER_ID))
+                .thenReturn(Optional.of(conversation));
         when(messageRepository.findByConversation_IdOrderByCreatedAtAsc(1L)).thenReturn(List.of());
         when(aiProvider.summarizeConversation(any()))
-                .thenReturn(new ConversationSummary("Nice work!", List.of(), List.of(), List.of(), List.of()));
+                .thenReturn(
+                        new ConversationSummary(
+                                "Nice work!", List.of(), List.of(), List.of(), List.of()));
 
         service.endConversation(USER_ID, 1L);
         ConversationSummaryResponse second = service.endConversation(USER_ID, 1L);
 
         assertThat(second.overview()).contains("Nice work!");
-        assertThat(second.pushedMistakes()).isEmpty();
+        assertThat(second.mistakes()).isEmpty();
         verify(aiProvider, org.mockito.Mockito.times(1)).summarizeConversation(any());
-        verify(mistakeService, never()).createOrIncrement(any(), any());
     }
 
     private static AIConversation newConversation(Language language, long id) {
@@ -233,7 +249,7 @@ class AiTutorServiceTest {
     }
 
     private static Language newLanguage(String code, String name) {
-        Language language = new Language(code, name);
+        Language language = new Language(code, name, true);
         try {
             var field = Language.class.getDeclaredField("id");
             field.setAccessible(true);

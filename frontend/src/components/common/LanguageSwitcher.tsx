@@ -1,4 +1,4 @@
-import { Select } from '@/components/ui/Select'
+import { Select } from 'antd'
 import { useLanguages } from '@/hooks/useLanguages'
 
 interface LanguageSwitcherProps {
@@ -9,15 +9,20 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ value, onChange, includeAll }: LanguageSwitcherProps) {
   const { data: languages } = useLanguages()
+  const options = [
+    ...(includeAll ? [{ value: '', label: 'All languages' }] : []),
+    ...(languages ?? []).map((language) => ({ value: language.code, label: language.name })),
+  ]
 
   return (
-    <Select value={value} onChange={(event) => onChange(event.target.value)}>
-      {includeAll && <option value="">All languages</option>}
-      {(languages ?? []).map((language) => (
-        <option key={language.code} value={language.code}>
-          {language.name}
-        </option>
-      ))}
-    </Select>
+    <Select
+      value={value}
+      onChange={onChange}
+      options={options}
+      size="large"
+      aria-label="Language"
+      popupMatchSelectWidth={false}
+      className="w-full"
+    />
   )
 }

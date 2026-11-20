@@ -1,12 +1,12 @@
 package com.learnflow.backend.ai;
 
-import com.learnflow.backend.ai.dto.ScenarioResponse;
+import com.learnflow.backend.ai.dto.response.ScenarioResponse;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Fixed role-play scenario presets per language (PROJECT.md §4.4). Plain constants, not domain
- * data — no table needed for 5 fixed strings per language.
+ * Fixed role-play scenario presets per language (PROJECT.md §4.4). Plain constants, not domain data
+ * — no table needed for 5 fixed strings per language.
  */
 final class ScenarioCatalog {
 
@@ -30,7 +30,8 @@ final class ScenarioCatalog {
     // Japanese too (D9) — reusing the same shape keeps JLPT learners from missing this feature.
     private static final List<ScenarioResponse> JA = ZH;
 
-    private static final Map<String, List<ScenarioResponse>> BY_LANGUAGE = Map.of("en", EN, "zh", ZH, "ja", JA);
+    private static final Map<String, List<ScenarioResponse>> BY_LANGUAGE =
+            Map.of("en", EN, "zh", ZH, "ja", JA);
 
     private ScenarioCatalog() {}
 

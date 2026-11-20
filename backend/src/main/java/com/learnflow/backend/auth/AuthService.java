@@ -1,18 +1,21 @@
 package com.learnflow.backend.auth;
 
+import com.learnflow.backend.account.AccountService;
 import com.learnflow.backend.auth.domain.User;
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.LoginRequest;
-import com.learnflow.backend.auth.dto.RegisterRequest;
-import com.learnflow.backend.auth.dto.UserResponse;
+import com.learnflow.backend.auth.dto.request.ChangePasswordRequest;
+import com.learnflow.backend.auth.dto.request.LoginRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
+import com.learnflow.backend.auth.dto.response.UserResponse;
 import com.learnflow.backend.common.error.BadRequestException;
 import com.learnflow.backend.common.error.ConflictException;
+import com.learnflow.backend.common.error.ForbiddenException;
 import com.learnflow.backend.common.error.NotFoundException;
-import com.learnflow.backend.vocabulary.VocabularyService;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
+import java.util.Locale;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,112 +25,116 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthService {
 
-    /**
-     * Reserved system account that owns the canonical starter vocabulary pack (see
-     * V12__restore_starter_vocabulary_per_user.sql). Never logged into — no UI path creates or
-     * authenticates it.
-     */
-    private static final String STARTER_VOCABULARY_TEMPLATE_EMAIL = "seed@learnflow.system";
+    static final int MIN_PASSWORD_CHARS = 8;
 
-    /** The only values the "new words per day" setting may take (00-overview §1.5-adjacent UI
-     * decision — a fixed set of tiers is simpler for a learner to reason about than a free-form
-     * number, and simpler for the Review queue's daily cap to enforce). */
-    private static final Set<Integer> ALLOWED_DAILY_NEW_WORDS_LIMITS = Set.of(20, 25, 30, 35);
+    /** BCrypt ignores everything after 72 bytes, and Spring's encoder rejects longer input. */
+    static final int MAX_PASSWORD_BYTES = 72;
+
+    private static final String INVALID_LOGIN = "Invalid email or password";
 
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthProperties authProperties;
-    private final VocabularyService vocabularyService;
     private final Clock clock;
+
+    /** Compared against when the email is unknown, so login takes as long either way. */
+    private final String dummyPasswordHash;
 
     public AuthService(
             UserRepository userRepository,
+            RefreshTokenService refreshTokenService,
+            AccountService accountService,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthProperties authProperties,
-            VocabularyService vocabularyService,
             Clock clock) {
         this.userRepository = userRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authProperties = authProperties;
-        this.vocabularyService = vocabularyService;
         this.clock = clock;
+        this.dummyPasswordHash = passwordEncoder.encode("timing-equalizer-not-a-password");
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthSession register(RegisterRequest request) {
         if (!authProperties.registrationEnabled()) {
-            throw new IllegalStateException("Registration is disabled");
+            throw new ForbiddenException("Registration is closed");
         }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ConflictException("Email already registered: " + request.email());
+        checkNewPassword(
+                "password", request.password(), "confirmPassword", request.confirmPassword());
+        String email = normalizeEmail(request.email());
+        if (userRepository.existsByEmail(email)) {
+            throw emailTaken(email);
         }
 
         User user =
                 new User(
-                        request.email(),
+                        email,
                         passwordEncoder.encode(request.password()),
-                        request.displayName(),
+                        request.displayName().strip(),
                         Instant.now(clock));
-        userRepository.save(user);
-
-        userRepository
-                .findByEmail(STARTER_VOCABULARY_TEMPLATE_EMAIL)
-                .ifPresent(
-                        templateUser ->
-                                vocabularyService.seedStarterVocabularyFor(user.getId(), templateUser.getId()));
-
-        return issueAuthResponse(user);
-    }
-
-    public AuthResponse login(LoginRequest request) {
-        User user =
-                userRepository
-                        .findByEmail(request.email())
-                        .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new BadCredentialsException("Invalid email or password");
+        try {
+            // Flush now so a concurrent registration with the same email hits the UNIQUE here.
+            userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw emailTaken(email);
         }
+        accountService.createProfile(user.getId(), request.timezone());
 
-        return issueAuthResponse(user);
+        return startSession(user);
     }
 
-    /** Real, loggable-into accounts only — excludes the starter-vocabulary template account. Used
-     * by {@code exercise.scheduler.ExerciseGenerationScheduler} to know which users to top up AI
-     * exercises for, without that module depending on {@code UserRepository} directly. */
-    @Transactional(readOnly = true)
-    public List<Long> listActiveUserIds() {
-        return userRepository.findAllByEmailNot(STARTER_VOCABULARY_TEMPLATE_EMAIL).stream()
-                .map(User::getId)
-                .toList();
-    }
-
-    public UserResponse updateDailyNewWordsLimit(Long userId, int limit) {
-        if (!ALLOWED_DAILY_NEW_WORDS_LIMITS.contains(limit)) {
-            throw new BadRequestException(
-                    "dailyNewWordsLimit must be one of " + ALLOWED_DAILY_NEW_WORDS_LIMITS);
+    public AuthSession login(LoginRequest request) {
+        User user = userRepository.findByEmail(normalizeEmail(request.email())).orElse(null);
+        String hash = user != null ? user.getPasswordHash() : dummyPasswordHash;
+        boolean matches =
+                fitsBcrypt(request.password()) && passwordEncoder.matches(request.password(), hash);
+        if (user == null || !matches) {
+            throw new BadCredentialsException(INVALID_LOGIN);
         }
+        return startSession(user);
+    }
+
+    /** Rotates the refresh token. A failed refresh must still commit the family revocation. */
+    @Transactional(noRollbackFor = BadCredentialsException.class)
+    public AuthSession refresh(String refreshToken) {
+        RefreshTokenService.Rotation rotation = refreshTokenService.rotate(refreshToken);
+        return session(rotation.user(), rotation.refreshToken());
+    }
+
+    public void logout(String refreshToken) {
+        refreshTokenService.revoke(refreshToken);
+    }
+
+    /** Signs out every device (all refresh tokens) and returns a new session for this one. */
+    public AuthSession changePassword(Long userId, ChangePasswordRequest request) {
         User user =
                 userRepository
                         .findById(userId)
                         .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-        user.setDailyNewWordsLimit(limit);
-        return UserResponse.from(user);
-    }
+        if (!fitsBcrypt(request.currentPassword())
+                || !passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            // 400, not 401: the access token is fine, and 401 would sign the client out.
+            throw new BadRequestException("currentPassword", "Current password is incorrect");
+        }
+        checkNewPassword(
+                "newPassword",
+                request.newPassword(),
+                "confirmNewPassword",
+                request.confirmNewPassword());
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new BadRequestException(
+                    "newPassword", "New password must differ from the current one");
+        }
 
-    /** Used by {@code srs.ReviewController} to cap new-word introduction in the Review queue.
-     * Fetched at the controller layer rather than injected into {@code ReviewService} directly —
-     * {@code VocabularyService} already depends on {@code ReviewService}, so {@code ReviewService}
-     * depending on this service (which depends on {@code VocabularyService}) would be a circular
-     * dependency. */
-    @Transactional(readOnly = true)
-    public int getDailyNewWordsLimit(Long userId) {
-        return userRepository
-                .findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + userId))
-                .getDailyNewWordsLimit();
+        user.changePasswordHash(passwordEncoder.encode(request.newPassword()));
+        refreshTokenService.revokeAll(userId);
+        return startSession(user);
     }
 
     @Transactional(readOnly = true)
@@ -139,8 +146,49 @@ public class AuthService {
         return UserResponse.from(user);
     }
 
-    private AuthResponse issueAuthResponse(User user) {
-        JwtService.IssuedToken issued = jwtService.issue(user.getId(), user.getEmail());
-        return new AuthResponse(issued.token(), issued.expiresAt(), UserResponse.from(user));
+    private AuthSession startSession(User user) {
+        return session(user, refreshTokenService.issue(user));
+    }
+
+    private AuthSession session(User user, RefreshTokenService.IssuedRefreshToken refreshToken) {
+        JwtService.IssuedToken access = jwtService.issue(user.getId(), user.getEmail());
+        return new AuthSession(
+                new AuthResponse(access.token(), access.expiresAt(), UserResponse.from(user)),
+                refreshToken.token(),
+                refreshToken.expiresAt());
+    }
+
+    /** 8+ characters, at most 72 bytes, at least one letter and one digit, and confirmed. */
+    static void checkNewPassword(
+            String field, String password, String confirmField, String confirmation) {
+        if (password.length() < MIN_PASSWORD_CHARS) {
+            throw new BadRequestException(
+                    field, "Password must be at least " + MIN_PASSWORD_CHARS + " characters");
+        }
+        if (!fitsBcrypt(password)) {
+            throw new BadRequestException(
+                    field, "Password must be at most " + MAX_PASSWORD_BYTES + " bytes");
+        }
+        if (password.chars().noneMatch(Character::isLetter)
+                || password.chars().noneMatch(Character::isDigit)) {
+            throw new BadRequestException(
+                    field, "Password must contain at least one letter and one digit");
+        }
+        if (!password.equals(confirmation)) {
+            throw new BadRequestException(confirmField, "Passwords do not match");
+        }
+    }
+
+    private static boolean fitsBcrypt(String password) {
+        return password.getBytes(StandardCharsets.UTF_8).length <= MAX_PASSWORD_BYTES;
+    }
+
+    private static ConflictException emailTaken(String email) {
+        return new ConflictException("Email already registered: " + email);
+    }
+
+    /** Emails are stored lower-cased (the DB has a CHECK), so Foo@x and foo@x are one account. */
+    static String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

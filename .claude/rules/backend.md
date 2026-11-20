@@ -13,17 +13,17 @@ Mỗi domain là **một package phẳng** dưới `com.learnflow.backend`:
 
 ```
 com.learnflow.backend.<module>/
-├── <Xxx>Controller.java        // @RestController — chỉ map HTTP <-> DTO, không có business logic
+├── api/v1/<Xxx>Controller.java // @RestController — chỉ map HTTP <-> DTO, không có business logic
 ├── <Xxx>Service.java           // @Service @Transactional — toàn bộ business logic
 ├── <Xxx>Repository.java        // interface extends JpaRepository<Entity, Long>
 ├── domain/<Entity>.java        // @Entity
-├── dto/<Xxx>Request.java, <Xxx>Response.java   // java record + jakarta validation
+├── dto/request/<Xxx>Request.java   // record client gửi lên + jakarta validation
+├── dto/response/<Xxx>Response.java // record trả về (kể cả record con lồng trong response)
 └── engine/                     // thuật toán thuần (SRS, planning, generator): không Spring, không DB
 ```
 
-Module hiện có: `common`, `auth`, `language`, `vocabulary`, `srs`, `study`, `progress`, `dashboard`,
-`ai`, `mistake`, `dailyplan`, `exercise`. Module mới theo lộ trình R0–R7 (`curriculum`, `learning`,
-`practice`) xem `plan/2026-11-17-japanese-learning-path-refactor.md` §5.
+Module hiện có: `common`, `auth`, `language`, `curriculum`, `ai`, `health`. Module sẽ có theo lộ trình R0–R7
+(`learning`, `srs`, `practice`, `account`) xem `plan/2026-11-17-japanese-learning-path-refactor.md` §5.
 
 ## Ba luật ranh giới — không được vi phạm
 
@@ -37,15 +37,37 @@ Tránh phụ thuộc vòng giữa các Service; nếu cần, lấy dữ liệu �
 
 ## API
 
-- Base path `/api`. Mọi endpoint yêu cầu `Authorization: Bearer <jwt>`, **trừ** `/api/auth/register`,
-  `/api/auth/login`, `/api/health`.
-- Resource số nhiều, kebab-case: `/api/vocabulary`, `/api/reviews/due`, `/api/study-sessions`.
+- **Mọi API có version trong URL: `/api/v1/...`, `/api/v2/...`.**
+- **Mọi URL định nghĩa tập trung ở `common/web/ApiPaths`**, chia theo version rồi theo module:
+  `ApiPaths.V1.Account.BASE` (= `/api/v1/account`, dùng cho `@RequestMapping` của class) và các đường dẫn con
+  `ApiPaths.V1.Account.PROFILE` (= `/profile`, dùng cho `@GetMapping`…). Controller, `SecurityConfig`, filter
+  **chỉ dùng hằng số này**, không viết chuỗi đường dẫn. (Annotation cần hằng số lúc biên dịch nên dùng
+  `static final String`, không dùng được enum.) Integration test cố ý viết URL dạng chữ để bắt lỗi đổi
+  hợp đồng API ngoài ý muốn.
+- Thư mục khớp version: controller dùng `ApiPaths.V1` nằm trong `<module>/api/v1/`. `ArchitectureTest` chặn
+  controller nằm ngoài package `api.vN`.
+- Ra version mới khi đổi hợp đồng API theo cách làm hỏng client cũ (đổi/xoá trường, đổi nghĩa). Thêm trường
+  mới không cần version mới. Version mới: thêm `ApiPaths.V2`, tạo `<module>/api/v2/` (DTO riêng của v2 đặt ở
+  `api/v2/dto/request`, `api/v2/dto/response`), giữ v1 chạy song song đến khi frontend chuyển xong.
+- Mọi endpoint yêu cầu `Authorization: Bearer <jwt>`, **trừ** `/api/v1/auth/register`, `/api/v1/auth/login`,
+  `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/health`, `/api/v1/curriculum/sources`.
+- Resource số nhiều, kebab-case: `/api/v1/vocabulary`, `/api/v1/reviews/due`, `/api/v1/study-sessions`.
 - Request/Response là **java `record`** tên `XxxRequest` / `XxxResponse`. Không trả entity ra ngoài.
 - JSON `camelCase`. Thời gian ISO-8601 UTC (`Instant`).
 - Lỗi: **RFC 7807 `ProblemDetail`** qua các exception trong `common/error`. Lỗi validate trả 400 kèm
   `errors: { "<field>": "<message>" }`. Không mượn exception có nghĩa khác để map status.
 - Phân trang: `?page=0&size=20`, trả `PageResponse<T> { content, page, size, totalElements, totalPages }`
   (`common/web`). Không trả `Page` của Spring.
+
+## Auth (D16)
+
+- Access token: JWT trong body (`token`), sống `app.auth.access-token-ttl` (15 phút).
+- Refresh token: chuỗi ngẫu nhiên 256 bit, **chỉ** nằm trong cookie `refresh_token` (HttpOnly, Secure,
+  SameSite=Strict, Path=`/api/v1/auth`); DB chỉ lưu SHA-256. Mỗi lần refresh xoay vòng token; dùng lại token đã
+  xoay → thu hồi cả chuỗi (`family_id`). Đổi mật khẩu thu hồi mọi refresh token của user.
+- Mật khẩu mới: ≥ 8 ký tự, ≤ 72 byte (giới hạn BCrypt), có chữ và số, phải khớp ô xác nhận. Kiểm ở
+  `AuthService`, lỗi trả 400 kèm `errors.<field>`.
+- Đăng nhập sai email hay sai mật khẩu trả cùng 401 và cùng thời gian (BCrypt chạy cả khi không có email).
 
 ## Dữ liệu theo người dùng
 

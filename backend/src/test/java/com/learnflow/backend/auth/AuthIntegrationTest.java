@@ -2,10 +2,10 @@ package com.learnflow.backend.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.LoginRequest;
-import com.learnflow.backend.auth.dto.RegisterRequest;
-import com.learnflow.backend.auth.dto.UserResponse;
+import com.learnflow.backend.auth.dto.request.LoginRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
+import com.learnflow.backend.auth.dto.response.UserResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,9 +27,14 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     @Test
     void registerThenLoginThenMe_succeeds() {
         RegisterRequest register =
-                new RegisterRequest("flow@example.com", "password123", "Flow User");
+                new RegisterRequest(
+                        "flow@example.com",
+                        "password123",
+                        "password123",
+                        "Flow User",
+                        "Asia/Ho_Chi_Minh");
         client.post()
-                .uri("/api/auth/register")
+                .uri("/api/v1/auth/register")
                 .body(register)
                 .exchange()
                 .expectStatus()
@@ -38,7 +43,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         LoginRequest login = new LoginRequest("flow@example.com", "password123");
         AuthResponse loginBody =
                 client.post()
-                        .uri("/api/auth/login")
+                        .uri("/api/v1/auth/login")
                         .body(login)
                         .exchange()
                         .expectStatus()
@@ -51,7 +56,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
         UserResponse me =
                 client.get()
-                        .uri("/api/auth/me")
+                        .uri("/api/v1/auth/me")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + loginBody.token())
                         .exchange()
                         .expectStatus()
@@ -65,13 +70,13 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void protectedEndpoint_withoutToken_returns401() {
-        client.get().uri("/api/auth/me").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/v1/auth/me").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
     void protectedEndpoint_withInvalidToken_returns401() {
         client.get()
-                .uri("/api/auth/me")
+                .uri("/api/v1/auth/me")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer not-a-real-token")
                 .exchange()
                 .expectStatus()

@@ -2,7 +2,7 @@ package com.learnflow.backend.language;
 
 import com.learnflow.backend.common.error.NotFoundException;
 import com.learnflow.backend.language.domain.Language;
-import com.learnflow.backend.language.dto.LanguageResponse;
+import com.learnflow.backend.language.dto.response.LanguageResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +17,9 @@ public class LanguageService {
         this.languageRepository = languageRepository;
     }
 
+    /** Enabled languages only (D3). */
     public List<LanguageResponse> listAll() {
-        return languageRepository.findAllByOrderByIdAsc().stream()
+        return languageRepository.findAllByEnabledTrueOrderByIdAsc().stream()
                 .map(LanguageResponse::from)
                 .toList();
     }

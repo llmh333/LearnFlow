@@ -1,0 +1,261 @@
+# N5 Unit 2 (đồ vật) and Unit 3 (nơi chốn). AI-drafted; a person must review before flipping status.
+# Words: unit-02-03.words.yaml (JMdict). Tatoeba sentences: unit-02-03.sentences.yaml.
+units:
+  - key: ja.n5.u02
+    course: ja.course.n5
+    position: 2
+    title: Đồ vật quanh ta
+    description: Hỏi và nói đồ vật là gì, của ai — これ・それ・あれ, この・その・あの, の.
+    status: draft
+    lessons:
+      - key: ja.n5.u02.l01
+        title: Cái này là gì?
+        status: draft
+        items:
+          - ja.word.kore
+          - ja.word.sore
+          - ja.word.are
+          - ja.word.nan
+          - ja.word.hon
+          - ja.word.jisho
+          - ja.word.zasshi
+          - ja.word.shinbun
+          - ja.word.tsukue
+          - ja.word.isu
+          - ja.kanji.本
+          - ja.kanji.何
+          - ja.grammar.kore-wa-n-desu
+          - ja.grammar.desu-ka
+          - ja.sentence.kore-wa-nan-desu-ka
+          - ja.sentence.sore-wa-jisho-desu
+          - ja.sentence.tatoeba-356396
+      - key: ja.n5.u02.l02
+        title: Của ai?
+        status: draft
+        items:
+          - ja.word.kono
+          - ja.word.sono
+          - ja.word.ano
+          - ja.word.dare
+          - ja.word.enpitsu
+          - ja.word.boorupen
+          - ja.word.nooto
+          - ja.word.kaban
+          - ja.word.tokei
+          - ja.word.kasa
+          - ja.word.kagi
+          - ja.word.eigo
+          - ja.grammar.kono-n
+          - ja.grammar.n-no-n
+          - ja.sentence.kore-wa-watashi-no-kasa-desu
+          - ja.sentence.sono-tokei-wa-dare-no-desu-ka
+          - ja.sentence.kore-wa-eigo-no-hon-desu
+          - ja.sentence.tatoeba-164225
+          - ja.sentence.tatoeba-229642
+          - ja.sentence.tatoeba-8389362
+  - key: ja.n5.u03
+    course: ja.course.n5
+    position: 3
+    title: Nơi chốn
+    description: Hỏi và chỉ đường trong trường, trong thành phố — ここ・そこ・あそこ・どこ, も.
+    status: draft
+    lessons:
+      - key: ja.n5.u03.l01
+        title: Ở trường
+        status: draft
+        items:
+          - ja.word.koko
+          - ja.word.soko
+          - ja.word.asoko
+          - ja.word.doko
+          - ja.word.kyoushitsu
+          - ja.word.shokudou
+          - ja.word.toire
+          - ja.word.kaidan
+          - ja.word.erebeetaa
+          - ja.grammar.koko-wa-n-desu
+          - ja.grammar.n-wa-doko-desu-ka
+          - ja.sentence.koko-wa-kyoushitsu-desu
+          - ja.sentence.toire-wa-asoko-desu
+          - ja.sentence.erebeetaa-wa-doko-desu-ka
+          - ja.sentence.tatoeba-145793
+          - ja.sentence.tatoeba-11052427
+      - key: ja.n5.u03.l02
+        title: Trong thành phố
+        status: draft
+        items:
+          - ja.word.eki
+          - ja.word.ginkou
+          - ja.word.yuubinkyoku
+          - ja.word.byouin
+          - ja.word.toshokan
+          - ja.word.kaisha
+          - ja.word.uchi
+          - ja.grammar.n-mo
+          - ja.sentence.eki-wa-soko-desu
+          - ja.sentence.watashi-no-kaisha-wa-asoko-desu
+          - ja.sentence.koko-mo-byouin-desu-ka
+          - ja.sentence.soko-mo-byouin-desu
+          - ja.sentence.tatoeba-143866
+          - ja.sentence.tatoeba-79171
+          - ja.sentence.tatoeba-145180
+
+grammar:
+  - key: ja.grammar.kore-wa-n-desu
+    status: draft
+    source: ai
+    pattern: これ／それ／あれ は N です
+    meaningVi: Cái này / cái đó / cái kia là N
+    explanationVi: >-
+      これ chỉ vật ở gần người nói, それ chỉ vật ở gần người nghe, あれ chỉ vật ở xa cả hai người.
+      Ba từ này đứng một mình, thay cho danh từ: これは本です。(Cái này là sách.) Phủ định:
+      それは辞書じゃありません。(Đó không phải là từ điển.)
+    jlptLevel: n5
+    examples:
+      - ja.sentence.sore-wa-jisho-desu
+      - ja.sentence.tatoeba-356396
+  - key: ja.grammar.desu-ka
+    status: draft
+    source: ai
+    pattern: ～ですか
+    meaningVi: … không? / … à? (dấu hiệu câu hỏi)
+    explanationVi: >-
+      Thêm か vào cuối câu để thành câu hỏi, giọng lên ở cuối; không đổi trật tự từ. Câu hỏi có từ để
+      hỏi (何, 誰) đặt từ đó vào chỗ cần hỏi: これは何ですか。(Cái này là cái gì?) Trả lời câu hỏi
+      có/không bằng はい、そうです hoặc いいえ、ちがいます.
+    jlptLevel: n5
+    examples:
+      - ja.sentence.kore-wa-nan-desu-ka
+  - key: ja.grammar.kono-n
+    status: draft
+    source: ai
+    pattern: この／その／あの N
+    meaningVi: N này / N đó / N kia
+    explanationVi: >-
+      この・その・あの luôn đứng ngay trước danh từ, không đứng một mình: この傘 (cái ô này). Khoảng
+      cách giống これ・それ・あれ. Muốn nói "cái này" mà không có danh từ thì dùng これ.
+    jlptLevel: n5
+    examples:
+      - ja.sentence.sono-tokei-wa-dare-no-desu-ka
+  - key: ja.grammar.n-no-n
+    status: draft
+    source: ai
+    pattern: N1 の N2
+    meaningVi: N2 của N1 / N2 về N1
+    explanationVi: >-
+      の nối hai danh từ; N1 bổ nghĩa cho N2, ngược trật tự với tiếng Việt: 私の傘 (ô của tôi),
+      英語の本 (sách tiếng Anh). Khi đã rõ N2 là gì có thể bỏ N2: これは私のです。(Cái này là của tôi.)
+    jlptLevel: n5
+    examples:
+      - ja.sentence.kore-wa-watashi-no-kasa-desu
+      - ja.sentence.kore-wa-eigo-no-hon-desu
+  - key: ja.grammar.koko-wa-n-desu
+    status: draft
+    source: ai
+    pattern: ここ／そこ／あそこ は N です・N は ここ／そこ／あそこ です
+    meaningVi: Chỗ này / chỗ đó / chỗ kia là N; N ở đây / đó / kia
+    explanationVi: >-
+      ここ・そこ・あそこ chỉ nơi chốn, chia gần xa giống これ・それ・あれ. ここは教室です。(Đây là
+      lớp học.) Đảo lại để nói vật ở đâu: トイレはあそこです。(Nhà vệ sinh ở đằng kia.)
+    jlptLevel: n5
+    examples:
+      - ja.sentence.koko-wa-kyoushitsu-desu
+      - ja.sentence.toire-wa-asoko-desu
+  - key: ja.grammar.n-wa-doko-desu-ka
+    status: draft
+    source: ai
+    pattern: N は どこ ですか
+    meaningVi: N ở đâu?
+    explanationVi: >-
+      どこ là từ hỏi nơi chốn. Trả lời bằng ここ・そこ・あそこ hoặc tên nơi chốn: 駅はどこですか。—
+      あそこです。Hỏi lịch sự hơn (ở cửa hàng, khách sạn) dùng どちら.
+    jlptLevel: n5
+    examples:
+      - ja.sentence.erebeetaa-wa-doko-desu-ka
+      - ja.sentence.tatoeba-143866
+  - key: ja.grammar.n-mo
+    status: draft
+    source: ai
+    pattern: N も
+    meaningVi: N cũng …
+    explanationVi: >-
+      も thay cho は khi nói điều giống với điều vừa nói: ここは病院です。そこも病院です。(Đây là bệnh
+      viện. Đó cũng là bệnh viện.) Không viết は và も cùng lúc.
+    jlptLevel: n5
+    examples:
+      - ja.sentence.soko-mo-byouin-desu
+      - ja.sentence.koko-mo-byouin-desu-ka
+
+sentences:
+  - key: ja.sentence.kore-wa-nan-desu-ka
+    status: draft
+    source: learnflow
+    text: これは何ですか。
+    reading: これはなんですか。
+    translationVi: Cái này là cái gì?
+  - key: ja.sentence.sore-wa-jisho-desu
+    status: draft
+    source: learnflow
+    text: それは辞書です。
+    reading: それはじしょです。
+    translationVi: Đó là quyển từ điển.
+  - key: ja.sentence.kore-wa-watashi-no-kasa-desu
+    status: draft
+    source: learnflow
+    text: これは私の傘です。
+    reading: これはわたしのかさです。
+    translationVi: Đây là cái ô của tôi.
+  - key: ja.sentence.sono-tokei-wa-dare-no-desu-ka
+    status: draft
+    source: learnflow
+    text: その時計は誰のですか。
+    reading: そのとけいはだれのですか。
+    translationVi: Cái đồng hồ đó là của ai?
+  - key: ja.sentence.kore-wa-eigo-no-hon-desu
+    status: draft
+    source: learnflow
+    text: これは英語の本です。
+    reading: これはえいごのほんです。
+    translationVi: Đây là sách tiếng Anh.
+  - key: ja.sentence.koko-wa-kyoushitsu-desu
+    status: draft
+    source: learnflow
+    text: ここは教室です。
+    reading: ここはきょうしつです。
+    translationVi: Đây là lớp học.
+  - key: ja.sentence.toire-wa-asoko-desu
+    status: draft
+    source: learnflow
+    text: トイレはあそこです。
+    reading: トイレはあそこです。
+    translationVi: Nhà vệ sinh ở đằng kia.
+  - key: ja.sentence.erebeetaa-wa-doko-desu-ka
+    status: draft
+    source: learnflow
+    text: エレベーターはどこですか。
+    reading: エレベーターはどこですか。
+    translationVi: Thang máy ở đâu?
+  - key: ja.sentence.eki-wa-soko-desu
+    status: draft
+    source: learnflow
+    text: 駅はそこです。
+    reading: えきはそこです。
+    translationVi: Nhà ga ở chỗ đó.
+  - key: ja.sentence.watashi-no-kaisha-wa-asoko-desu
+    status: draft
+    source: learnflow
+    text: 私の会社はあそこです。
+    reading: わたしのかいしゃはあそこです。
+    translationVi: Công ty của tôi ở đằng kia.
+  - key: ja.sentence.soko-mo-byouin-desu
+    status: draft
+    source: learnflow
+    text: ここは病院です。そこも病院です。
+    reading: ここはびょういんです。そこもびょういんです。
+    translationVi: Đây là bệnh viện. Đó cũng là bệnh viện.
+  - key: ja.sentence.koko-mo-byouin-desu-ka
+    status: draft
+    source: learnflow
+    text: ここも病院ですか。
+    reading: ここもびょういんですか。
+    translationVi: Chỗ này cũng là bệnh viện à?

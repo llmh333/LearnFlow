@@ -24,11 +24,15 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Calls the Anthropic Messages API directly via {@link RestClient} (no SDK dependency). Structured
- * results (examples list, sentence correction, mistake analysis, conversation summary) use
- * Claude's tool-use forcing instead of parsing free text, per {@code plan/phases/phase-5-ai-tutor.md}.
+ * results (examples list, sentence correction, mistake analysis, conversation summary) use Claude's
+ * tool-use forcing instead of parsing free text, per {@code plan/phases/phase-5-ai-tutor.md}.
  */
 @Component
-@ConditionalOnProperty(prefix = "app.ai", name = "provider", havingValue = "claude", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "app.ai",
+        name = "provider",
+        havingValue = "claude",
+        matchIfMissing = true)
 public class ClaudeAIProvider implements AIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(ClaudeAIProvider.class);
@@ -46,7 +50,10 @@ public class ClaudeAIProvider implements AIProvider {
     public ClaudeAIProvider(AIProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper;
-        this.model = properties.model() == null || properties.model().isBlank() ? DEFAULT_MODEL : properties.model();
+        this.model =
+                properties.model() == null || properties.model().isBlank()
+                        ? DEFAULT_MODEL
+                        : properties.model();
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(10));
@@ -70,7 +77,8 @@ public class ClaudeAIProvider implements AIProvider {
     @Override
     public List<String> generateExamples(ExampleGenerationRequest request) {
         String system =
-                AIPrompts.generateExamples(request.word(), request.languageCode(), request.currentLevel());
+                AIPrompts.generateExamples(
+                        request.word(), request.languageCode(), request.currentLevel());
         Map<String, Object> schema =
                 Map.of(
                         "type", "object",
@@ -85,7 +93,9 @@ public class ClaudeAIProvider implements AIProvider {
                         "Generate examples for: " + request.word(),
                         toolSpec("generate_examples", "Return example sentences", schema));
         Object examples = input.get("examples");
-        return examples instanceof List<?> list ? list.stream().map(String::valueOf).toList() : List.of();
+        return examples instanceof List<?> list
+                ? list.stream().map(String::valueOf).toList()
+                : List.of();
     }
 
     @Override
@@ -103,7 +113,10 @@ public class ClaudeAIProvider implements AIProvider {
                 callTool(
                         system,
                         request.text(),
-                        toolSpec("correct_sentence", "Return the corrected sentence and explanation", schema));
+                        toolSpec(
+                                "correct_sentence",
+                                "Return the corrected sentence and explanation",
+                                schema));
         return new SentenceCorrection(
                 String.valueOf(input.get("corrected")), String.valueOf(input.get("explanation")));
     }
@@ -121,25 +134,35 @@ public class ClaudeAIProvider implements AIProvider {
                                 Map.of(
                                         "category",
                                         Map.of(
-                                                "type", "string",
+                                                "type",
+                                                "string",
                                                 "enum",
-                                                        List.of(
-                                                                "Vocabulary",
-                                                                "Grammar",
-                                                                "Word order",
-                                                                "Pronunciation",
-                                                                "Usage",
-                                                                "Spelling",
-                                                                "Tone",
-                                                                "Other")),
-                                        "topic", Map.of("type", "string", "description", "Short label, 2-4 words")),
+                                                List.of(
+                                                        "Vocabulary",
+                                                        "Grammar",
+                                                        "Word order",
+                                                        "Pronunciation",
+                                                        "Usage",
+                                                        "Spelling",
+                                                        "Tone",
+                                                        "Other")),
+                                        "topic",
+                                        Map.of(
+                                                "type",
+                                                "string",
+                                                "description",
+                                                "Short label, 2-4 words")),
                         "required", List.of("category", "topic"));
         Map<String, Object> input =
                 callTool(
                         system,
                         userMessage,
-                        toolSpec("analyze_mistake", "Classify the mistake's category and topic", schema));
-        return new MistakeAnalysis(String.valueOf(input.get("category")), String.valueOf(input.get("topic")));
+                        toolSpec(
+                                "analyze_mistake",
+                                "Classify the mistake's category and topic",
+                                schema));
+        return new MistakeAnalysis(
+                String.valueOf(input.get("category")), String.valueOf(input.get("topic")));
     }
 
     @Override
@@ -149,7 +172,8 @@ public class ClaudeAIProvider implements AIProvider {
     }
 
     @Override
-    public void streamConversation(ConversationRequest request, Consumer<String> onDelta, Runnable onComplete) {
+    public void streamConversation(
+            ConversationRequest request, Consumer<String> onDelta, Runnable onComplete) {
         Map<String, Object> body = conversationBody(request);
         body.put("stream", true);
         streamPost(body, onDelta);
@@ -161,7 +185,8 @@ public class ClaudeAIProvider implements AIProvider {
                 request.scenario() == null || request.scenario().isBlank()
                         ? "daily conversation"
                         : request.scenario();
-        String system = AIPrompts.conversation(request.languageCode(), request.currentLevel(), scenario);
+        String system =
+                AIPrompts.conversation(request.languageCode(), request.currentLevel(), scenario);
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage(request.userMessage()));
         return baseBody(system, messages);
@@ -177,22 +202,33 @@ public class ClaudeAIProvider implements AIProvider {
                                 Map.of(
                                         "category",
                                         Map.of(
-                                                "type", "string",
+                                                "type",
+                                                "string",
                                                 "enum",
-                                                        List.of(
-                                                                "Vocabulary",
-                                                                "Grammar",
-                                                                "Word order",
-                                                                "Pronunciation",
-                                                                "Usage",
-                                                                "Spelling",
-                                                                "Tone",
-                                                                "Other")),
-                                        "topic", Map.of("type", "string"),
-                                        "original", Map.of("type", "string"),
-                                        "corrected", Map.of("type", "string"),
-                                        "explanation", Map.of("type", "string")),
-                        "required", List.of("category", "topic", "original", "corrected", "explanation"));
+                                                List.of(
+                                                        "Vocabulary",
+                                                        "Grammar",
+                                                        "Word order",
+                                                        "Pronunciation",
+                                                        "Usage",
+                                                        "Spelling",
+                                                        "Tone",
+                                                        "Other")),
+                                        "topic",
+                                        Map.of("type", "string"),
+                                        "original",
+                                        Map.of("type", "string"),
+                                        "corrected",
+                                        Map.of("type", "string"),
+                                        "explanation",
+                                        Map.of("type", "string")),
+                        "required",
+                                List.of(
+                                        "category",
+                                        "topic",
+                                        "original",
+                                        "corrected",
+                                        "explanation"));
         Map<String, Object> vocabItemSchema =
                 Map.of(
                         "type", "object",
@@ -207,12 +243,22 @@ public class ClaudeAIProvider implements AIProvider {
                         "properties",
                                 Map.of(
                                         "overview", Map.of("type", "string"),
-                                        "mistakes", Map.of("type", "array", "items", mistakeItemSchema),
-                                        "newVocabulary", Map.of("type", "array", "items", vocabItemSchema),
+                                        "mistakes",
+                                                Map.of("type", "array", "items", mistakeItemSchema),
+                                        "newVocabulary",
+                                                Map.of("type", "array", "items", vocabItemSchema),
                                         "betterExpressions",
-                                                Map.of("type", "array", "items", Map.of("type", "string")),
+                                                Map.of(
+                                                        "type",
+                                                        "array",
+                                                        "items",
+                                                        Map.of("type", "string")),
                                         "grammarProblems",
-                                                Map.of("type", "array", "items", Map.of("type", "string"))),
+                                                Map.of(
+                                                        "type",
+                                                        "array",
+                                                        "items",
+                                                        Map.of("type", "string"))),
                         "required",
                                 List.of(
                                         "overview",
@@ -224,7 +270,13 @@ public class ClaudeAIProvider implements AIProvider {
         List<Map<String, Object>> messages = toMessages(request.history());
         messages.add(userMessage("Please summarize this conversation for me."));
         Map<String, Object> body = baseBody(system, messages);
-        body.put("tools", List.of(toolSpec("summarize_conversation", "Return the structured summary", schema)));
+        body.put(
+                "tools",
+                List.of(
+                        toolSpec(
+                                "summarize_conversation",
+                                "Return the structured summary",
+                                schema)));
         body.put("tool_choice", Map.of("type", "tool", "name", "summarize_conversation"));
 
         Map<String, Object> input = extractToolInput(post(body), "summarize_conversation");
@@ -233,106 +285,45 @@ public class ClaudeAIProvider implements AIProvider {
 
     @SuppressWarnings("unchecked")
     private ConversationSummary toConversationSummary(Map<String, Object> input) {
-        List<Map<String, Object>> mistakesRaw = (List<Map<String, Object>>) input.getOrDefault("mistakes", List.of());
+        List<Map<String, Object>> mistakesRaw =
+                (List<Map<String, Object>>) input.getOrDefault("mistakes", List.of());
         List<ConversationMistake> mistakes =
                 mistakesRaw.stream()
-                        .map(
-                                m ->
-                                        new ConversationMistake(
-                                                String.valueOf(m.get("category")),
-                                                String.valueOf(m.get("topic")),
-                                                String.valueOf(m.get("original")),
-                                                String.valueOf(m.get("corrected")),
-                                                String.valueOf(m.get("explanation"))))
+                        .map(m ->
+                                new ConversationMistake(
+                                        String.valueOf(m.get("category")),
+                                        String.valueOf(m.get("topic")),
+                                        String.valueOf(m.get("original")),
+                                        String.valueOf(m.get("corrected")),
+                                        String.valueOf(m.get("explanation"))))
                         .toList();
 
         List<Map<String, Object>> vocabRaw =
                 (List<Map<String, Object>>) input.getOrDefault("newVocabulary", List.of());
         List<SuggestedVocabulary> newVocabulary =
                 vocabRaw.stream()
-                        .map(
-                                v ->
-                                        new SuggestedVocabulary(
-                                                String.valueOf(v.get("word")), String.valueOf(v.get("meaningVietnamese"))))
+                        .map(v ->
+                                new SuggestedVocabulary(
+                                        String.valueOf(v.get("word")),
+                                        String.valueOf(v.get("meaningVietnamese"))))
                         .toList();
 
         List<String> betterExpressions =
                 ((List<?>) input.getOrDefault("betterExpressions", List.of()))
                         .stream().map(String::valueOf).toList();
         List<String> grammarProblems =
-                ((List<?>) input.getOrDefault("grammarProblems", List.of())).stream().map(String::valueOf).toList();
+                ((List<?>) input.getOrDefault("grammarProblems", List.of()))
+                        .stream().map(String::valueOf).toList();
 
         return new ConversationSummary(
-                String.valueOf(input.get("overview")), mistakes, newVocabulary, betterExpressions, grammarProblems);
-    }
-
-    @Override
-    public List<GeneratedExercise> generateExercises(ExerciseGenerationRequest request) {
-        String system = AIPrompts.exerciseGeneration(request.context(), request.count());
-        Map<String, Object> exerciseItemSchema =
-                Map.of(
-                        "type", "object",
-                        "properties",
-                                Map.of(
-                                        "type",
-                                        Map.of(
-                                                "type", "string",
-                                                "enum", List.of("SENTENCE_SCRAMBLE", "MULTIPLE_CHOICE")),
-                                        "word", Map.of("type", "string"),
-                                        "correctSentence", Map.of("type", "string"),
-                                        "question", Map.of("type", "string"),
-                                        "options", Map.of("type", "array", "items", Map.of("type", "string")),
-                                        "correctOptionIndex", Map.of("type", "integer")),
-                        "required", List.of("type"));
-        Map<String, Object> schema =
-                Map.of(
-                        "type", "object",
-                        "properties", Map.of("exercises", Map.of("type", "array", "items", exerciseItemSchema)),
-                        "required", List.of("exercises"));
-        Map<String, Object> input =
-                callTool(
-                        system,
-                        "Generate %d exercises.".formatted(request.count()),
-                        toolSpec("generate_exercises", "Return the practice exercises", schema));
-        return toGeneratedExercises(input);
+                String.valueOf(input.get("overview")),
+                mistakes,
+                newVocabulary,
+                betterExpressions,
+                grammarProblems);
     }
 
     @SuppressWarnings("unchecked")
-    private List<GeneratedExercise> toGeneratedExercises(Map<String, Object> input) {
-        Object raw = input.get("exercises");
-        if (!(raw instanceof List<?> list)) {
-            return List.of();
-        }
-        List<GeneratedExercise> result = new ArrayList<>();
-        for (Object item : list) {
-            if (!(item instanceof Map<?, ?> rawMap)) {
-                continue;
-            }
-            Map<String, Object> m = (Map<String, Object>) rawMap;
-            Object options = m.get("options");
-            Object correctOptionIndex = m.get("correctOptionIndex");
-            result.add(
-                    new GeneratedExercise(
-                            String.valueOf(m.get("type")),
-                            m.get("word") == null ? null : String.valueOf(m.get("word")),
-                            m.get("correctSentence") == null ? null : String.valueOf(m.get("correctSentence")),
-                            null,
-                            m.get("question") == null ? null : String.valueOf(m.get("question")),
-                            options instanceof List<?> ol ? ol.stream().map(String::valueOf).toList() : null,
-                            correctOptionIndex instanceof Number n ? n.intValue() : null));
-        }
-        return result;
-    }
-
-    @Override
-    public String generateDailyPlan(DailyPlanContext context) {
-        String system = AIPrompts.DAILY_PLAN;
-        String userMessage =
-                "Total time: %d minutes.\n%s"
-                        .formatted(context.totalMinutes(), String.join("\n", context.languageSummaries()));
-        return extractText(post(baseBody(system, List.of(userMessage(userMessage)))));
-    }
-
     private List<Map<String, Object>> toMessages(List<ConversationTurn> history) {
         List<Map<String, Object>> messages = new ArrayList<>();
         for (ConversationTurn turn : history) {
@@ -345,7 +336,8 @@ public class ClaudeAIProvider implements AIProvider {
         return Map.of("role", "user", "content", content);
     }
 
-    private Map<String, Object> callTool(String system, String userMessage, Map<String, Object> tool) {
+    private Map<String, Object> callTool(
+            String system, String userMessage, Map<String, Object> tool) {
         Map<String, Object> body = baseBody(system, List.of(userMessage(userMessage)));
         body.put("tools", List.of(tool));
         body.put("tool_choice", Map.of("type", "tool", "name", tool.get("name")));
@@ -361,7 +353,8 @@ public class ClaudeAIProvider implements AIProvider {
         return body;
     }
 
-    private Map<String, Object> toolSpec(String name, String description, Map<String, Object> schema) {
+    private Map<String, Object> toolSpec(
+            String name, String description, Map<String, Object> schema) {
         Map<String, Object> tool = new LinkedHashMap<>();
         tool.put("name", name);
         tool.put("description", description);
@@ -385,7 +378,8 @@ public class ClaudeAIProvider implements AIProvider {
                 return (Map<String, Object>) block.get("input");
             }
         }
-        throw new AIProviderException("AI response did not include the expected tool call: " + toolName);
+        throw new AIProviderException(
+                "AI response did not include the expected tool call: " + toolName);
     }
 
     @SuppressWarnings("unchecked")
@@ -402,7 +396,8 @@ public class ClaudeAIProvider implements AIProvider {
         RuntimeException lastError = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                Map<String, Object> response = restClient.post().uri(API_URL).body(body).retrieve().body(Map.class);
+                Map<String, Object> response =
+                        restClient.post().uri(API_URL).body(body).retrieve().body(Map.class);
                 if (response == null) {
                     throw new AIProviderException("AI response body was empty");
                 }
@@ -410,15 +405,19 @@ public class ClaudeAIProvider implements AIProvider {
                 return response;
             } catch (RestClientException e) {
                 lastError = e;
-                log.warn("Claude API call failed (attempt {}/{}): {}", attempt, MAX_ATTEMPTS, e.getMessage());
+                log.warn(
+                        "Claude API call failed (attempt {}/{}): {}",
+                        attempt,
+                        MAX_ATTEMPTS,
+                        e.getMessage());
             }
         }
         throw new AIProviderException("Failed to call Claude API", lastError);
     }
 
     /**
-     * Streams the response body as Anthropic's SSE format, calling {@code onDelta} for each
-     * {@code content_block_delta} text fragment. Retries once on failure, same as {@link #post}.
+     * Streams the response body as Anthropic's SSE format, calling {@code onDelta} for each {@code
+     * content_block_delta} text fragment. Retries once on failure, same as {@link #post}.
      */
     private void streamPost(Map<String, Object> body, Consumer<String> onDelta) {
         RuntimeException lastError = null;
@@ -428,11 +427,10 @@ public class ClaudeAIProvider implements AIProvider {
                         .post()
                         .uri(API_URL)
                         .body(body)
-                        .exchange(
-                                (request, response) -> {
-                                    readSseStream(response.getBody(), onDelta);
-                                    return null;
-                                });
+                        .exchange((request, response) -> {
+                            readSseStream(response.getBody(), onDelta);
+                            return null;
+                        });
                 return;
             } catch (RestClientException e) {
                 lastError = e;
@@ -447,7 +445,8 @@ public class ClaudeAIProvider implements AIProvider {
     }
 
     private void readSseStream(java.io.InputStream body, Consumer<String> onDelta) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("data:")) {

@@ -10,13 +10,14 @@
 | Database: migration, schema, entity | `.claude/rules/database.md` | `db/**`, `domain/**`, `*Repository.java` |
 | Frontend | `.claude/rules/frontend.md` | `frontend/**` |
 | Test | `.claude/rules/testing.md` | `backend/src/test/**`, `*.test.tsx` |
-| Nội dung tiếng Nhật | `.claude/rules/content.md` | `content/**`, `scripts/content/**` |
+| Nội dung tiếng Nhật | `.claude/rules/content.md` | `backend/src/main/resources/content/**`, `scripts/content/**` |
 
 ## 1. Bản giao kèo quy ước (Conventions Contract)
 
 ### 1.1. Cấu trúc module backend
 
-Mỗi domain là một package phẳng dưới `com.learnflow.backend` (Controller, Service, Repository, `domain/`, `dto/`).
+Mỗi domain là một package phẳng dưới `com.learnflow.backend` (Service, Repository, `domain/`, `dto/`); controller
+nằm trong `api/v1/`, `api/v2/`, … theo version API.
 
 **Ba luật ranh giới — không được vi phạm:**
 1. Controller **không bao giờ** inject Repository. Luôn đi qua Service.
@@ -25,7 +26,8 @@ Mỗi domain là một package phẳng dưới `com.learnflow.backend` (Controll
 
 ### 1.2. Quy ước API
 
-Base path `/api`, Bearer JWT; request/response là java `record` (không trả entity); lỗi theo RFC 7807
+Mọi API có version: `/api/v1/...`; mọi URL là hằng số trong `common/web/ApiPaths`, controller nằm ở
+`<module>/api/vN/` và chỉ dùng hằng số đó; Bearer JWT; request/response là java `record` (không trả entity); lỗi theo RFC 7807
 `ProblemDetail`; phân trang bằng `PageResponse<T>`. Chi tiết: `.claude/rules/backend.md`.
 
 ### 1.3. Quy ước database

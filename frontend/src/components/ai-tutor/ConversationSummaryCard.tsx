@@ -1,50 +1,45 @@
-import { useState } from 'react'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { IconSparkles, IconPlus, IconCheck } from '@/components/ui/Icon'
-import { useCreateVocabulary } from '@/hooks/useVocabulary'
+import { Flex, Tag } from 'antd'
 import type { ConversationSummaryResult } from '@/api/ai'
 
 interface ConversationSummaryCardProps {
   summary: ConversationSummaryResult
-  languageCode: string
 }
 
-export function ConversationSummaryCard({ summary, languageCode }: ConversationSummaryCardProps) {
-  const createVocabulary = useCreateVocabulary()
-  const [addedWords, setAddedWords] = useState<Set<string>>(new Set())
-
-  function handleAdd(word: string, meaning: string) {
-    createVocabulary.mutate(
-      { languageCode, word, meaning, tags: [], attributes: {} },
-      { onSuccess: () => setAddedWords((prev) => new Set(prev).add(word)) },
-    )
-  }
-
+export function ConversationSummaryCard({ summary }: ConversationSummaryCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm dark:border-[#2C2C2C] dark:bg-[#1E1E1E] shadow-xs animate-fade-in">
-      <div className="flex items-center gap-2 text-[#365314] dark:text-[#B6F23A]">
-        <IconSparkles size={18} />
-        <h3 className="font-bold text-slate-900 dark:text-white">Conversation Analysis</h3>
+    <Flex
+      vertical
+      gap={16}
+      className="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 text-sm dark:border-[#2B3940] dark:bg-[#1B272C] shadow-xs animate-fade-in"
+    >
+      <Flex align="center" gap={8}>
+        <span className="text-2xl animate-bounce-playful">🌟</span>
+        <h3 className="font-black text-base text-slate-800 dark:text-white">
+          Session Analysis & Feedback
+        </h3>
+      </Flex>
+
+      <div className="rounded-2xl border-2 border-amber-200 bg-[#FFF5CC] p-4 text-[#A16800] dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
+        <p className="text-xs sm:text-sm font-bold leading-relaxed">{summary.overview}</p>
       </div>
 
-      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-[#F8F9FA] dark:bg-[#262626] p-3 rounded-xl border border-slate-200 dark:border-[#383838] font-medium">
-        {summary.overview}
-      </p>
-
-      {summary.pushedMistakes.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-            Recorded Mistakes
+      {summary.mistakes.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-black text-[#FF4B4B] uppercase tracking-wide">
+            Areas to polish
           </p>
-          <ul className="flex flex-col gap-1.5">
-            {summary.pushedMistakes.map((m) => (
+          <ul className="flex flex-col gap-2">
+            {summary.mistakes.map((m) => (
               <li
-                key={m.id}
-                className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-slate-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-800"
+                key={m.original}
+                className="flex items-center gap-2.5 rounded-2xl bg-[#FFDFE0]/60 p-3 text-xs text-slate-800 border-2 border-[#FFB3B5] dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-800"
               >
-                {m.category && <Badge variant="danger">{m.category}</Badge>}
-                <span className="font-semibold">{m.topic}</span>
+                {m.category && (
+                  <Tag color="error" className="m-0 rounded-full border-2 font-bold">
+                    {m.category}
+                  </Tag>
+                )}
+                <span className="font-bold">{m.topic}</span>
               </li>
             ))}
           </ul>
@@ -53,52 +48,35 @@ export function ConversationSummaryCard({ summary, languageCode }: ConversationS
 
       {summary.suggestedVocabulary.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#365314] dark:text-[#B6F23A]">
-            Recommended Vocabulary
+          <p className="text-xs font-black text-[#58CC02] uppercase tracking-wide">
+            Vocabulary Boost
           </p>
-          <ul className="flex flex-col gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {summary.suggestedVocabulary.map((v) => (
-              <li
+              <div
                 key={v.word}
-                className="flex items-center justify-between gap-2 rounded-xl bg-[#F8F9FA] p-2.5 border border-slate-200 dark:bg-[#262626] dark:border-[#383838]"
+                className="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-3 text-xs dark:border-[#2B3940] dark:bg-[#131F24]"
               >
-                <div className="text-xs font-semibold text-slate-900 dark:text-white">
-                  <span className="font-bold text-[#365314] dark:text-[#B6F23A]">{v.word}</span>
-                  <span className="text-slate-400 mx-1.5">—</span>
-                  <span>{v.meaningVietnamese}</span>
-                </div>
-                {addedWords.has(v.word) ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[#365314] dark:text-[#B6F23A]">
-                    <IconCheck size={14} /> Added
-                  </span>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleAdd(v.word, v.meaningVietnamese)}
-                    disabled={createVocabulary.isPending}
-                    className="gap-1 text-xs font-semibold"
-                  >
-                    <IconPlus size={13} />
-                    <span>Add to deck</span>
-                  </Button>
-                )}
-              </li>
+                <span className="font-black text-slate-900 dark:text-white text-sm">{v.word}</span>
+                <p className="text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                  {v.meaningVietnamese}
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
       {summary.betterExpressions.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            Better Expressions
+        <div className="space-y-2">
+          <p className="text-xs font-black text-[#1CB0F6] uppercase tracking-wide">
+            Natural Native Expressions
           </p>
-          <ul className="space-y-1 rounded-xl bg-emerald-50 p-3 border border-emerald-200 text-xs text-slate-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200">
+          <ul className="space-y-2 rounded-2xl bg-[#DDF4FF]/60 p-3.5 border-2 border-[#A3E2FF] text-xs text-slate-800 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-200">
             {summary.betterExpressions.map((expression) => (
-              <li key={expression} className="flex items-start gap-1.5">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
-                <span className="font-medium">{expression}</span>
+              <li key={expression} className="flex items-start gap-2">
+                <span className="text-[#1CB0F6] font-black text-sm">✓</span>
+                <span className="font-bold">{expression}</span>
               </li>
             ))}
           </ul>
@@ -106,20 +84,20 @@ export function ConversationSummaryCard({ summary, languageCode }: ConversationS
       )}
 
       {summary.grammarProblems.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            Grammar Points to Review
+        <div className="space-y-2">
+          <p className="text-xs font-black text-[#A16800] uppercase tracking-wide">
+            Grammar points to review
           </p>
-          <ul className="space-y-1 rounded-xl bg-amber-50 p-3 border border-amber-200 text-xs text-slate-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200">
+          <ul className="space-y-2 rounded-2xl bg-[#FFF5CC] p-3.5 border-2 border-amber-300 text-xs text-[#A16800] dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200">
             {summary.grammarProblems.map((problem) => (
-              <li key={problem} className="flex items-start gap-1.5">
-                <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>
-                <span className="font-medium">{problem}</span>
+              <li key={problem} className="flex items-start gap-2">
+                <span className="font-black text-sm">💡</span>
+                <span className="font-bold">{problem}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </div>
+    </Flex>
   )
 }

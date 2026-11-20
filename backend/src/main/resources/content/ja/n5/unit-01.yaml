@@ -1,0 +1,190 @@
+# N5 Unit 1 — Chào hỏi. AI-drafted; a person must review before flipping status to reviewed.
+units:
+  - key: ja.n5.u01
+    course: ja.course.n5
+    position: 1
+    title: Chào hỏi
+    description: Chào hỏi hằng ngày và tự giới thiệu bản thân.
+    status: draft
+    lessons:
+      - key: ja.n5.u01.l01
+        title: Lời chào hằng ngày
+        status: draft
+        items:
+          - ja.word.ohayougozaimasu
+          - ja.word.konnichiha
+          - ja.word.konbanha
+          - ja.word.sayounara
+          - ja.word.arigatougozaimasu
+          - ja.word.sumimasen
+      - key: ja.n5.u01.l02
+        title: Tự giới thiệu
+        status: draft
+        items:
+          - ja.word.hajimemashite
+          - ja.word.yoroshikuonegaishimasu
+          - ja.word.watashi
+          - ja.word.gakusei
+          - ja.word.sensei
+          - ja.word.betonamujin
+          - ja.word.nihonjin
+          - ja.grammar.n-wa-n-desu
+          - ja.sentence.watashi-wa-gakusei-desu
+          - ja.sentence.watashi-wa-betonamujin-desu
+          - ja.sentence.hajimemashite-yoroshiku
+
+words:
+  - key: ja.word.ohayougozaimasu
+    status: draft
+    source: ai
+    reading: おはようございます
+    meaningsVi: [chào buổi sáng (lịch sự)]
+    meaningsEn: [good morning]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Với bạn bè, gia đình nói ngắn là おはよう.
+  - key: ja.word.konnichiha
+    status: draft
+    source: ai
+    reading: こんにちは
+    meaningsVi: [xin chào, chào buổi trưa]
+    meaningsEn: [hello, good day]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Chữ は cuối đọc là "wa".
+  - key: ja.word.konbanha
+    status: draft
+    source: ai
+    reading: こんばんは
+    meaningsVi: [chào buổi tối]
+    meaningsEn: [good evening]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Chữ は cuối đọc là "wa".
+  - key: ja.word.sayounara
+    status: draft
+    source: ai
+    reading: さようなら
+    meaningsVi: [tạm biệt]
+    meaningsEn: [goodbye]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Mang sắc thái chia tay lâu; với bạn bè hằng ngày thường nói じゃあね.
+  - key: ja.word.arigatougozaimasu
+    status: draft
+    source: ai
+    reading: ありがとうございます
+    meaningsVi: [cảm ơn (lịch sự)]
+    meaningsEn: [thank you very much]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Với bạn bè, gia đình nói ngắn là ありがとう.
+  - key: ja.word.sumimasen
+    status: draft
+    source: ai
+    reading: すみません
+    meaningsVi: [xin lỗi, xin lỗi cho hỏi (khi gọi hoặc làm phiền ai)]
+    meaningsEn: [excuse me, I'm sorry]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+    note: Cũng dùng như lời cảm ơn nhẹ khi đã làm phiền người khác.
+  - key: ja.word.hajimemashite
+    status: draft
+    source: ai
+    reading: はじめまして
+    meaningsVi: [rất vui được làm quen (lần đầu gặp mặt)]
+    meaningsEn: [nice to meet you]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+  - key: ja.word.yoroshikuonegaishimasu
+    status: draft
+    source: ai
+    written: よろしくお願いします
+    reading: よろしくおねがいします
+    meaningsVi: [rất mong được giúp đỡ]
+    meaningsEn: [please treat me well, nice to meet you]
+    partOfSpeech: [expression]
+    jlptLevel: N5
+  - key: ja.word.watashi
+    status: draft
+    source: ai
+    written: 私
+    reading: わたし
+    meaningsVi: [tôi]
+    meaningsEn: [I, me]
+    partOfSpeech: [pronoun]
+    jlptLevel: N5
+  - key: ja.word.gakusei
+    status: draft
+    source: ai
+    written: 学生
+    reading: がくせい
+    meaningsVi: [sinh viên, học sinh]
+    meaningsEn: [student]
+    partOfSpeech: [noun]
+    jlptLevel: N5
+    note: Thường chỉ sinh viên đại học; học sinh phổ thông thường gọi là 生徒.
+  - key: ja.word.sensei
+    status: draft
+    source: ai
+    written: 先生
+    reading: せんせい
+    meaningsVi: [giáo viên, thầy/cô]
+    meaningsEn: [teacher]
+    partOfSpeech: [noun]
+    jlptLevel: N5
+    note: Không dùng để tự gọi mình. Cũng dùng để gọi bác sĩ, luật sư.
+  - key: ja.word.betonamujin
+    status: draft
+    source: ai
+    written: ベトナム人
+    reading: ベトナムじん
+    meaningsVi: [người Việt Nam]
+    meaningsEn: [Vietnamese person]
+    partOfSpeech: [noun]
+    jlptLevel: N5
+  - key: ja.word.nihonjin
+    status: draft
+    source: ai
+    written: 日本人
+    reading: にほんじん
+    meaningsVi: [người Nhật]
+    meaningsEn: [Japanese person]
+    partOfSpeech: [noun]
+    jlptLevel: N5
+
+grammar:
+  - key: ja.grammar.n-wa-n-desu
+    status: draft
+    source: ai
+    pattern: N1 は N2 です
+    examples:
+      - ja.sentence.watashi-wa-gakusei-desu
+      - ja.sentence.watashi-wa-betonamujin-desu
+    meaningVi: N1 là N2
+    explanationVi: >-
+      Dùng để giới thiệu hoặc nói N1 là gì. は là trợ từ chủ đề, đọc là "wa". です đặt cuối câu, làm
+      câu lịch sự. Câu phủ định: N1 は N2 じゃありません (ví dụ: 私は先生じゃありません。); dạng
+      trang trọng hơn khi viết là では ありません. Khi người nghe đã biết đang nói về ai, người Nhật
+      thường bỏ 私は: はじめまして。ベトナム人です。
+    jlptLevel: N5
+
+sentences:
+  - key: ja.sentence.watashi-wa-gakusei-desu
+    status: draft
+    source: ai
+    text: 私は学生です。
+    reading: わたしはがくせいです。
+    translationVi: Tôi là sinh viên.
+  - key: ja.sentence.watashi-wa-betonamujin-desu
+    status: draft
+    source: ai
+    text: 私はベトナム人です。
+    reading: わたしはベトナムじんです。
+    translationVi: Tôi là người Việt Nam.
+  - key: ja.sentence.hajimemashite-yoroshiku
+    status: draft
+    source: ai
+    text: はじめまして。よろしくお願いします。
+    reading: はじめまして。よろしくおねがいします。
+    translationVi: Rất vui được gặp bạn. Rất mong được bạn giúp đỡ.

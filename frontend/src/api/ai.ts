@@ -1,4 +1,5 @@
-import { apiFetch, ApiError } from './client'
+import { API_BASE, apiFetch, ApiError, refreshSession } from './client'
+import { isMockMode, handleMockStream } from '@/mock'
 import { useAuthStore } from '@/stores/authStore'
 import type { Language } from '@/types/domain'
 
@@ -9,6 +10,16 @@ export function explainGrammar(
   return apiFetch('/ai/grammar/explain', {
     method: 'POST',
     body: JSON.stringify({ languageCode, question }),
+  })
+}
+
+export function generateExamples(
+  languageCode: string,
+  word: string,
+): Promise<{ examples: string[] }> {
+  return apiFetch('/ai/examples/generate', {
+    method: 'POST',
+    body: JSON.stringify({ languageCode, word }),
   })
 }
 
@@ -67,16 +78,30 @@ export async function streamConversationMessage(
   message: string,
   onDelta: (delta: string) => void,
 ): Promise<void> {
-  const token = useAuthStore.getState().token
+  if (isMockMode()) {
+    return handleMockStream(conversationId, message, onDelta)
+  }
+
   const params = new URLSearchParams({ message })
-  const response = await fetch(
-    `/api/ai/conversation/${conversationId}/stream?${params.toString()}`,
-    {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    },
-  )
+  const url = `${API_BASE}/ai/conversation/${conversationId}/stream?${params.toString()}`
+  const send = () => {
+    const token = useAuthStore.getState().token
+    return fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  }
+  let response: Response
+  try {
+    response = await send()
+    // Access token expired mid-session: refresh once (shared with apiFetch) and retry.
+    if (response.status === 401 && (await refreshSession())) {
+      response = await send()
+    }
+  } catch (err) {
+    if (err instanceof TypeError) {
+      console.warn(`[LearnFlow AI] Backend stream unreachable. Falling back to Mock Stream.`)
+      return handleMockStream(conversationId, message, onDelta)
+    }
+    throw err
+  }
 
   if (!response.ok || !response.body) {
     throw new ApiError(response.status, 'Failed to start streaming reply')
@@ -122,13 +147,12 @@ export async function streamConversationMessage(
   flushEvent()
 }
 
-export interface PushedMistake {
-  id: number
+export interface ConversationMistake {
   category: string | null
   topic: string | null
   original: string
   corrected: string
-  timesRepeated: number
+  explanation: string | null
 }
 
 export interface SuggestedVocabulary {
@@ -139,7 +163,7 @@ export interface SuggestedVocabulary {
 export interface ConversationSummaryResult {
   conversationId: number
   overview: string
-  pushedMistakes: PushedMistake[]
+  mistakes: ConversationMistake[]
   suggestedVocabulary: SuggestedVocabulary[]
   betterExpressions: string[]
   grammarProblems: string[]

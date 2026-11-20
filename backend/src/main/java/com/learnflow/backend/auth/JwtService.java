@@ -11,7 +11,9 @@ import java.util.Optional;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;
 
-/** Issues and parses HS256 JWTs. The signing key comes from {@code JWT_SECRET} (never hardcoded). */
+/**
+ * Issues and parses HS256 JWTs. The signing key comes from {@code JWT_SECRET} (never hardcoded).
+ */
 @Service
 public class JwtService {
 
@@ -28,7 +30,7 @@ public class JwtService {
 
     public IssuedToken issue(Long userId, String email) {
         Instant now = Instant.now(clock);
-        Instant expiresAt = now.plus(authProperties.tokenTtl());
+        Instant expiresAt = now.plus(authProperties.accessTokenTtl());
 
         String token =
                 Jwts.builder()
@@ -42,7 +44,9 @@ public class JwtService {
         return new IssuedToken(token, expiresAt);
     }
 
-    /** Returns the subject (user id as string) if the token is valid and not expired, else empty. */
+    /**
+     * Returns the subject (user id as string) if the token is valid and not expired, else empty.
+     */
     public Optional<Long> parseUserId(String token) {
         try {
             String subject =

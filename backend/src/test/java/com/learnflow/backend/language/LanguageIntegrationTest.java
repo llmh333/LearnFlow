@@ -2,10 +2,10 @@ package com.learnflow.backend.language;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.learnflow.backend.auth.dto.AuthResponse;
-import com.learnflow.backend.auth.dto.RegisterRequest;
+import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.common.AbstractIntegrationTest;
-import com.learnflow.backend.language.dto.LanguageResponse;
+import com.learnflow.backend.language.dto.response.LanguageResponse;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -19,20 +19,27 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void list_withoutToken_returns401() {
-        RestTestClient client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+        RestTestClient client =
+                RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
-        client.get().uri("/api/languages").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/v1/languages").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
     void list_returnsSeededLanguages() {
-        RestTestClient client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+        RestTestClient client =
+                RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
         RegisterRequest register =
-                new RegisterRequest("lang-" + System.nanoTime() + "@example.com", "password123", "Tester");
+                new RegisterRequest(
+                        "lang-" + System.nanoTime() + "@example.com",
+                        "password123",
+                        "password123",
+                        "Tester",
+                        "Asia/Ho_Chi_Minh");
         AuthResponse auth =
                 client.post()
-                        .uri("/api/auth/register")
+                        .uri("/api/v1/auth/register")
                         .body(register)
                         .exchange()
                         .expectStatus()
@@ -43,7 +50,7 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
 
         List<LanguageResponse> languages =
                 client.get()
-                        .uri("/api/languages")
+                        .uri("/api/v1/languages")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + auth.token())
                         .exchange()
                         .expectStatus()
@@ -52,6 +59,6 @@ class LanguageIntegrationTest extends AbstractIntegrationTest {
                         .returnResult()
                         .getResponseBody();
 
-        assertThat(languages).extracting(LanguageResponse::code).containsExactly("en", "zh", "ja");
+        assertThat(languages).extracting(LanguageResponse::code).containsExactly("ja");
     }
 }

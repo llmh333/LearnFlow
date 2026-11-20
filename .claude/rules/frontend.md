@@ -12,14 +12,14 @@ Chi tiết cho AGENTS.md §1.5.
 ```
 frontend/src/
 ├── api/
-│   ├── client.ts               // fetch wrapper: gắn Bearer, parse ProblemDetail, ném ApiError, 401 -> logout
+│   ├── client.ts               // fetch wrapper: gắn Bearer, parse ProblemDetail, ném ApiError, 401 -> refresh rồi thử lại
 │   └── <domain>.ts             // hàm thuần gọi API: fetchVocabularyList, createVocabulary...
 ├── hooks/use<Domain>.ts        // wrap react-query, export <domain>Keys
 ├── pages/<Name>Page.tsx
 ├── components/
 │   ├── ui/                     // Button, Input, Select, Card, Dialog, Badge — dùng chung
 │   └── <domain>/<Name>.tsx
-├── stores/authStore.ts, uiStore.ts   // zustand (+ persist cho auth)
+├── stores/authStore.ts, uiStore.ts   // zustand; auth KHÔNG persist
 ├── types/domain.ts             // mirror DTO backend, viết tay
 ├── lib/cn.ts, lib/format.ts
 └── router.tsx
@@ -36,6 +36,21 @@ frontend/src/
 - `types/domain.ts` mirror DTO backend bằng tay; đổi DTO backend thì đổi type ở cùng PR.
 - UI copy: **tiếng Anh** (quyết định hiện hành; đang cân nhắc chuyển sang tiếng Việt cho người học Việt Nam —
   chưa đổi cho tới khi có quyết định trong decision log).
+- **Access token chỉ nằm trong bộ nhớ** (`authStore`, không `persist`, không `localStorage`/`sessionStorage`).
+  Refresh token là cookie HttpOnly do backend đặt; frontend không đọc được và không cần đọc. Tải lại trang →
+  `ProtectedRoute` gọi `refreshSession()` để khôi phục phiên. Gặp 401 → `apiFetch` gọi `refreshSession()`
+  (một request tại một thời điểm — backend thu hồi cả phiên nếu một refresh token bị dùng hai lần) rồi thử lại
+  đúng một lần. Gọi `fetch` trực tiếp (ví dụ stream SSE) cũng phải làm như vậy.
+- **Layout dùng `Flex` của antd**, không dùng `<div className="flex ...">`: hàng → `<Flex align="center" gap={8}>`,
+  cột → `<Flex vertical>`, `justify="space-between"`, `wrap`. Tailwind giữ cho phần trang trí (màu, viền, bo góc,
+  padding, kích thước) và biến thể responsive (`md:flex-row`, `md:gap-6` vẫn đè được vì style antd nằm trong
+  `@layer antd` dưới Tailwind utilities — `StyleProvider layer` ở `App.tsx`, thứ tự layer ở `index.css`).
+  Ngoại lệ: phần tử có thể không có con (ví dụ ô chỉ chứa `''`) giữ `div`, vì `Flex` tự ẩn khi `:empty`.
+- **Ưu tiên component antd thay vì tự viết HTML/CSS**: form dùng `Form` + `Form.Item name=…` (lỗi `errors.<field>`
+  từ backend đưa vào bằng `form.setFields`), ô nhập `Input`/`Input.TextArea`/`InputNumber`/`Select`, nhãn `Tag`,
+  loading `Spin`, popover `Popover`, nhóm lựa chọn `Radio.Group` (có sẵn phím mũi tên). Hộp thoại dùng
+  `components/ui/Dialog` (bọc antd `Modal`) hoặc `ConfirmModal`/`useConfirm`. Chỉ giữ component tự viết khi nó mang
+  kiểu dáng riêng của app mà antd không có (`ui/Button` 3D).
 - Không thêm dependency ngoài danh sách đã chốt nếu không ghi lý do vào decision log.
 - Thiết kế **mobile-first**: dùng được ở chiều rộng 375px, vùng chạm đủ lớn, không cuộn ngang.
 - Component và hàm thuần trong `lib/` dễ test; tách logic khỏi JSX khi logic phức tạp.

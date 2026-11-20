@@ -16,15 +16,13 @@ spring:
 
 app:
   auth:
-    token-ttl: PT12H
+    access-token-ttl: PT15M
+    refresh-token-ttl: P30D
     registration-enabled: true
-  vocabulary:
-    seed-starter-pack-on-register: true
-  exercise:
-    deterministic-count-per-day: 5
-    ai-count-per-day: 3
-    pregenerate-days: 3
-    cron: "0 0 3 * * *"
+  content:
+    location: classpath*:content/
+    include-drafts: false
+    import-on-startup: true
   cors:
     allowed-origins: http://localhost:5173
   ai:
@@ -32,3 +30,5 @@ app:
     # apply their own default when app.ai.model is blank), a shared default would silently pick
     # the wrong model name for whichever provider is actually active.
     timeout-seconds: 60
+    # D8: AI calls per user per local day, across all AI features.
+    daily-quota: 50

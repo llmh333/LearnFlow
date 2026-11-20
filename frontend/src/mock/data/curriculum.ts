@@ -1,0 +1,158 @@
+import type { ContentSource, Course } from '@/types/domain'
+
+export const MOCK_CONTENT_SOURCES: ContentSource[] = [
+  {
+    key: 'jmdict',
+    name: 'JMdict (Japanese Dictionary)',
+    url: 'https://www.edrdg.org/jmdict/j_jmdict.html',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://www.edrdg.org/edrdg/licence.html',
+    attribution: 'Electronic Dictionary Research and Development Group (EDRDG).',
+  },
+  {
+    key: 'cc-cedict',
+    name: 'CC-CEDICT (Chinese Dictionary)',
+    url: 'https://www.mdbg.net/chinese/dictionary?page=cedict',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    attribution: 'MDBG & CC-CEDICT community Mandarin dictionary project.',
+  },
+  {
+    key: 'wordnet',
+    name: 'Princeton WordNet (English Lexicon)',
+    url: 'https://wordnet.princeton.edu/',
+    license: 'WordNet 3.0 License',
+    licenseUrl: 'https://wordnet.princeton.edu/license-and-commercial-use',
+    attribution: 'Princeton University Cognitive Science Laboratory lexical database.',
+  },
+  {
+    key: 'tatoeba',
+    name: 'Tatoeba Multilingual Corpus',
+    url: 'https://tatoeba.org',
+    license: 'CC BY 2.0 FR',
+    licenseUrl: 'https://creativecommons.org/licenses/by/2.0/fr/',
+    attribution: 'Tatoeba collaborative community sentences for English, Chinese, and Japanese.',
+  },
+  {
+    key: 'animcjk',
+    name: 'AnimCJK',
+    url: 'https://github.com/parsimonhi/animCJK',
+    license: 'LGPL / Arphic Public License',
+    attribution: 'Animated vector stroke orders for Kanji and Hanzi by François Mizessyn.',
+  },
+]
+
+export const MOCK_COURSES: Course[] = [
+  {
+    id: 1,
+    key: 'ja-n5',
+    language: 'ja',
+    level: 'N5',
+    title: 'Japanese N5 Foundation',
+    description: 'Master essential Japanese grammar, greetings, daily vocabulary, and basic Kanji.',
+    status: 'REVIEWED',
+    units: [
+      {
+        id: 101,
+        key: 'ja-n5-u1',
+        position: 1,
+        title: 'Meeting & Greeting (出会いと挨拶)',
+        description: 'First conversations, introducing yourself, and polite everyday expressions.',
+        status: 'REVIEWED',
+        lessons: [
+          {
+            id: 1001,
+            key: 'ja-n5-u1-l1',
+            position: 1,
+            title: 'Self Introductions',
+            status: 'REVIEWED',
+            itemCount: 12,
+          },
+          {
+            id: 1002,
+            key: 'ja-n5-u1-l2',
+            position: 2,
+            title: 'Numbers & Time',
+            status: 'REVIEWED',
+            itemCount: 15,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 2,
+    key: 'en-b1',
+    language: 'en',
+    level: 'B1',
+    title: 'English B1 Fluency & Confidence',
+    description: 'Practical English for travel, workplace, and natural conversational fluidity.',
+    status: 'REVIEWED',
+    units: [
+      {
+        id: 201,
+        key: 'en-b1-u1',
+        position: 1,
+        title: 'Everyday Dialogues & Opinions',
+        description: 'Expressing thoughts, agreeing, disagreeing, and storytelling.',
+        status: 'REVIEWED',
+        lessons: [
+          {
+            id: 2001,
+            key: 'en-b1-u1-l1',
+            position: 1,
+            title: 'Asking Thoughtful Questions',
+            status: 'REVIEWED',
+            itemCount: 10,
+          },
+          {
+            id: 2002,
+            key: 'en-b1-u1-l2',
+            position: 2,
+            title: 'Sharing Personal Experiences',
+            status: 'REVIEWED',
+            itemCount: 14,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 3,
+    key: 'zh-hsk2',
+    language: 'zh',
+    level: 'HSK2',
+    title: 'Mandarin Chinese HSK 2',
+    description:
+      'Expand your conversational Mandarin with 300 core words and key sentence patterns.',
+    status: 'REVIEWED',
+    units: [
+      {
+        id: 301,
+        key: 'zh-hsk2-u1',
+        position: 1,
+        title: 'Daily Life & Dining (日常生活与用餐)',
+        description: 'Ordering food, shopping, and describing your daily schedule in Mandarin.',
+        status: 'REVIEWED',
+        lessons: [
+          {
+            id: 3001,
+            key: 'zh-hsk2-u1-l1',
+            position: 1,
+            title: 'At the Restaurant',
+            status: 'REVIEWED',
+            itemCount: 12,
+          },
+          {
+            id: 3002,
+            key: 'zh-hsk2-u1-l2',
+            position: 2,
+            title: 'Making Plans with Friends',
+            status: 'REVIEWED',
+            itemCount: 11,
+          },
+        ],
+      },
+    ],
+  },
+]

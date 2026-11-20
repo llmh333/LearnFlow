@@ -1,5 +1,6 @@
-import { IconPlus, IconBot } from '@/components/ui/Icon'
-import { Badge } from '@/components/ui/Badge'
+import { Flex, Tag } from 'antd'
+import { IconPlus, IconBot } from '@/assets'
+import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
 import type { ConversationListItem } from '@/api/ai'
 
@@ -17,17 +18,13 @@ export function ConversationList({
   onNew,
 }: ConversationListProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={onNew}
-        className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#93D620] bg-[#EDFBD8]/60 px-3.5 py-2.5 text-xs font-bold text-[#365314] hover:bg-[#EDFBD8] transition-all dark:border-[#365314] dark:bg-[#1E2B11] dark:text-[#B6F23A] cursor-pointer"
-      >
-        <IconPlus size={15} />
-        <span>New conversation</span>
-      </button>
+    <Flex vertical gap={12}>
+      <Button type="button" variant="primary" onClick={onNew} className="w-full gap-2 py-3">
+        <IconPlus size={16} />
+        <span>Start New Chat</span>
+      </Button>
 
-      <ul className="flex flex-col gap-1.5 max-h-[26rem] overflow-y-auto pr-1">
+      <ul className="flex flex-col gap-2 max-h-[28rem] overflow-y-auto pr-1">
         {conversations.map((conversation) => {
           const isActive = activeId === conversation.conversationId
           return (
@@ -36,34 +33,29 @@ export function ConversationList({
                 type="button"
                 onClick={() => onSelect(conversation.conversationId)}
                 className={cn(
-                  'w-full rounded-xl px-3 py-2.5 text-left text-xs transition-all duration-150 cursor-pointer border',
+                  'w-full rounded-2xl p-3 text-left transition-all duration-75 cursor-pointer border-2 border-b-4 active:border-b-2 active:translate-y-[2px]',
                   isActive
-                    ? 'border-[#365314] bg-[#365314] text-white shadow-xs dark:border-[#B6F23A] dark:bg-[#B6F23A] dark:text-[#1A1A1A]'
-                    : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:border-[#2C2C2C] dark:bg-[#1E1E1E] dark:text-slate-200 dark:hover:bg-[#252525]',
+                    ? 'border-[#1899D6] bg-[#1CB0F6] text-white shadow-xs'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-[#2B3940] dark:bg-[#1B272C] dark:text-slate-200 dark:hover:bg-[#223238]',
                 )}
               >
-                <div className="flex items-center justify-between gap-1 mb-1">
-                  <span className="font-bold truncate">
-                    {conversation.scenario ?? 'General Chat'}
+                <Flex align="center" justify="space-between" gap={4} className="mb-1.5">
+                  <span className="font-extrabold text-xs truncate">
+                    {conversation.scenario ?? 'General Practice'}
                   </span>
-                  <Badge
-                    variant={isActive ? 'outline' : 'default'}
+                  <Tag
                     className={cn(
-                      'text-[10px] py-0 px-1.5',
-                      isActive
-                        ? 'border-white/40 text-white dark:border-black/30 dark:text-[#1A1A1A]'
-                        : '',
+                      'm-0 rounded-full border-2 px-2 text-[10px] font-bold',
+                      isActive && 'border-white/50 bg-transparent text-white',
                     )}
                   >
-                    {conversation.language?.code.toUpperCase() ?? 'EN'}
-                  </Badge>
-                </div>
+                    {conversation.language?.code.toUpperCase() ?? 'JA'}
+                  </Tag>
+                </Flex>
                 <div
                   className={cn(
-                    'truncate text-[11px] font-medium',
-                    isActive
-                      ? 'text-[#EDFBD8] dark:text-[#1A1A1A]/80'
-                      : 'text-slate-500 dark:text-slate-400',
+                    'truncate text-[11px] font-bold',
+                    isActive ? 'text-white/80' : 'text-slate-400 dark:text-slate-500',
                   )}
                 >
                   {new Date(conversation.startedAt).toLocaleDateString([], {
@@ -81,10 +73,10 @@ export function ConversationList({
         {conversations.length === 0 && (
           <li className="flex flex-col items-center justify-center p-6 text-center text-xs text-slate-400">
             <IconBot size={24} className="text-slate-300 dark:text-slate-600 mb-1" />
-            <span>No previous chats.</span>
+            <span>No previous chats yet.</span>
           </li>
         )}
       </ul>
-    </div>
+    </Flex>
   )
 }
