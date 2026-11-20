@@ -33,6 +33,7 @@ backend/target/
 
 # Frontend
 frontend/node_modules/
+scripts/content/node_modules/
 frontend/dist/
 
 # IDE
