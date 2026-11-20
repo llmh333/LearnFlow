@@ -2,9 +2,13 @@ package com.learnflow.backend.auth.api.v1;
 
 import com.learnflow.backend.auth.AuthService;
 import com.learnflow.backend.auth.AuthSession;
+import com.learnflow.backend.auth.PasswordResetService;
 import com.learnflow.backend.auth.dto.request.ChangePasswordRequest;
+import com.learnflow.backend.auth.dto.request.ForgotPasswordRequest;
 import com.learnflow.backend.auth.dto.request.LoginRequest;
 import com.learnflow.backend.auth.dto.request.RegisterRequest;
+import com.learnflow.backend.auth.dto.request.ResetPasswordRequest;
+import com.learnflow.backend.auth.dto.request.VerifyResetCodeRequest;
 import com.learnflow.backend.auth.dto.response.AuthResponse;
 import com.learnflow.backend.auth.dto.response.UserResponse;
 import com.learnflow.backend.common.web.ApiPaths;
@@ -35,10 +39,13 @@ public class AuthController {
     public static final String REFRESH_COOKIE = "refresh_token";
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
     private final Clock clock;
 
-    public AuthController(AuthService authService, Clock clock) {
+    public AuthController(
+            AuthService authService, PasswordResetService passwordResetService, Clock clock) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
         this.clock = clock;
     }
 
@@ -77,6 +84,27 @@ public class AuthController {
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody ChangePasswordRequest request) {
         return withRefreshCookie(authService.changePassword(userId, request));
+    }
+
+    /** Always 202, whether or not the email has an account. */
+    @PostMapping(ApiPaths.V1.Auth.PASSWORD_RESET_REQUEST)
+    public ResponseEntity<Void> requestPasswordReset(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.requestCode(request);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping(ApiPaths.V1.Auth.PASSWORD_RESET_VERIFY)
+    public ResponseEntity<Void> verifyPasswordResetCode(
+            @Valid @RequestBody VerifyResetCodeRequest request) {
+        passwordResetService.verifyCode(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(ApiPaths.V1.Auth.PASSWORD_RESET_CONFIRM)
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(ApiPaths.V1.Auth.ME)

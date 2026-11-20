@@ -159,7 +159,7 @@ public class AuthService {
     }
 
     /** 8+ characters, at most 72 bytes, at least one letter and one digit, and confirmed. */
-    private static void checkNewPassword(
+    static void checkNewPassword(
             String field, String password, String confirmField, String confirmation) {
         if (password.length() < MIN_PASSWORD_CHARS) {
             throw new BadRequestException(
@@ -188,7 +188,7 @@ public class AuthService {
     }
 
     /** Emails are stored lower-cased (the DB has a CHECK), so Foo@x and foo@x are one account. */
-    private static String normalizeEmail(String email) {
+    static String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 }

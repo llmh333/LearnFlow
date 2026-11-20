@@ -34,6 +34,9 @@ public final class ApiPaths {
             public static final String REFRESH = "/refresh";
             public static final String LOGOUT = "/logout";
             public static final String CHANGE_PASSWORD = "/change-password";
+            public static final String PASSWORD_RESET_REQUEST = "/password-reset/request";
+            public static final String PASSWORD_RESET_VERIFY = "/password-reset/verify";
+            public static final String PASSWORD_RESET_CONFIRM = "/password-reset/confirm";
             public static final String ME = "/me";
 
             private Auth() {}

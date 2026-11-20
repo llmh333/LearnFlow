@@ -38,6 +38,12 @@ public class SecurityConfig {
                                         // Authenticated by the refresh cookie, not a Bearer token.
                                         ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.REFRESH,
                                         ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.LOGOUT,
+                                        ApiPaths.V1.Auth.BASE
+                                                + ApiPaths.V1.Auth.PASSWORD_RESET_REQUEST,
+                                        ApiPaths.V1.Auth.BASE
+                                                + ApiPaths.V1.Auth.PASSWORD_RESET_VERIFY,
+                                        ApiPaths.V1.Auth.BASE
+                                                + ApiPaths.V1.Auth.PASSWORD_RESET_CONFIRM,
                                         ApiPaths.V1.Health.BASE,
                                         ApiPaths.V1.Curriculum.BASE
                                                 + ApiPaths.V1.Curriculum.SOURCES)

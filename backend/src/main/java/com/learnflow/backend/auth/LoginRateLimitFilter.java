@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Deque;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.springframework.context.annotation.Profile;
@@ -17,13 +18,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Simple in-memory fixed-window limiter on {@code POST /api/auth/login}, keyed by client IP. Only
- * meant to slow down brute-force guessing against the single account this app serves — not a
- * distributed rate limiter, so it resets on restart and doesn't share state across instances, which
- * is fine since there is exactly one backend container in production. Disabled under the {@code
- * test} profile: integration tests share one Spring context (and thus one instance of this bean)
- * across the whole suite, so its counter would otherwise accumulate across unrelated test classes
- * and start rejecting legitimate test logins.
+ * Simple in-memory fixed-window limiter on login and the password-reset endpoints, keyed by client
+ * IP (one shared budget). Only meant to slow down brute-force guessing against the single account
+ * this app serves — not a distributed rate limiter, so it resets on restart and doesn't share state
+ * across instances, which is fine since there is exactly one backend container in production.
+ * Disabled under the {@code test} profile: integration tests share one Spring context (and thus one
+ * instance of this bean) across the whole suite, so its counter would otherwise accumulate across
+ * unrelated test classes and start rejecting legitimate test logins.
  */
 @Component
 @Profile("!test")
@@ -66,8 +67,15 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private static final Set<String> LIMITED_PATHS =
+            Set.of(
+                    ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.LOGIN,
+                    ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.PASSWORD_RESET_REQUEST,
+                    ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.PASSWORD_RESET_VERIFY,
+                    ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.PASSWORD_RESET_CONFIRM);
+
     private boolean isLoginRequest(HttpServletRequest request) {
         return "POST".equalsIgnoreCase(request.getMethod())
-                && (ApiPaths.V1.Auth.BASE + ApiPaths.V1.Auth.LOGIN).equals(request.getRequestURI());
+                && LIMITED_PATHS.contains(request.getRequestURI());
     }
 }
